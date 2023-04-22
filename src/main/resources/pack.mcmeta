@@ -1,7 +1,6 @@
 {
   "pack": {
-    "description": "Resources for examplemod",
-    "pack_format": 9,
-    "_comment": "pack_format 9 is the current format for Minecraft 1.19.2. Be aware may have changed by the time you use this template!"
+    "description": "Resources for Litematica",
+    "pack_format": 9
   }
 }

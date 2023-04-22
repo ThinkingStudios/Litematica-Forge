@@ -30,3 +30,10 @@ mandatory = true
 versionRange = "[1.19,)"
 ordering = "NONE"
 side = "BOTH"
+
+[[dependencies.litematica]]
+modId = "malilib"
+mandatory = true
+versionRange = "*"
+ordering = "NONE"
+side = "BOTH"

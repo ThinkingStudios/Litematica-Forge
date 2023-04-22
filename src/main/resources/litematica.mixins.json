@@ -1,0 +1,22 @@
+{
+  "required": true,
+  "package": "fi.dy.masa.litematica.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "minVersion": "0.7",
+  "client": [
+    "IMixinBlockModelRenderer",
+    "IMixinChunkDeltaUpdateS2CPacket",
+    "MixinClientPlayNetworkHandler",
+    "MixinClientWorld",
+    "MixinDebugHud",
+    "MixinIntegratedServer",
+    "MixinMinecraftClient",
+    "MixinModelOverride",
+    "MixinRailBlocks",
+    "MixinWorldChunk",
+    "MixinWorldRenderer"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

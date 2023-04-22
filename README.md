@@ -1,3 +1,5 @@
-# ArchitecturyTemplateMod-Forge
+# Litematica-Forge
 
-These Templates are [Architectury Templates](https://github.com/architectury/architectury-templates) Fork (Only Forge).
+Litematica unofficial forge port.
+
+Require MaLiLib-Forge & ForgedFabricLoaderAPI.

@@ -1,0 +1,34 @@
+{
+  "required": true,
+  "package": "fi.dy.masa.litematica.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "minVersion": "0.8",
+  "client": [
+    "IMixinChunkDeltaUpdateS2CPacket",
+    "IMixinFenceGateBlock",
+    "IMixinHandledScreen",
+    "IMixinRedstoneWireBlock",
+    "IMixinStairsBlock",
+    "IMixinVineBlock",
+    "IMixinWorldTickScheduler",
+    "MixinBlock",
+    "MixinBlockItem",
+    "MixinBlockStateFlattening",
+    "MixinChestBlock",
+    "MixinClientPlayNetworkHandler",
+    "MixinClientWorld",
+    "MixinDebugHud",
+    "MixinHandledScreen",
+    "MixinIntegratedServer",
+    "MixinMinecraftClient",
+    "MixinModelOverrideList",
+    "MixinRailBlocks",
+    "MixinServerPlayNetworkHandler",
+    "MixinWorld",
+    "MixinWorldChunk",
+    "MixinWorldRenderer"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

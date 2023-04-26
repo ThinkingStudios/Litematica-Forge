@@ -1,4 +1,4 @@
-# Litematica-Forge
+# Forgematica
 
 Litematica unofficial forge port.
 

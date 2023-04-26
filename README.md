@@ -2,4 +2,4 @@
 
 Litematica unofficial forge port.
 
-Require MaLiLib-Forge & ForgedFabricLoaderAPI.
+Require [MaLiLib-Forge](https://github.com/ThinkingStudios/MaLiLib-Forge).

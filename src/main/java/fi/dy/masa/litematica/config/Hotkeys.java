@@ -10,7 +10,7 @@ public class Hotkeys
     public static final ConfigHotkey ADD_SELECTION_BOX                  = new ConfigHotkey("addSelectionBox",                   "M,A",  "Add a new selection box (position 1) here");
     public static final ConfigHotkey CLONE_SELECTION                    = new ConfigHotkey("cloneSelection",                    "",     "Quickly clone the current area selection.\nThis basically just creates an in-memory-only schematic,\nand then creates a placement of that schematic and selects it,\nand also switches the tool mode to the Paste mode.");
     public static final ConfigHotkey DELETE_SELECTION_BOX               = new ConfigHotkey("deleteSelectionBox",                "",     "Delete the currently selected box");
-    public static final ConfigHotkey EASY_PLACE_ACTIVATION              = new ConfigHotkey("easyPlaceActivation",               "",     KeybindSettings.MODIFIER_INGAME_EMPTY, "When the easyPlaceMode is enabled, this key must\nbe held to enable placing the blocks when\nusing the vanilla Use key");
+    public static final ConfigHotkey EASY_PLACE_ACTIVATION              = new ConfigHotkey("easyPlaceUseKey",                   "BUTTON_2", "When the easyPlaceMode is enabled, this key is used for placing the blocks");
     public static final ConfigHotkey EASY_PLACE_TOGGLE                  = new ConfigHotkey("easyPlaceToggle",                   "",     "Allows quickly toggling on/off the Easy Place mode");
     public static final ConfigHotkey EXECUTE_OPERATION                  = new ConfigHotkey("executeOperation",                  "",     "Execute the currently selected tool operation with the\ncurrent selection or placement in the Fill, Replace,\nPaste Schematic etc. modes");
     public static final ConfigHotkey INVERT_GHOST_BLOCK_RENDER_STATE    = new ConfigHotkey("invertGhostBlockRenderState",       "",     "Inverts the schematic/ghost block rendering status\nwhile this keybind is held down");
@@ -42,6 +42,7 @@ public class Hotkeys
     public static final ConfigHotkey RERENDER_SCHEMATIC                 = new ConfigHotkey("rerenderSchematic",                 "F3,M", "Hotkey to refresh/redraw only the schematic, instead of\nhaving to refresh the vanilla terrain too with F3 + A");
     public static final ConfigHotkey SAVE_AREA_AS_IN_MEMORY_SCHEMATIC   = new ConfigHotkey("saveAreaAsInMemorySchematic",       "",     "Save the current Area Selection as an in-memory Schematic");
     public static final ConfigHotkey SAVE_AREA_AS_SCHEMATIC_TO_FILE     = new ConfigHotkey("saveAreaAsSchematicToFile",         "LEFT_CONTROL,LEFT_ALT,S",  "Save the current Area Selection as a Schematic to a file");
+    public static final ConfigHotkey SCHEMATIC_REBUILD_BREAK_ALL_EXCEPT = new ConfigHotkey("schematicRebuildBreakAllExcept",    "",     KeybindSettings.MODIFIER_INGAME, "Modifier key to activate the \"break everything except\"\nmode/function in the Schematic Rebuild tool mode.\nBasically when you hold this key and punch a schematic block,\nall other blocks except this block will be removed from the schematic.");
     public static final ConfigHotkey SCHEMATIC_REBUILD_BREAK_ALL        = new ConfigHotkey("schematicRebuildBreakPlaceAll",     "",     KeybindSettings.MODIFIER_INGAME, "Modifier key to activate the \"break all identical blocks\"\nfunction in the Schematic Rebuild tool mode");
     public static final ConfigHotkey SCHEMATIC_REBUILD_BREAK_DIRECTION  = new ConfigHotkey("schematicRebuildBreakPlaceDirection","",    KeybindSettings.MODIFIER_INGAME, "Modifier key to activate the directional/continuous\nbreak or place function in the Schematic Rebuild tool mode");
     public static final ConfigHotkey SCHEMATIC_REBUILD_REPLACE_ALL      = new ConfigHotkey("schematicRebuildReplaceAll",        "",     KeybindSettings.MODIFIER_INGAME, "Modifier key to activate the \"replace all identical\"\nreplace mode/function in the Schematic Rebuild tool mode");
@@ -115,6 +116,7 @@ public class Hotkeys
             SAVE_AREA_AS_IN_MEMORY_SCHEMATIC,
             SAVE_AREA_AS_SCHEMATIC_TO_FILE,
             SCHEMATIC_REBUILD_BREAK_ALL,
+            SCHEMATIC_REBUILD_BREAK_ALL_EXCEPT,
             SCHEMATIC_REBUILD_BREAK_DIRECTION,
             SCHEMATIC_REBUILD_REPLACE_ALL,
             SCHEMATIC_REBUILD_REPLACE_DIRECTION,

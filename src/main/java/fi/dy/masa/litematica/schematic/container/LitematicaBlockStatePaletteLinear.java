@@ -1,10 +1,11 @@
 package fi.dy.masa.litematica.schematic.container;
 
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.NbtList;
 
 public class LitematicaBlockStatePaletteLinear implements ILitematicaBlockStatePalette
 {
@@ -80,13 +81,13 @@ public class LitematicaBlockStatePaletteLinear implements ILitematicaBlockStateP
     }
 
     @Override
-    public void readFromNBT(ListTag tagList)
+    public void readFromNBT(NbtList tagList)
     {
         final int size = tagList.size();
 
         for (int i = 0; i < size; ++i)
         {
-            CompoundTag tag = tagList.getCompound(i);
+            NbtCompound tag = tagList.getCompound(i);
             BlockState state = NbtHelper.toBlockState(tag);
 
             if (i > 0 || state != LitematicaBlockStateContainer.AIR_BLOCK_STATE)
@@ -97,16 +98,43 @@ public class LitematicaBlockStatePaletteLinear implements ILitematicaBlockStateP
     }
 
     @Override
-    public ListTag writeToNBT()
+    public NbtList writeToNBT()
     {
-        ListTag tagList = new ListTag();
+        NbtList tagList = new NbtList();
 
         for (int id = 0; id < this.currentSize; ++id)
         {
-            CompoundTag tag = NbtHelper.fromBlockState(this.states[id]);
+            BlockState state = this.states[id];
+
+            if (state == null)
+            {
+                state = LitematicaBlockStateContainer.AIR_BLOCK_STATE;
+            }
+
+            NbtCompound tag = NbtHelper.fromBlockState(state);
             tagList.add(tag);
         }
 
         return tagList;
+    }
+
+    @Override
+    public boolean setMapping(List<BlockState> list)
+    {
+        final int size = list.size();
+
+        if (size <= this.states.length)
+        {
+            for (int id = 0; id < size; ++id)
+            {
+                this.states[id] = list.get(id);
+            }
+
+            this.currentSize = size;
+
+            return true;
+        }
+
+        return false;
     }
 }

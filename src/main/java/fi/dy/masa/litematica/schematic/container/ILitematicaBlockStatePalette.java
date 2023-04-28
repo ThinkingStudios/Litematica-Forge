@@ -1,8 +1,9 @@
 package fi.dy.masa.litematica.schematic.container;
 
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.block.BlockState;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtList;
 
 public interface ILitematicaBlockStatePalette
 {
@@ -20,7 +21,15 @@ public interface ILitematicaBlockStatePalette
 
     int getPaletteSize();
 
-    void readFromNBT(ListTag tagList);
+    void readFromNBT(NbtList tagList);
 
-    ListTag writeToNBT();
+    NbtList writeToNBT();
+
+    /**
+     * Sets the current mapping of the palette.
+     * This is meant for reading the palette from file.
+     * @param list
+     * @return true if the mapping was set successfully, false if it failed
+     */
+    boolean setMapping(List<BlockState> list);
 }

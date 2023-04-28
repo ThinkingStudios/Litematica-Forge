@@ -1,10 +1,11 @@
 package fi.dy.masa.litematica.schematic.container;
 
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.util.collection.Int2ObjectBiMap;
 
 public class LitematicaBlockStatePaletteHashMap implements ILitematicaBlockStatePalette
@@ -67,13 +68,13 @@ public class LitematicaBlockStatePaletteHashMap implements ILitematicaBlockState
     }
 
     @Override
-    public void readFromNBT(ListTag tagList)
+    public void readFromNBT(NbtList tagList)
     {
         final int size = tagList.size();
 
         for (int i = 0; i < size; ++i)
         {
-            CompoundTag tag = tagList.getCompound(i);
+            NbtCompound tag = tagList.getCompound(i);
             BlockState state = NbtHelper.toBlockState(tag);
 
             if (i > 0 || state != LitematicaBlockStateContainer.AIR_BLOCK_STATE)
@@ -84,16 +85,36 @@ public class LitematicaBlockStatePaletteHashMap implements ILitematicaBlockState
     }
 
     @Override
-    public ListTag writeToNBT()
+    public NbtList writeToNBT()
     {
-        ListTag tagList = new ListTag();
+        NbtList tagList = new NbtList();
 
         for (int id = 0; id < this.statePaletteMap.size(); ++id)
         {
-            CompoundTag tag = NbtHelper.fromBlockState(this.statePaletteMap.get(id));
+            BlockState state = this.statePaletteMap.get(id);
+
+            if (state == null)
+            {
+                state = LitematicaBlockStateContainer.AIR_BLOCK_STATE;
+            }
+
+            NbtCompound tag = NbtHelper.fromBlockState(state);
             tagList.add(tag);
         }
 
         return tagList;
+    }
+
+    @Override
+    public boolean setMapping(List<BlockState> list)
+    {
+        this.statePaletteMap.clear();
+
+        for (BlockState blockState : list)
+        {
+            this.statePaletteMap.add(blockState);
+        }
+
+        return true;
     }
 }

@@ -1,12 +1,13 @@
 package fi.dy.masa.litematica.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
@@ -29,10 +30,11 @@ import fi.dy.masa.litematica.gui.GuiSchematicSave.InMemorySchematicCreator;
 import fi.dy.masa.litematica.scheduler.TaskScheduler;
 import fi.dy.masa.litematica.scheduler.tasks.TaskBase;
 import fi.dy.masa.litematica.scheduler.tasks.TaskDeleteArea;
-import fi.dy.masa.litematica.scheduler.tasks.TaskPasteSchematicDirect;
-import fi.dy.masa.litematica.scheduler.tasks.TaskPasteSchematicSetblock;
+import fi.dy.masa.litematica.scheduler.tasks.TaskPasteSchematicPerChunkCommand;
+import fi.dy.masa.litematica.scheduler.tasks.TaskPasteSchematicPerChunkDirect;
 import fi.dy.masa.litematica.scheduler.tasks.TaskSaveSchematic;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic;
+import fi.dy.masa.litematica.schematic.SchematicMetadata;
 import fi.dy.masa.litematica.schematic.container.LitematicaBlockStateContainer;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacementManager;
@@ -167,7 +169,8 @@ public class SchematicUtils
 
     public static boolean breakSchematicBlocks(MinecraftClient mc)
     {
-        RayTraceWrapper wrapper = RayTraceUtils.getSchematicWorldTraceWrapperIfClosest(mc.world, mc.player, 10);
+        Entity entity = fi.dy.masa.malilib.util.EntityUtils.getCameraEntity();
+        RayTraceWrapper wrapper = RayTraceUtils.getSchematicWorldTraceWrapperIfClosest(mc.world, entity, 10);
 
         if (wrapper != null && wrapper.getHitType() == RayTraceWrapper.HitType.SCHEMATIC_BLOCK)
         {
@@ -192,7 +195,8 @@ public class SchematicUtils
 
     public static boolean breakAllIdenticalSchematicBlocks(MinecraftClient mc)
     {
-        RayTraceWrapper wrapper = RayTraceUtils.getSchematicWorldTraceWrapperIfClosest(mc.world, mc.player, 10);
+        Entity entity = fi.dy.masa.malilib.util.EntityUtils.getCameraEntity();
+        RayTraceWrapper wrapper = RayTraceUtils.getSchematicWorldTraceWrapperIfClosest(mc.world, entity, 10);
 
         if (wrapper != null && wrapper.getHitType() == RayTraceWrapper.HitType.SCHEMATIC_BLOCK)
         {
@@ -227,6 +231,23 @@ public class SchematicUtils
         return false;
     }
 
+    public static boolean breakAllSchematicBlocksExceptTargeted(MinecraftClient mc)
+    {
+        Entity entity = fi.dy.masa.malilib.util.EntityUtils.getCameraEntity();
+        RayTraceWrapper wrapper = RayTraceUtils.getSchematicWorldTraceWrapperIfClosest(mc.world, entity, 10);
+
+        if (wrapper != null && wrapper.getHitType() == RayTraceWrapper.HitType.SCHEMATIC_BLOCK)
+        {
+            BlockHitResult trace = wrapper.getBlockHitResult();
+            BlockPos pos = trace.getBlockPos();
+            BlockState stateOriginal = SchematicWorldHandler.getSchematicWorld().getBlockState(pos);
+
+            return setAllStatesToAirExcept(pos, stateOriginal);
+        }
+
+        return false;
+    }
+
     public static boolean fillAirWithBlocks(MinecraftClient mc)
     {
         ReplacementInfo info = getTargetInfo(mc);
@@ -250,10 +271,12 @@ public class SchematicUtils
     {
         ItemStack stack = mc.player.getMainHandStack();
 
-        if (stack.isEmpty() == false && (stack.getItem() instanceof BlockItem))
+        if ((stack.isEmpty() == false && (stack.getItem() instanceof BlockItem)) ||
+            (stack.isEmpty() && ToolMode.REBUILD.getPrimaryBlock() != null))
         {
             WorldSchematic worldSchematic = SchematicWorldHandler.getSchematicWorld();
-            RayTraceWrapper traceWrapper = RayTraceUtils.getGenericTrace(mc.world, mc.player, 10, true);
+            Entity entity = fi.dy.masa.malilib.util.EntityUtils.getCameraEntity();
+            RayTraceWrapper traceWrapper = RayTraceUtils.getGenericTrace(mc.world, entity, 10);
 
             if (worldSchematic != null && traceWrapper != null &&
                 traceWrapper.getHitType() == RayTraceWrapper.HitType.SCHEMATIC_BLOCK)
@@ -277,6 +300,10 @@ public class SchematicUtils
                     mc.player.world = worldClient;
 
                     stateNew = ((BlockItem) stack.getItem()).getBlock().getPlacementState(ctx);
+                }
+                else if (ToolMode.REBUILD.getPrimaryBlock() != null)
+                {
+                    stateNew = ToolMode.REBUILD.getPrimaryBlock();
                 }
 
                 return new ReplacementInfo(pos, side, hitVec, stateOriginal, stateNew);
@@ -318,7 +345,8 @@ public class SchematicUtils
     public static boolean setTargetedSchematicBlockState(MinecraftClient mc, BlockState state)
     {
         WorldSchematic world = SchematicWorldHandler.getSchematicWorld();
-        RayTraceWrapper traceWrapper = RayTraceUtils.getGenericTrace(mc.world, mc.player, 6, true);
+        Entity entity = fi.dy.masa.malilib.util.EntityUtils.getCameraEntity();
+        RayTraceWrapper traceWrapper = RayTraceUtils.getGenericTrace(mc.world, entity, 6);
 
         if (world != null && traceWrapper != null && traceWrapper.getHitType() == RayTraceWrapper.HitType.SCHEMATIC_BLOCK)
         {
@@ -370,7 +398,12 @@ public class SchematicUtils
                             totalBlocks += increment;
 
                             container.set(posSchematic.getX(), posSchematic.getY(), posSchematic.getZ(), state);
-                            part.getPlacement().getSchematic().getMetadata().setTotalBlocks(totalBlocks);
+
+                            SchematicMetadata metadata = part.getPlacement().getSchematic().getMetadata();
+                            metadata.setTotalBlocks(totalBlocks);
+                            metadata.setTimeModifiedToNow();
+                            metadata.setModifiedSinceSaved();
+
                             DataManager.getSchematicPlacementManager().markChunkForRebuild(new ChunkPos(cpos.getX(), cpos.getZ()));
 
                             return true;
@@ -445,7 +478,11 @@ public class SchematicUtils
                                 }
                             }
 
-                            part.getPlacement().getSchematic().getMetadata().setTotalBlocks(totalBlocks);
+                            SchematicMetadata metadata = part.getPlacement().getSchematic().getMetadata();
+                            metadata.setTotalBlocks(totalBlocks);
+                            metadata.setTimeModifiedToNow();
+                            metadata.setModifiedSinceSaved();
+
                             DataManager.getSchematicPlacementManager().markAllPlacementsOfSchematicForRebuild(placement.getSchematic());
 
                             return true;
@@ -487,6 +524,141 @@ public class SchematicUtils
         }
 
         return false;
+    }
+
+    private static boolean setAllStatesToAirExcept(BlockPos pos, BlockState state)
+    {
+        if (pos != null)
+        {
+            SubChunkPos cpos = new SubChunkPos(pos);
+            SchematicPlacementManager manager = DataManager.getSchematicPlacementManager();
+            List<PlacementPart> list = manager.getAllPlacementsTouchingSubChunk(cpos);
+
+            if (list.isEmpty() == false)
+            {
+                for (PlacementPart part : list)
+                {
+                    if (part.getBox().containsPos(pos))
+                    {
+                        if (setAllStatesToAirExcept(manager, part, state))
+                        {
+                            manager.markAllPlacementsOfSchematicForRebuild(part.getPlacement().getSchematic());
+                            return true;
+                        }
+
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean setAllStatesToAirExcept(SchematicPlacementManager manager, PlacementPart part, BlockState state)
+    {
+        SchematicPlacement schematicPlacement = part.getPlacement();
+        String selected = schematicPlacement.getSelectedSubRegionName();
+        List<String> regions = new ArrayList<>();
+        final BlockState air = Blocks.AIR.getDefaultState();
+
+        // Some sub-region selected, only replace in that region
+        if (selected != null)
+        {
+            regions.add(selected);
+        }
+        // The entire placement is selected, replace in all sub-regions
+        else if (manager.getSelectedSchematicPlacement() == schematicPlacement)
+        {
+            regions.addAll(schematicPlacement.getSubRegionBoxes(RequiredEnabled.PLACEMENT_ENABLED).keySet());
+        }
+        // Nothing from the targeted placement is selected, don't replace anything
+        else
+        {
+            InfoUtils.showInGameMessage(MessageType.WARNING, 20000, "litematica.message.warn.schematic_rebuild_placement_not_selected");
+            return false;
+        }
+
+        LayerRange range = DataManager.getRenderLayerRange();
+        int totalBlocks = schematicPlacement.getSchematic().getMetadata().getTotalBlocks();
+
+        for (String regionName : regions)
+        {
+            LitematicaBlockStateContainer container = schematicPlacement.getSchematic().getSubRegionContainer(regionName);
+            SubRegionPlacement placement = schematicPlacement.getRelativeSubRegionPlacement(regionName);
+
+            if (container == null || placement == null)
+            {
+                continue;
+            }
+
+            int minX = range.getClampedValue(LayerRange.getWorldMinValueForAxis(Direction.Axis.X), Direction.Axis.X);
+            int minY = range.getClampedValue(LayerRange.getWorldMinValueForAxis(Direction.Axis.Y), Direction.Axis.Y);
+            int minZ = range.getClampedValue(LayerRange.getWorldMinValueForAxis(Direction.Axis.Z), Direction.Axis.Z);
+            int maxX = range.getClampedValue(LayerRange.getWorldMaxValueForAxis(Direction.Axis.X), Direction.Axis.X);
+            int maxY = range.getClampedValue(LayerRange.getWorldMaxValueForAxis(Direction.Axis.Y), Direction.Axis.Y);
+            int maxZ = range.getClampedValue(LayerRange.getWorldMaxValueForAxis(Direction.Axis.Z), Direction.Axis.Z);
+
+            BlockPos posStart = new BlockPos(minX, minY, minZ);
+            BlockPos posEnd = new BlockPos(maxX, maxY, maxZ);
+
+            BlockPos pos1 = getReverserTransformedWorldPosition(posStart, schematicPlacement.getSchematic(),
+                                                                regionName, schematicPlacement, schematicPlacement.getRelativeSubRegionPlacement(regionName));
+            BlockPos pos2 = getReverserTransformedWorldPosition(posEnd, schematicPlacement.getSchematic(),
+                                                                regionName, schematicPlacement, schematicPlacement.getRelativeSubRegionPlacement(regionName));
+
+            if (pos1 == null || pos2 == null)
+            {
+                return false;
+            }
+
+            BlockPos posStartWorld = PositionUtils.getMinCorner(pos1, pos2);
+            BlockPos posEndWorld   = PositionUtils.getMaxCorner(pos1, pos2);
+
+            Vec3i size = container.getSize();
+            final int startX = Math.max(posStartWorld.getX(), 0);
+            final int startY = Math.max(posStartWorld.getY(), 0);
+            final int startZ = Math.max(posStartWorld.getZ(), 0);
+            final int endX = Math.min(posEndWorld.getX(), size.getX() - 1);
+            final int endY = Math.min(posEndWorld.getY(), size.getY() - 1);
+            final int endZ = Math.min(posEndWorld.getZ(), size.getZ() - 1);
+
+            //System.out.printf("DEBUG == region: %s, sx: %d, sy: %s, sz: %d, ex: %d, ey: %d, ez: %d - size x: %d y: %d z: %d =============\n",
+            //        regionName, startX, startY, startZ, endX, endY, endZ, container.getSize().getX(), container.getSize().getY(), container.getSize().getZ());
+
+            if (endX >= size.getX() || endY >= size.getY() || endZ >= size.getZ())
+            {
+                System.out.printf("OUT OF BOUNDS == region: %s, sx: %d, sy: %s, sz: %d, ex: %d, ey: %d, ez: %d - size x: %d y: %d z: %d =============\n",
+                                  regionName, startX, startY, startZ, endX, endY, endZ, size.getX(), size.getY(), size.getZ());
+                return false;
+            }
+
+            //System.out.printf("DEBUG == region: %s, sx: %d, sy: %s, sz: %d, ex: %d, ey: %d, ez: %d - size x: %d y: %d z: %d =============\n",
+            //        regionName, startX, startY, startZ, endX, endY, endZ, size.getX(), size.getY(), size.getZ());
+
+            BlockState stateOriginal = getUntransformedBlockState(state, schematicPlacement, regionName);
+
+            for (int y = startY; y <= endY; ++y)
+            {
+                for (int z = startZ; z <= endZ; ++z)
+                {
+                    for (int x = startX; x <= endX; ++x)
+                    {
+                        BlockState oldState = container.get(x, y, z);
+
+                        if (oldState != stateOriginal && oldState.isAir() == false)
+                        {
+                            container.set(x, y, z, air);
+                            --totalBlocks;
+                        }
+                    }
+                }
+            }
+        }
+
+        schematicPlacement.getSchematic().getMetadata().setTotalBlocks(totalBlocks);
+
+        return true;
     }
 
     private static boolean replaceAllIdenticalBlocks(SchematicPlacementManager manager, PlacementPart part,
@@ -603,19 +775,22 @@ public class SchematicUtils
             }
         }
 
-        schematicPlacement.getSchematic().getMetadata().setTotalBlocks(totalBlocks);
+        SchematicMetadata metadata = part.getPlacement().getSchematic().getMetadata();
+        metadata.setTotalBlocks(totalBlocks);
+        metadata.setTimeModifiedToNow();
+        metadata.setModifiedSinceSaved();
 
         return true;
     }
 
-    public static void moveCurrentlySelectedWorldRegionToLookingDirection(int amount, PlayerEntity player, MinecraftClient mc)
+    public static void moveCurrentlySelectedWorldRegionToLookingDirection(int amount, Entity entity, MinecraftClient mc)
     {
         SelectionManager sm = DataManager.getSelectionManager();
         AreaSelection area = sm.getCurrentSelection();
 
         if (area != null && area.getAllSubRegionBoxes().size() > 0)
         {
-            BlockPos pos = area.getEffectiveOrigin().offset(EntityUtils.getClosestLookingDirection(player), amount);
+            BlockPos pos = area.getEffectiveOrigin().offset(EntityUtils.getClosestLookingDirection(entity), amount);
             moveCurrentlySelectedWorldRegionTo(pos, mc);
         }
     }
@@ -638,8 +813,8 @@ public class SchematicUtils
         if ((currentTime - areaMovedTime) < 400 ||
             scheduler.hasTask(TaskSaveSchematic.class) ||
             scheduler.hasTask(TaskDeleteArea.class) ||
-            scheduler.hasTask(TaskPasteSchematicSetblock.class) ||
-            scheduler.hasTask(TaskPasteSchematicDirect.class))
+            scheduler.hasTask(TaskPasteSchematicPerChunkCommand.class) ||
+            scheduler.hasTask(TaskPasteSchematicPerChunkDirect.class))
         {
             InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.message.error.move.pending_tasks");
             return;
@@ -651,7 +826,8 @@ public class SchematicUtils
         if (area != null && area.getAllSubRegionBoxes().size() > 0)
         {
             LitematicaSchematic schematic = LitematicaSchematic.createEmptySchematic(area, "");
-            TaskSaveSchematic taskSave = new TaskSaveSchematic(schematic, area, true);
+            LitematicaSchematic.SchematicSaveInfo info = new LitematicaSchematic.SchematicSaveInfo(false, false);
+            TaskSaveSchematic taskSave = new TaskSaveSchematic(schematic, area, info);
             taskSave.disableCompletionMessage();
             areaMovedTime = System.currentTimeMillis();
 
@@ -667,14 +843,15 @@ public class SchematicUtils
                 taskDelete.setCompletionListener(() ->
                 {
                     TaskBase taskPaste;
+                    LayerRange range = new LayerRange(SchematicWorldRefresher.INSTANCE);
 
                     if (mc.isIntegratedServerRunning())
                     {
-                        taskPaste = new TaskPasteSchematicDirect(placement);
+                        taskPaste = new TaskPasteSchematicPerChunkDirect(Collections.singletonList(placement), range, false);
                     }
                     else
                     {
-                        taskPaste = new TaskPasteSchematicSetblock(placement, false);
+                        taskPaste = new TaskPasteSchematicPerChunkCommand(Collections.singletonList(placement), range, false);
                     }
 
                     taskPaste.disableCompletionMessage();
@@ -709,20 +886,23 @@ public class SchematicUtils
         if (area != null && area.getAllSubRegionBoxes().size() > 0)
         {
             LitematicaSchematic schematic = LitematicaSchematic.createEmptySchematic(area, mc.player.getName().getString());
-            TaskSaveSchematic taskSave = new TaskSaveSchematic(schematic, area, true);
+            LitematicaSchematic.SchematicSaveInfo info = new LitematicaSchematic.SchematicSaveInfo(false, false);
+            TaskSaveSchematic taskSave = new TaskSaveSchematic(schematic, area, info);
             taskSave.disableCompletionMessage();
+            Entity entity = fi.dy.masa.malilib.util.EntityUtils.getCameraEntity();
+            BlockPos originTmp = RayTraceUtils.getTargetedPosition(mc.world, entity, 6, false);
+
+            if (originTmp == null)
+            {
+                originTmp = fi.dy.masa.malilib.util.PositionUtils.getEntityBlockPos(entity);
+            }
+
+            final BlockPos origin = originTmp;
+            String name = schematic.getMetadata().getName();
 
             taskSave.setCompletionListener(() ->
             {
                 SchematicPlacementManager manager = DataManager.getSchematicPlacementManager();
-                String name = schematic.getMetadata().getName();
-                BlockPos origin = RayTraceUtils.getTargetedPosition(mc.world, mc.player, 6, false);
-
-                if (origin == null)
-                {
-                    origin = fi.dy.masa.malilib.util.PositionUtils.getEntityBlockPos(mc.player);
-                }
-
                 SchematicPlacement placement = SchematicPlacement.createFor(schematic, origin, name, true, true);
 
                 manager.addSchematicPlacement(placement, false);

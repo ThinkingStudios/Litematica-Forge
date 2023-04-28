@@ -19,11 +19,9 @@ import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BufferBuilderStorage;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.render.block.BlockRenderManager;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
@@ -37,7 +35,6 @@ import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.BlockRenderView;
 import net.minecraft.world.chunk.WorldChunk;
@@ -56,7 +53,6 @@ public class WorldRendererSchematic
     private final BlockModelRendererSchematic blockModelRenderer;
     private final Set<BlockEntity> blockEntities = new HashSet<>();
     private final List<ChunkRendererSchematicVbo> renderInfos = new ArrayList<>(1024);
-    private final VertexFormat vertexFormat = VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL;
     private final BufferBuilderStorage bufferBuilders;
     private Set<ChunkRendererSchematicVbo> chunksToUpdate = new LinkedHashSet<>();
     private WorldSchematic world;
@@ -94,7 +90,7 @@ public class WorldRendererSchematic
         this.entityRenderDispatcher = mc.getEntityRenderDispatcher();
         this.bufferBuilders = mc.getBufferBuilders();
 
-        this.renderChunkFactory = new RenderChunkFactoryVbo();
+        this.renderChunkFactory = ChunkRendererSchematicVbo::new;
 
         this.blockRenderManager = MinecraftClient.getInstance().getBlockRenderManager();
         this.blockModelRenderer = new BlockModelRendererSchematic(mc.getBlockColors());
@@ -103,6 +99,11 @@ public class WorldRendererSchematic
     public void markNeedsUpdate()
     {
         this.displayListEntitiesDirty = true;
+    }
+
+    public boolean hasWorld()
+    {
+        return this.world != null;
     }
 
     public String getDebugInfoRenders()
@@ -172,7 +173,7 @@ public class WorldRendererSchematic
 
     public void loadRenderers()
     {
-        if (this.world != null)
+        if (this.hasWorld())
         {
             if (this.renderDispatcher == null)
             {
@@ -292,8 +293,6 @@ public class WorldRendererSchematic
 
             this.displayListEntitiesDirty = false;
             this.renderInfos.clear();
-
-            Entity.setRenderDistanceMultiplier(MathHelper.clamp((double) renderDistance / 8.0D, 1.0D, 2.5D));
 
             Set<SubChunkPos> set = DataManager.getSchematicPlacementManager().getAllTouchedSubChunks();
             List<SubChunkPos> positions = new ArrayList<>(set.size());
@@ -477,7 +476,7 @@ public class WorldRendererSchematic
                 matrices.translate((double) chunkOrigin.getX() - x, (double) chunkOrigin.getY() - y, (double) chunkOrigin.getZ() - z);
 
                 buffer.bind();
-                this.vertexFormat.startDrawing(0L);
+                renderLayer.getVertexFormat().startDrawing(0L);
                 buffer.draw(matrices.peek().getModel(), GL11.GL_QUADS);
 
                 matrices.pop();
@@ -487,7 +486,7 @@ public class WorldRendererSchematic
 
         VertexBuffer.unbind();
         RenderSystem.clearCurrentColor();
-        this.vertexFormat.endDrawing();
+        renderLayer.getVertexFormat().endDrawing();
         renderLayer.endDrawing();
 
         this.world.getProfiler().pop();
@@ -593,6 +592,11 @@ public class WorldRendererSchematic
 
     public BakedModel getModelForState(BlockState state)
     {
+        if (state.getRenderType() == BlockRenderType.ENTITYBLOCK_ANIMATED)
+        {
+            return this.blockRenderManager.getModels().getModelManager().getMissingModel();
+        }
+
         return this.blockRenderManager.getModel(state);
     }
 
@@ -623,7 +627,6 @@ public class WorldRendererSchematic
             //List<Entity> entitiesMultipass = Lists.<Entity>newArrayList();
 
             VertexConsumerProvider.Immediate entityVertexConsumers = this.bufferBuilders.getEntityVertexConsumers();
-            DiffuseLighting.enableForLevel(matrices.peek().getModel());
             LayerRange layerRange = DataManager.getRenderLayerRange();
 
             for (ChunkRendererSchematicVbo chunkRenderer : this.renderInfos)

@@ -440,10 +440,19 @@ public class RenderUtils
     {
         for (final Direction side : fi.dy.masa.malilib.util.PositionUtils.ALL_DIRECTIONS)
         {
-            renderModelQuadOutlines(pos, buffer, color, model.getQuads(state, side, RAND));
+            renderModelQuadOutlines(model, state, pos, side, color, expand, buffer);
         }
 
-        renderModelQuadOutlines(pos, buffer, color, model.getQuads(state, null, RAND));
+        renderModelQuadOutlines(model, state, pos, null, color, expand, buffer);
+    }
+
+    private static void renderModelQuadOutlines(BakedModel model, BlockState state, BlockPos pos, Direction side, Color4f color, double expand, BufferBuilder buffer)
+    {
+        try
+        {
+            renderModelQuadOutlines(pos, buffer, color, model.getQuads(state, side, RAND));
+        }
+        catch (Exception ignore) {}
     }
 
     private static void renderModelQuadOutlines(BlockPos pos, BufferBuilder buffer, Color4f color, List<BakedQuad> quads)
@@ -461,15 +470,16 @@ public class RenderUtils
         final int x = pos.getX();
         final int y = pos.getY();
         final int z = pos.getZ();
-        float fx[] = new float[4];
-        float fy[] = new float[4];
-        float fz[] = new float[4];
+        final int vertexSize = vertexData.length / 4;
+        final float fx[] = new float[4];
+        final float fy[] = new float[4];
+        final float fz[] = new float[4];
 
         for (int index = 0; index < 4; ++index)
         {
-            fx[index] = x + Float.intBitsToFloat(vertexData[index * 8 + 0]);
-            fy[index] = y + Float.intBitsToFloat(vertexData[index * 8 + 1]);
-            fz[index] = z + Float.intBitsToFloat(vertexData[index * 8 + 2]);
+            fx[index] = x + Float.intBitsToFloat(vertexData[index * vertexSize    ]);
+            fy[index] = y + Float.intBitsToFloat(vertexData[index * vertexSize + 1]);
+            fz[index] = z + Float.intBitsToFloat(vertexData[index * vertexSize + 2]);
         }
 
         buffer.vertex(fx[0], fy[0], fz[0]).color(color.r, color.g, color.b, color.a).next();
@@ -489,15 +499,19 @@ public class RenderUtils
     {
         for (final Direction side : fi.dy.masa.malilib.util.PositionUtils.ALL_DIRECTIONS)
         {
-            renderModelQuadOverlayBatched(pos, buffer, color, model.getQuads(state, side, RAND));
+            drawBlockModelQuadOverlayBatched(model, state, pos, side, color, expand, buffer);
         }
 
-        renderModelQuadOverlayBatched(pos, buffer, color, model.getQuads(state, null, RAND));
+        drawBlockModelQuadOverlayBatched(model, state, pos, null, color, expand, buffer);
     }
 
     public static void drawBlockModelQuadOverlayBatched(BakedModel model, BlockState state, BlockPos pos, Direction side, Color4f color, double expand, BufferBuilder buffer)
     {
-        renderModelQuadOverlayBatched(pos, buffer, color, model.getQuads(state, side, RAND));
+        try
+        {
+            renderModelQuadOverlayBatched(pos, buffer, color, model.getQuads(state, side, RAND));
+        }
+        catch (Exception ignore) {}
     }
 
     private static void renderModelQuadOverlayBatched(BlockPos pos, BufferBuilder buffer, Color4f color, List<BakedQuad> quads)
@@ -515,13 +529,14 @@ public class RenderUtils
         final int x = pos.getX();
         final int y = pos.getY();
         final int z = pos.getZ();
+        final int vertexSize = vertexData.length / 4;
         float fx, fy, fz;
 
         for (int index = 0; index < 4; ++index)
         {
-            fx = x + Float.intBitsToFloat(vertexData[index * 8 + 0]);
-            fy = y + Float.intBitsToFloat(vertexData[index * 8 + 1]);
-            fz = z + Float.intBitsToFloat(vertexData[index * 8 + 2]);
+            fx = x + Float.intBitsToFloat(vertexData[index * vertexSize    ]);
+            fy = y + Float.intBitsToFloat(vertexData[index * vertexSize + 1]);
+            fz = z + Float.intBitsToFloat(vertexData[index * vertexSize + 2]);
 
             buffer.vertex(fx, fy, fz).color(color.r, color.g, color.b, color.a).next();
         }

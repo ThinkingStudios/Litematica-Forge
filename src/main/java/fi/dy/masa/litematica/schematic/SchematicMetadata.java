@@ -1,7 +1,8 @@
 package fi.dy.masa.litematica.schematic;
 
 import javax.annotation.Nullable;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.malilib.util.NBTUtils;
@@ -18,6 +19,7 @@ public class SchematicMetadata
     private int totalVolume;
     private int totalBlocks;
     private int[] thumbnailPixelData;
+    private boolean modifiedSinceSaved;
 
     public String getName()
     {
@@ -26,7 +28,7 @@ public class SchematicMetadata
 
     public String getAuthor()
     {
-        return author;
+        return this.author;
     }
 
     public String getDescription()
@@ -37,7 +39,7 @@ public class SchematicMetadata
     @Nullable
     public int[] getPreviewImagePixelData()
     {
-        return thumbnailPixelData;
+        return this.thumbnailPixelData;
     }
 
     public int getRegionCount()
@@ -62,17 +64,32 @@ public class SchematicMetadata
 
     public long getTimeCreated()
     {
-        return timeCreated;
+        return this.timeCreated;
     }
 
     public long getTimeModified()
     {
-        return timeModified;
+        return this.timeModified;
     }
 
     public boolean hasBeenModified()
     {
         return this.timeCreated != this.timeModified;
+    }
+
+    public boolean wasModifiedSinceSaved()
+    {
+        return this.modifiedSinceSaved;
+    }
+
+    public void setModifiedSinceSaved()
+    {
+        this.modifiedSinceSaved = true;
+    }
+
+    public void clearModifiedSinceSaved()
+    {
+        this.modifiedSinceSaved = false;
     }
 
     public void setName(String name)
@@ -125,9 +142,14 @@ public class SchematicMetadata
         this.timeModified = timeModified;
     }
 
-    public CompoundTag writeToNBT()
+    public void setTimeModifiedToNow()
     {
-        CompoundTag nbt = new CompoundTag();
+        this.timeModified = System.currentTimeMillis();
+    }
+
+    public NbtCompound writeToNBT()
+    {
+        NbtCompound nbt = new NbtCompound();
 
         nbt.putString("Name", this.name);
         nbt.putString("Author", this.author);
@@ -147,7 +169,7 @@ public class SchematicMetadata
         return nbt;
     }
 
-    public void readFromNBT(CompoundTag nbt)
+    public void readFromNBT(NbtCompound nbt)
     {
         this.name = nbt.getString("Name");
         this.author = nbt.getString("Author");
@@ -159,15 +181,15 @@ public class SchematicMetadata
         this.timeModified = nbt.getLong("TimeModified");
 
         Vec3i size = NBTUtils.readBlockPos(nbt.getCompound("EnclosingSize"));
-
-        if (size != null)
-        {
-            this.enclosingSize = size;
-        }
+        this.enclosingSize = size != null ? size : BlockPos.ORIGIN;
 
         if (nbt.contains("PreviewImageData", Constants.NBT.TAG_INT_ARRAY))
         {
             this.thumbnailPixelData = nbt.getIntArray("PreviewImageData");
+        }
+        else
+        {
+            this.thumbnailPixelData = null;
         }
     }
 }

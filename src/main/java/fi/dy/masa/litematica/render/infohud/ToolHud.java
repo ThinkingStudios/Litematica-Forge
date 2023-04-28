@@ -4,6 +4,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import net.minecraft.block.BlockState;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import fi.dy.masa.litematica.config.Configs;
@@ -251,6 +253,15 @@ public class ToolHud extends InfoHud
 
                 lines.add(StringUtils.translate("litematica.hud.area_selection.origin", green + str + rst));
 
+                BlockState state = mode.getPrimaryBlock();
+                ItemStack stack = this.mc.player.getMainHandStack();
+
+                if (state != null && mode == ToolMode.REBUILD &&
+                    (stack.isEmpty() || EntityUtils.hasToolItemInHand(this.mc.player, Hand.MAIN_HAND)))
+                {
+                    lines.add(StringUtils.translate("litematica.tool_hud.block_1", this.getBlockString(state)));
+                }
+
                 SubRegionPlacement placement = schematicPlacement.getSelectedSubRegionPlacement();
 
                 if (placement != null)
@@ -283,6 +294,12 @@ public class ToolHud extends InfoHud
                     }
 
                     lines.add(StringUtils.translate("litematica.hud.misc.schematic_paste.replace_mode", str));
+
+                    str = Configs.Generic.PASTE_NBT_BEHAVIOR.getOptionListValue().getDisplayName();
+                    lines.add(StringUtils.translate("litematica.hud.misc.schematic_paste.data_restore_mode", str));
+
+                    String strVal = Configs.Generic.PASTE_IGNORE_INVENTORY.getBooleanValue() ? strYes : strNo;
+                    lines.add(String.format("Ignore inventory contents: %s", strVal));
                 }
             }
             else

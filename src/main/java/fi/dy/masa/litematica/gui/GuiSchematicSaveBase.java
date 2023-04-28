@@ -1,6 +1,7 @@
 package fi.dy.masa.litematica.gui;
 
 import javax.annotation.Nullable;
+import net.minecraft.client.util.math.MatrixStack;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic;
 import fi.dy.masa.malilib.gui.GuiTextFieldGeneric;
 import fi.dy.masa.malilib.gui.Message.MessageType;
@@ -13,12 +14,13 @@ import fi.dy.masa.malilib.gui.widgets.WidgetFileBrowserBase.DirectoryEntryType;
 import fi.dy.masa.malilib.util.FileUtils;
 import fi.dy.masa.malilib.util.KeyCodes;
 import fi.dy.masa.malilib.util.StringUtils;
-import net.minecraft.client.util.math.MatrixStack;
 
 public abstract class GuiSchematicSaveBase extends GuiSchematicBrowserBase implements ISelectionListener<DirectoryEntry>
 {
     protected GuiTextFieldGeneric textField;
     protected WidgetCheckBox checkboxIgnoreEntities;
+    protected WidgetCheckBox checkboxVisibleOnly;
+    protected final WidgetCheckBox checkboxSaveFromSchematicWorld;
     protected String lastText = "";
     protected String defaultText = "";
     @Nullable protected final LitematicaSchematic schematic;
@@ -32,18 +34,14 @@ public abstract class GuiSchematicSaveBase extends GuiSchematicBrowserBase imple
         this.textField = new GuiTextFieldGeneric(10, 32, 160, 20, this.textRenderer);
         this.textField.setMaxLength(256);
         this.textField.setFocused(true);
+
+        this.checkboxSaveFromSchematicWorld = new WidgetCheckBox(0, 0, Icons.CHECKBOX_UNSELECTED, Icons.CHECKBOX_SELECTED, "Save from schematic world", "If enabled, then the schematic is created by saving the\ncontents of the selection from the schematic world\ninstead of the normal vanilla world.\nThis allows you to combine or trim schematics without having\nto paste them to a temporary creative world.");
     }
 
     @Override
     public int getBrowserHeight()
     {
         return this.height - 80;
-    }
-
-    @Override
-    public int getMaxInfoHeight()
-    {
-        return super.getMaxInfoHeight();
     }
 
     @Override
@@ -85,6 +83,12 @@ public abstract class GuiSchematicSaveBase extends GuiSchematicBrowserBase imple
         String str = StringUtils.translate("litematica.gui.label.schematic_save.checkbox.ignore_entities");
         this.checkboxIgnoreEntities = new WidgetCheckBox(x, y + 24, Icons.CHECKBOX_UNSELECTED, Icons.CHECKBOX_SELECTED, str);
         this.addWidget(this.checkboxIgnoreEntities);
+
+        this.checkboxVisibleOnly = new WidgetCheckBox(12, y + 24, Icons.CHECKBOX_UNSELECTED, Icons.CHECKBOX_SELECTED, "Visible blocks only [experimental quick hax]");
+        this.addWidget(this.checkboxVisibleOnly);
+
+        this.checkboxSaveFromSchematicWorld.setPosition(20 + this.checkboxVisibleOnly.getWidth(), y + 24);
+        this.addWidget(this.checkboxSaveFromSchematicWorld);
 
         x = this.createButton(x, y, ButtonType.SAVE);
     }

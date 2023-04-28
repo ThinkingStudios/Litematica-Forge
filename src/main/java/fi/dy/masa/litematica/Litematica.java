@@ -6,7 +6,6 @@ import net.minecraftforge.fml.common.Mod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import fi.dy.masa.malilib.event.InitializationHandler;
-import net.fabricmc.api.ModInitializer;
 
 @Mod(Reference.MOD_ID)
 public class Litematica {

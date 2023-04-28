@@ -9,15 +9,13 @@ import net.minecraft.world.chunk.WorldChunk;
 import fi.dy.masa.litematica.util.WorldUtils;
 
 @Mixin(WorldChunk.class)
-public abstract class MixinWorldChunk
-{
+public abstract class MixinWorldChunk {
     @Redirect(method = "setBlockState",
                 slice = @Slice(from = @At(value = "INVOKE",
                                 target = "Lnet/minecraft/world/chunk/ChunkSection;getBlockState(III)" +
                                           "Lnet/minecraft/block/BlockState;")),
                 at = @At(value = "FIELD", target = "Lnet/minecraft/world/World;isClient:Z", ordinal = 0))
-    private boolean litematica_redirectIsRemote(World world)
-    {
+    private boolean litematica_redirectIsRemote(World world) {
         return WorldUtils.shouldPreventBlockUpdates(world) || world.isClient;
     }
 }

@@ -188,7 +188,7 @@ public class WidgetSchematicPlacement extends WidgetListEntryBase<SchematicPlace
             }
             else if (this.type == ButtonType.REMOVE)
             {
-                if (this.widget.placement.isLocked() && GuiBase.isShiftDown() == false)
+                if (this.widget.placement.isLocked() && !GuiBase.isShiftDown())
                 {
                     this.widget.parent.getParentGui().addMessage(MessageType.ERROR, "litematica.error.schematic_placements.remove_fail_locked");
                 }

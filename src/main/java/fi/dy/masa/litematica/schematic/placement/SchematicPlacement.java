@@ -513,7 +513,7 @@ public class SchematicPlacement
 
             boolean notOverlapping = boxXMin > chunkXMax || boxZMin > chunkZMax || boxXMax < chunkXMin || boxZMax < chunkZMin;
 
-            if (notOverlapping == false)
+            if (!notOverlapping)
             {
                 set.add(entry.getKey());
             }
@@ -791,7 +791,7 @@ public class SchematicPlacement
 
         origin = PositionUtils.getModifiedPartiallyLockedPosition(this.origin, origin, this.coordinateLockMask);
 
-        if (this.origin.equals(origin) == false)
+        if (!this.origin.equals(origin))
         {
             // Marks the currently touched chunks before doing the modification
             SchematicPlacementManager manager = DataManager.getSchematicPlacementManager();
@@ -912,7 +912,7 @@ public class SchematicPlacement
                 obj.add("material_list", this.materialList.toJson());
             }
 
-            if (this.relativeSubRegionPlacements.isEmpty() == false)
+            if (!this.relativeSubRegionPlacements.isEmpty())
             {
                 arr = new JsonArray();
 
@@ -1043,7 +1043,7 @@ public class SchematicPlacement
 
         for (int i = 0; i < length; ++i)
         {
-            if (USED_COLORS.contains(color) == false)
+            if (!USED_COLORS.contains(color))
             {
                 return color;
             }

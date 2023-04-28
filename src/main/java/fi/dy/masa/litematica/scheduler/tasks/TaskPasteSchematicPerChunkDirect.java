@@ -38,13 +38,13 @@ public class TaskPasteSchematicPerChunkDirect extends TaskPasteSchematicPerChunk
     @Override
     public boolean canExecute()
     {
-        if (super.canExecute() == false || this.mc.isIntegratedServerRunning() == false)
+        if (!super.canExecute() || !this.mc.isIntegratedServerRunning())
         {
             return false;
         }
 
         World world = WorldUtils.getBestWorld(this.mc);
-        return world != null && world.isClient == false;
+        return world != null && !world.isClient;
     }
 
     @Override
@@ -85,7 +85,7 @@ public class TaskPasteSchematicPerChunkDirect extends TaskPasteSchematicPerChunk
                     }
                 }
 
-                if (this.placementsPerChunk.containsKey(pos) == false)
+                if (!this.placementsPerChunk.containsKey(pos))
                 {
                     this.chunks.remove(chunkIndex);
                     --chunkIndex;

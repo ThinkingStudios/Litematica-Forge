@@ -1,7 +1,6 @@
 package fi.dy.masa.litematica.gui.widgets;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import fi.dy.masa.litematica.gui.GuiSchematicVerifier;
 import fi.dy.masa.litematica.gui.GuiSchematicVerifier.BlockMismatchEntry;
@@ -99,7 +98,7 @@ public class WidgetListSchematicVerificationResults extends WidgetListBase<Block
 
         this.reCreateListEntryWidgets();
 
-        if (this.scrollbarRestored == false && lastScrollbarPosition <= this.scrollBar.getMaxValue())
+        if (!this.scrollbarRestored && lastScrollbarPosition <= this.scrollBar.getMaxValue())
         {
             // This needs to happen after the setMaxValue() has been called in reCreateListEntryWidgets()
             this.scrollBar.setValue(lastScrollbarPosition);
@@ -130,7 +129,7 @@ public class WidgetListSchematicVerificationResults extends WidgetListBase<Block
                 ItemStack stack = ItemUtils.getItemForState(state);
                 ItemType itemType = new ItemType(stack, false, true);
 
-                if (itemCounts.containsKey(itemType) == false)
+                if (!itemCounts.containsKey(itemType))
                 {
                     states.put(itemType, state);
                 }
@@ -152,7 +151,7 @@ public class WidgetListSchematicVerificationResults extends WidgetListBase<Block
             list = this.guiSchematicVerifier.getPlacement().getSchematicVerifier().getMismatchOverviewFor(type);
         }
 
-        Collections.sort(list, this.sorter);
+        list.sort(this.sorter);
 
         for (BlockMismatch mismatch : list)
         {

@@ -11,7 +11,7 @@ public enum BlockInfoAlignment implements IConfigOptionListEntry
     private final String configString;
     private final String unlocName;
 
-    private BlockInfoAlignment(String configString, String unlocName)
+    BlockInfoAlignment(String configString, String unlocName)
     {
         this.configString = configString;
         this.unlocName = unlocName;

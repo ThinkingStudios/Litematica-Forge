@@ -77,7 +77,7 @@ public class BlockModelRendererSchematic
             random.setSeed(seedIn);
             List<BakedQuad> quads = modelIn.getQuads(stateIn, side, random);
 
-            if (quads.isEmpty() == false)
+            if (!quads.isEmpty())
             {
                 if (this.shouldRenderModelSide(worldIn, stateIn, posIn, side))
                 {
@@ -88,9 +88,9 @@ public class BlockModelRendererSchematic
         }
 
         random.setSeed(seedIn);
-        List<BakedQuad> quads = modelIn.getQuads(stateIn, (Direction) null, random);
+        List<BakedQuad> quads = modelIn.getQuads(stateIn, null, random);
 
-        if (quads.isEmpty() == false)
+        if (!quads.isEmpty())
         {
             this.renderQuadsSmooth(worldIn, stateIn, posIn, matrices, vertexConsumer, quads, quadBounds, bitset, aoFace, overlay);
             renderedSomething = true;
@@ -110,7 +110,7 @@ public class BlockModelRendererSchematic
             random.setSeed(seedIn);
             List<BakedQuad> quads = modelIn.getQuads(stateIn, side, random);
 
-            if (quads.isEmpty() == false)
+            if (!quads.isEmpty())
             {
                 if (this.shouldRenderModelSide(worldIn, stateIn, posIn, side))
                 {
@@ -124,7 +124,7 @@ public class BlockModelRendererSchematic
         random.setSeed(seedIn);
         List<BakedQuad> quads = modelIn.getQuads(stateIn, null, random);
 
-        if (quads.isEmpty() == false)
+        if (!quads.isEmpty())
         {
             this.renderQuadsFlat(worldIn, stateIn, posIn, -1, overlay, true, matrices, vertexConsumer, quads, bitset);
             renderedSomething = true;
@@ -145,10 +145,7 @@ public class BlockModelRendererSchematic
     {
         final int size = list.size();
 
-        for (int i = 0; i < size; ++i)
-        {
-            BakedQuad bakedQuad = list.get(i);
-
+        for (BakedQuad bakedQuad : list) {
             this.getQuadDimensions(world, state, pos, bakedQuad.getVertexData(), bakedQuad.getFace(), box, flags);
             ambientOcclusionCalculator.apply(world, state, pos, bakedQuad.getFace(), box, flags, bakedQuad.hasShade());
 
@@ -169,12 +166,8 @@ public class BlockModelRendererSchematic
     {
         final int size = list.size();
 
-        for (int i = 0; i < size; ++i)
-        {
-            BakedQuad bakedQuad = list.get(i);
-
-            if (useWorldLight)
-            {
+        for (BakedQuad bakedQuad : list) {
+            if (useWorldLight) {
                 this.getQuadDimensions(world, state, pos, bakedQuad.getVertexData(), bakedQuad.getFace(), null, flags);
                 BlockPos blockPos = flags.get(0) ? pos.offset(bakedQuad.getFace()) : pos;
                 light = WorldRenderer.getLightmapCoordinates(world, state, blockPos);
@@ -350,108 +343,13 @@ public class BlockModelRendererSchematic
     }
     */
 
-    class AmbientOcclusionCalculator
+    static class AmbientOcclusionCalculator
     {
         private final float[] brightness = new float[4];
         private final int[] light = new int[4];
 
         public void apply(BlockRenderView world, BlockState state, BlockPos pos, Direction direction, float[] box, BitSet shapeState, boolean hasShade)
         {
-            /*
-            BlockPos blockpos = shapeState.get(0) ? centerPos.offset(direction) : centerPos;
-            BlockPos.PooledMutableBlockPos blockpos$pooledmutableblockpos = BlockPos.PooledMutableBlockPos.retain();
-            BlockPos.PooledMutableBlockPos blockpos$pooledmutableblockpos1 = BlockPos.PooledMutableBlockPos.retain(blockpos).move(neighborInfo.corners[0]);
-            BlockPos.PooledMutableBlockPos blockpos$pooledmutableblockpos2 = BlockPos.PooledMutableBlockPos.retain(blockpos).move(neighborInfo.corners[1]);
-            BlockPos.PooledMutableBlockPos blockpos$pooledmutableblockpos3 = BlockPos.PooledMutableBlockPos.retain(blockpos).move(neighborInfo.corners[2]);
-            BlockPos.PooledMutableBlockPos blockpos$pooledmutableblockpos4 = BlockPos.PooledMutableBlockPos.retain(blockpos).move(neighborInfo.corners[3]);
-            int i = state.getPackedLightmapCoords(worldIn, blockpos$pooledmutableblockpos1);
-            int j = state.getPackedLightmapCoords(worldIn, blockpos$pooledmutableblockpos2);
-            int k = state.getPackedLightmapCoords(worldIn, blockpos$pooledmutableblockpos3);
-            int l = state.getPackedLightmapCoords(worldIn, blockpos$pooledmutableblockpos4);
-            float f = worldIn.getBlockState(blockpos$pooledmutableblockpos1).getAmbientOcclusionLightValue();
-            float f1 = worldIn.getBlockState(blockpos$pooledmutableblockpos2).getAmbientOcclusionLightValue();
-            float f2 = worldIn.getBlockState(blockpos$pooledmutableblockpos3).getAmbientOcclusionLightValue();
-            float f3 = worldIn.getBlockState(blockpos$pooledmutableblockpos4).getAmbientOcclusionLightValue();
-            boolean flag = worldIn.getBlockState(blockpos$pooledmutableblockpos.setPos(blockpos$pooledmutableblockpos1).move(direction)).isTranslucent();
-            boolean flag1 = worldIn.getBlockState(blockpos$pooledmutableblockpos.setPos(blockpos$pooledmutableblockpos2).move(direction)).isTranslucent();
-            boolean flag2 = worldIn.getBlockState(blockpos$pooledmutableblockpos.setPos(blockpos$pooledmutableblockpos3).move(direction)).isTranslucent();
-            boolean flag3 = worldIn.getBlockState(blockpos$pooledmutableblockpos.setPos(blockpos$pooledmutableblockpos4).move(direction)).isTranslucent();
-            float f4;
-            int i1;
-
-            if (!flag2 && !flag)
-            {
-                f4 = f;
-                i1 = i;
-            }
-            else
-            {
-                BlockPos blockpos1 = blockpos$pooledmutableblockpos.setPos(blockpos$pooledmutableblockpos1).move(neighborInfo.corners[2]);
-                f4 = worldIn.getBlockState(blockpos1).getAmbientOcclusionLightValue();
-                i1 = state.getPackedLightmapCoords(worldIn, blockpos1);
-            }
-
-            float f5;
-            int j1;
-
-            if (!flag3 && !flag)
-            {
-                f5 = f;
-                j1 = i;
-            }
-            else
-            {
-                BlockPos blockpos2 = blockpos$pooledmutableblockpos.setPos(blockpos$pooledmutableblockpos1).move(neighborInfo.corners[3]);
-                f5 = worldIn.getBlockState(blockpos2).getAmbientOcclusionLightValue();
-                j1 = state.getPackedLightmapCoords(worldIn, blockpos2);
-            }
-
-            float f6;
-            int k1;
-
-            if (!flag2 && !flag1)
-            {
-                f6 = f1;
-                k1 = j;
-            }
-            else
-            {
-                BlockPos blockpos3 = blockpos$pooledmutableblockpos.setPos(blockpos$pooledmutableblockpos2).move(neighborInfo.corners[2]);
-                f6 = worldIn.getBlockState(blockpos3).getAmbientOcclusionLightValue();
-                k1 = state.getPackedLightmapCoords(worldIn, blockpos3);
-            }
-
-            float f7;
-            int l1;
-
-            if (!flag3 && !flag1)
-            {
-                f7 = f1;
-                l1 = j;
-            }
-            else
-            {
-                BlockPos blockpos4 = blockpos$pooledmutableblockpos.setPos(blockpos$pooledmutableblockpos2).move(neighborInfo.corners[3]);
-                f7 = worldIn.getBlockState(blockpos4).getAmbientOcclusionLightValue();
-                l1 = state.getPackedLightmapCoords(worldIn, blockpos4);
-            }
-
-            int i3 = state.getPackedLightmapCoords(worldIn, centerPos);
-
-            if (shapeState.get(0) || !worldIn.getBlockState(centerPos.offset(direction)).isOpaqueCube())
-            {
-                i3 = state.getPackedLightmapCoords(worldIn, centerPos.offset(direction));
-            }
-
-            float f8 = shapeState.get(0) ? worldIn.getBlockState(blockpos).getAmbientOcclusionLightValue() : worldIn.getBlockState(centerPos).getAmbientOcclusionLightValue();
-            VertexTranslations vertexTranslations = VertexTranslations.getVertexTranslations(direction);
-            blockpos$pooledmutableblockpos.release();
-            blockpos$pooledmutableblockpos1.release();
-            blockpos$pooledmutableblockpos2.release();
-            blockpos$pooledmutableblockpos3.release();
-            blockpos$pooledmutableblockpos4.release();
-            */
-
             EnumNeighborInfo neighborInfo = EnumNeighborInfo.getNeighbourInfo(direction);
             VertexTranslations vertexTranslations = VertexTranslations.getVertexTranslations(direction);
             int i, j, k, l, i1, i3, j1, k1, l1;
@@ -543,7 +441,7 @@ public class BlockModelRendererSchematic
         }
     }
 
-    public static enum EnumNeighborInfo
+    public enum EnumNeighborInfo
     {
         DOWN(new Direction[]{Direction.WEST, Direction.EAST, Direction.NORTH, Direction.SOUTH}, 0.5F, true, new Orientation[]{Orientation.FLIP_WEST, Orientation.SOUTH, Orientation.FLIP_WEST, Orientation.FLIP_SOUTH, Orientation.WEST, Orientation.FLIP_SOUTH, Orientation.WEST, Orientation.SOUTH}, new Orientation[]{Orientation.FLIP_WEST, Orientation.NORTH, Orientation.FLIP_WEST, Orientation.FLIP_NORTH, Orientation.WEST, Orientation.FLIP_NORTH, Orientation.WEST, Orientation.NORTH}, new Orientation[]{Orientation.FLIP_EAST, Orientation.NORTH, Orientation.FLIP_EAST, Orientation.FLIP_NORTH, Orientation.EAST, Orientation.FLIP_NORTH, Orientation.EAST, Orientation.NORTH}, new Orientation[]{Orientation.FLIP_EAST, Orientation.SOUTH, Orientation.FLIP_EAST, Orientation.FLIP_SOUTH, Orientation.EAST, Orientation.FLIP_SOUTH, Orientation.EAST, Orientation.SOUTH}),
         UP(new Direction[]{Direction.EAST, Direction.WEST, Direction.NORTH, Direction.SOUTH}, 1.0F, true, new Orientation[]{Orientation.EAST, Orientation.SOUTH, Orientation.EAST, Orientation.FLIP_SOUTH, Orientation.FLIP_EAST, Orientation.FLIP_SOUTH, Orientation.FLIP_EAST, Orientation.SOUTH}, new Orientation[]{Orientation.EAST, Orientation.NORTH, Orientation.EAST, Orientation.FLIP_NORTH, Orientation.FLIP_EAST, Orientation.FLIP_NORTH, Orientation.FLIP_EAST, Orientation.NORTH}, new Orientation[]{Orientation.WEST, Orientation.NORTH, Orientation.WEST, Orientation.FLIP_NORTH, Orientation.FLIP_WEST, Orientation.FLIP_NORTH, Orientation.FLIP_WEST, Orientation.NORTH}, new Orientation[]{Orientation.WEST, Orientation.SOUTH, Orientation.WEST, Orientation.FLIP_SOUTH, Orientation.FLIP_WEST, Orientation.FLIP_SOUTH, Orientation.FLIP_WEST, Orientation.SOUTH}),
@@ -561,7 +459,7 @@ public class BlockModelRendererSchematic
         private final Orientation[] vert3Weights;
         private static final EnumNeighborInfo[] VALUES = new EnumNeighborInfo[6];
 
-        private EnumNeighborInfo(Direction[] p_i46236_3_, float p_i46236_4_, boolean p_i46236_5_, Orientation[] p_i46236_6_, Orientation[] p_i46236_7_, Orientation[] p_i46236_8_, Orientation[] p_i46236_9_)
+        EnumNeighborInfo(Direction[] p_i46236_3_, float p_i46236_4_, boolean p_i46236_5_, Orientation[] p_i46236_6_, Orientation[] p_i46236_7_, Orientation[] p_i46236_8_, Orientation[] p_i46236_9_)
         {
             //this.corners = p_i46236_3_;
             //this.shadeWeight = p_i46236_4_;
@@ -588,7 +486,7 @@ public class BlockModelRendererSchematic
         }
     }
 
-    public static enum Orientation
+    public enum Orientation
     {
         DOWN(Direction.DOWN, false),
         UP(Direction.UP, false),
@@ -605,13 +503,13 @@ public class BlockModelRendererSchematic
 
         private final int shape;
 
-        private Orientation(Direction p_i46233_3_, boolean p_i46233_4_)
+        Orientation(Direction p_i46233_3_, boolean p_i46233_4_)
         {
             this.shape = p_i46233_3_.getId() + (p_i46233_4_ ? Direction.values().length : 0);
         }
     }
 
-    static enum VertexTranslations
+    enum VertexTranslations
     {
         DOWN(0, 1, 2, 3),
         UP(2, 3, 0, 1),
@@ -626,7 +524,7 @@ public class BlockModelRendererSchematic
         private final int vert3;
         private static final VertexTranslations[] VALUES = new VertexTranslations[6];
 
-        private VertexTranslations(int p_i46234_3_, int p_i46234_4_, int p_i46234_5_, int p_i46234_6_)
+        VertexTranslations(int p_i46234_3_, int p_i46234_4_, int p_i46234_5_, int p_i46234_6_)
         {
             this.vert0 = p_i46234_3_;
             this.vert1 = p_i46234_4_;

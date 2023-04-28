@@ -76,7 +76,7 @@ public class WidgetTaskEntry extends WidgetListEntryBase<ITask>
             {
                 ITask task = this.widget.getEntry();
 
-                if (TaskScheduler.getInstanceClient().removeTask(task) == false)
+                if (!TaskScheduler.getInstanceClient().removeTask(task))
                 {
                     TaskScheduler.getInstanceServer().removeTask(task);
                 }
@@ -87,7 +87,7 @@ public class WidgetTaskEntry extends WidgetListEntryBase<ITask>
 
         public enum Type
         {
-            REMOVE;
+            REMOVE
         }
     }
 }

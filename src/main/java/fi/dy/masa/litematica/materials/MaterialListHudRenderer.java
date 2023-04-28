@@ -82,7 +82,7 @@ public class MaterialListHudRenderer implements IInfoHudRenderer
         {
             MaterialListUtils.updateAvailableCounts(this.materialList.getMaterialsAll(), mc.player);
             list = this.materialList.getMaterialsMissingOnly(true);
-            Collections.sort(list, this.sorter);
+            list.sort(this.sorter);
             this.lastUpdateTime = currentTime;
         }
         else

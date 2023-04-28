@@ -40,7 +40,7 @@ public class SchematicWorldRefresher implements IRangeChangeListener
                 ChunkPos pos = chunk.getPos();
 
                 // Only mark chunks that are actually rendered (if the schematic world contains more chunks)
-                if (pos.x >= cxMin && pos.x <= cxMax && chunk.isEmpty() == false &&
+                if (pos.x >= cxMin && pos.x <= cxMax && !chunk.isEmpty() &&
                     WorldUtils.isClientChunkLoaded(this.mc.world, pos.x, pos.z))
                 {
                     minX = Math.max( pos.x << 4      , xMin);
@@ -66,7 +66,7 @@ public class SchematicWorldRefresher implements IRangeChangeListener
                 ChunkPos pos = chunk.getPos();
 
                 // Only mark chunks that are actually rendered (if the schematic world contains more chunks)
-                if (chunk.isEmpty() == false && WorldUtils.isClientChunkLoaded(this.mc.world, pos.x, pos.z))
+                if (!chunk.isEmpty() && WorldUtils.isClientChunkLoaded(this.mc.world, pos.x, pos.z))
                 {
                     world.scheduleChunkRenders((pos.x << 4)     , minY, (pos.z << 4)     ,
                                                (pos.x << 4) + 15, maxY, (pos.z << 4) + 15);
@@ -93,7 +93,7 @@ public class SchematicWorldRefresher implements IRangeChangeListener
                 ChunkPos pos = chunk.getPos();
 
                 // Only mark chunks that are actually rendered (if the schematic world contains more chunks)
-                if (pos.z >= czMin && pos.z <= czMax && chunk.isEmpty() == false &&
+                if (pos.z >= czMin && pos.z <= czMax && !chunk.isEmpty() &&
                     WorldUtils.isClientChunkLoaded(this.mc.world, pos.x, pos.z))
                 {
                     minZ = Math.max( pos.z << 4      , zMin);

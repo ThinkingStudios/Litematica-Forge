@@ -80,7 +80,7 @@ public class ChunkRendererSchematicVbo
     public ChunkRendererSchematicVbo(WorldSchematic world, WorldRendererSchematic worldRenderer)
     {
         this.world = world;
-        this.worldRenderer = (WorldRendererSchematic) worldRenderer;
+        this.worldRenderer = worldRenderer;
         this.chunkRenderData = ChunkRenderDataSchematic.EMPTY;
         this.chunkRenderLock = new ReentrantLock();
         this.chunkRenderDataLock = new ReentrantLock();
@@ -184,13 +184,11 @@ public class ChunkRendererSchematicVbo
         this.clear();
         this.world = null;
 
-        this.vertexBufferBlocks.values().forEach((buf) -> buf.close());
+        this.vertexBufferBlocks.values().forEach(VertexBuffer::close);
 
-        for (int i = 0; i < this.vertexBufferOverlay.length; ++i)
-        {
-            if (this.vertexBufferOverlay[i] != null)
-            {
-                this.vertexBufferOverlay[i].close();
+        for (VertexBuffer vertexBuffer : this.vertexBufferOverlay) {
+            if (vertexBuffer != null) {
+                vertexBuffer.close();
             }
         }
     }
@@ -208,7 +206,7 @@ public class ChunkRendererSchematicVbo
 
         if (bufferState != null)
         {
-            if (data.isBlockLayerEmpty(layerTranslucent) == false)
+            if (!data.isBlockLayerEmpty(layerTranslucent))
             {
                 BufferBuilder buffer = buffers.getBlockBufferByLayer(layerTranslucent);
 
@@ -224,7 +222,7 @@ public class ChunkRendererSchematicVbo
             OverlayRenderType type = OverlayRenderType.QUAD;
             bufferState = data.getOverlayBufferState(type);
 
-            if (bufferState != null && data.isOverlayTypeEmpty(type) == false)
+            if (bufferState != null && !data.isOverlayTypeEmpty(type))
             {
                 BufferBuilder buffer = buffers.getOverlayBuffer(type);
 
@@ -263,8 +261,8 @@ public class ChunkRendererSchematicVbo
 
         synchronized (this.boxes)
         {
-            if (this.boxes.isEmpty() == false &&
-                (this.schematicWorldView.isEmpty() == false || this.clientWorldView.isEmpty() == false) &&
+            if (!this.boxes.isEmpty() &&
+                (!this.schematicWorldView.isEmpty() || !this.clientWorldView.isEmpty()) &&
                  range.intersects(new SubChunkPos(posChunk.getX() >> 4, posChunk.getY() >> 4, posChunk.getZ() >> 4)))
             {
                 ++schematicRenderChunksUpdated;
@@ -379,12 +377,12 @@ public class ChunkRendererSchematicVbo
             // TODO change when the fluids become separate
             FluidState fluidState = stateSchematic.getFluidState();
 
-            if (fluidState.isEmpty() == false)
+            if (!fluidState.isEmpty())
             {
                 RenderLayer layer = RenderLayers.getFluidLayer(fluidState);
                 BufferBuilder bufferSchematic = buffers.getBlockBufferByLayer(layer);
 
-                if (data.isBlockLayerStarted(layer) == false)
+                if (!data.isBlockLayerStarted(layer))
                 {
                     data.setBlockLayerStarted(layer);
                     this.preRenderBlocks(bufferSchematic, layer);
@@ -401,7 +399,7 @@ public class ChunkRendererSchematicVbo
                 RenderLayer layer = translucent ? RenderLayer.getTranslucent() : RenderLayers.getBlockLayer(stateSchematic);
                 BufferBuilder bufferSchematic = buffers.getBlockBufferByLayer(layer);
 
-                if (data.isBlockLayerStarted(layer) == false)
+                if (!data.isBlockLayerStarted(layer))
                 {
                     data.setBlockLayerStarted(layer);
                     this.preRenderBlocks(bufferSchematic, layer);
@@ -440,7 +438,7 @@ public class ChunkRendererSchematicVbo
         {
             BufferBuilder bufferOverlayQuads = buffers.getOverlayBuffer(OverlayRenderType.QUAD);
 
-            if (data.isOverlayTypeStarted(OverlayRenderType.QUAD) == false)
+            if (!data.isOverlayTypeStarted(OverlayRenderType.QUAD))
             {
                 data.setOverlayTypeStarted(OverlayRenderType.QUAD);
                 this.preRenderOverlay(bufferOverlayQuads, OverlayRenderType.QUAD);
@@ -465,7 +463,7 @@ public class ChunkRendererSchematicVbo
                         BakedModel bakedModel = this.worldRenderer.getModelForState(stateSchematic);
 
                         if (type.getRenderPriority() > typeAdj.getRenderPriority() ||
-                            Block.isFaceFullSquare(stateSchematic.getCollisionShape(this.schematicWorldView, pos), side) == false)
+                                !Block.isFaceFullSquare(stateSchematic.getCollisionShape(this.schematicWorldView, pos), side))
                         {
                             RenderUtils.drawBlockModelQuadOverlayBatched(bakedModel, stateSchematic, relPos, side, this.overlayColor, 0, bufferOverlayQuads);
                         }
@@ -498,7 +496,7 @@ public class ChunkRendererSchematicVbo
         {
             BufferBuilder bufferOverlayOutlines = buffers.getOverlayBuffer(OverlayRenderType.OUTLINE);
 
-            if (data.isOverlayTypeStarted(OverlayRenderType.OUTLINE) == false)
+            if (!data.isOverlayTypeStarted(OverlayRenderType.OUTLINE))
             {
                 data.setOverlayTypeStarted(OverlayRenderType.OUTLINE);
                 this.preRenderOverlay(bufferOverlayOutlines, OverlayRenderType.OUTLINE);
@@ -750,7 +748,7 @@ public class ChunkRendererSchematicVbo
 
     private void postRenderBlocks(RenderLayer layer, float x, float y, float z, BufferBuilder buffer, ChunkRenderDataSchematic chunkRenderData)
     {
-        if (layer == RenderLayer.getTranslucent() && chunkRenderData.isBlockLayerEmpty(layer) == false)
+        if (layer == RenderLayer.getTranslucent() && !chunkRenderData.isBlockLayerEmpty(layer))
         {
             buffer.sortQuads(x, y, z);
             chunkRenderData.setBlockBufferState(layer, buffer.popState());
@@ -774,7 +772,7 @@ public class ChunkRendererSchematicVbo
 
     private void postRenderOverlay(OverlayRenderType type, float x, float y, float z, BufferBuilder buffer, ChunkRenderDataSchematic chunkRenderData)
     {
-        if (type == OverlayRenderType.QUAD && chunkRenderData.isOverlayTypeEmpty(type) == false)
+        if (type == OverlayRenderType.QUAD && !chunkRenderData.isOverlayTypeEmpty(type))
         {
             buffer.sortQuads(x, y, z);
             chunkRenderData.setOverlayBufferState(type, buffer.popState());
@@ -912,7 +910,7 @@ public class ChunkRendererSchematicVbo
 
         private final int glMode;
 
-        private OverlayRenderType(int glMode)
+        OverlayRenderType(int glMode)
         {
             this.glMode = glMode;
         }

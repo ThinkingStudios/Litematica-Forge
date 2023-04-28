@@ -28,7 +28,7 @@ public class ChunkRenderDispatcherLitematica
     private static final Logger LOGGER = Litematica.logger;
     private static final ThreadFactory THREAD_FACTORY = (new ThreadFactoryBuilder()).setNameFormat("Litematica Chunk Batcher %d").setDaemon(true).build();
 
-    private final List<Thread> listWorkerThreads = Lists.<Thread>newArrayList();
+    private final List<Thread> listWorkerThreads = Lists.newArrayList();
     private final List<ChunkRenderWorkerLitematica> listThreadedWorkers = new ArrayList<>();
     private final PriorityBlockingQueue<ChunkRenderTaskSchematic> queueChunkUpdates = Queues.newPriorityBlockingQueue();
     private final BlockingQueue<BufferBuilderCache> queueFreeRenderBuilders;
@@ -117,7 +117,7 @@ public class ChunkRenderDispatcherLitematica
                 }
             }
 
-            if (finishTimeNano == 0L || processedTask == false || finishTimeNano < System.nanoTime())
+            if (finishTimeNano == 0L || !processedTask || finishTimeNano < System.nanoTime())
             {
                 break;
             }
@@ -136,13 +136,7 @@ public class ChunkRenderDispatcherLitematica
         {
             final ChunkRenderTaskSchematic generator = renderChunk.makeCompileTaskChunkSchematic(this::getCameraPos);
 
-            generator.addFinishRunnable(new Runnable()
-            {
-                public void run()
-                {
-                    ChunkRenderDispatcherLitematica.this.queueChunkUpdates.remove(generator);
-                }
-            });
+            generator.addFinishRunnable(() -> ChunkRenderDispatcherLitematica.this.queueChunkUpdates.remove(generator));
 
             boolean flag = this.queueChunkUpdates.offer(generator);
 
@@ -175,7 +169,7 @@ public class ChunkRenderDispatcherLitematica
             {
                 this.renderWorker.processTask(generator);
             }
-            catch (InterruptedException e)
+            catch (InterruptedException ignored)
             {
             }
 
@@ -202,7 +196,7 @@ public class ChunkRenderDispatcherLitematica
             {
                 list.add(this.allocateRenderBuilder());
             }
-            catch (InterruptedException e)
+            catch (InterruptedException ignored)
             {
             }
         }
@@ -241,14 +235,7 @@ public class ChunkRenderDispatcherLitematica
                 return flag;
             }
 
-            generator.addFinishRunnable(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    ChunkRenderDispatcherLitematica.this.queueChunkUpdates.remove(generator);
-                }
-            });
+            generator.addFinishRunnable(() -> ChunkRenderDispatcherLitematica.this.queueChunkUpdates.remove(generator));
 
             flag = this.queueChunkUpdates.offer(generator);
         }
@@ -267,18 +254,11 @@ public class ChunkRenderDispatcherLitematica
         {
             //if (GuiBase.isCtrlDown()) System.out.printf("uploadChunkBlocks()\n");
             this.uploadVertexBuffer(buffer, renderChunk.getBlocksVertexBufferByLayer(layer));
-            return Futures.<Object>immediateFuture(null);
+            return Futures.immediateFuture(null);
         }
         else
         {
-            ListenableFutureTask<Object> futureTask = ListenableFutureTask.<Object>create(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    ChunkRenderDispatcherLitematica.this.uploadChunkBlocks(layer, buffer, renderChunk, chunkRenderData, distanceSq);
-                }
-            }, null);
+            ListenableFutureTask<Object> futureTask = ListenableFutureTask.create(() -> ChunkRenderDispatcherLitematica.this.uploadChunkBlocks(layer, buffer, renderChunk, chunkRenderData, distanceSq), null);
 
             synchronized (this.queueChunkUploads)
             {
@@ -295,18 +275,11 @@ public class ChunkRenderDispatcherLitematica
         {
             //if (GuiBase.isCtrlDown()) System.out.printf("uploadChunkOverlay()\n");
             this.uploadVertexBuffer(buffer, renderChunk.getOverlayVertexBuffer(type));
-            return Futures.<Object>immediateFuture(null);
+            return Futures.immediateFuture(null);
         }
         else
         {
-            ListenableFutureTask<Object> futureTask = ListenableFutureTask.<Object>create(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    ChunkRenderDispatcherLitematica.this.uploadChunkOverlay(type, buffer, renderChunk, compiledChunk, distanceSq);
-                }
-            }, null);
+            ListenableFutureTask<Object> futureTask = ListenableFutureTask.create(() -> ChunkRenderDispatcherLitematica.this.uploadChunkOverlay(type, buffer, renderChunk, compiledChunk, distanceSq), null);
 
             synchronized (this.queueChunkUploads)
             {
@@ -323,7 +296,7 @@ public class ChunkRenderDispatcherLitematica
 
     public void clearChunkUpdates()
     {
-        while (this.queueChunkUpdates.isEmpty() == false)
+        while (!this.queueChunkUpdates.isEmpty())
         {
             ChunkRenderTaskSchematic generator = this.queueChunkUpdates.poll();
 
@@ -357,7 +330,7 @@ public class ChunkRenderDispatcherLitematica
             }
             catch (InterruptedException interruptedexception)
             {
-                LOGGER.warn("Interrupted whilst waiting for worker to die", (Throwable)interruptedexception);
+                LOGGER.warn("Interrupted whilst waiting for worker to die", interruptedexception);
             }
         }
 

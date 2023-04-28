@@ -85,7 +85,7 @@ public class WallStateFixer implements SchematicConversionFixers.IStateFixer
         Block block = state.getBlock();
 
         return state.isIn(BlockTags.WALLS) ||
-               Block.cannotConnect(block) == false && faceFullSquare ||
+               !Block.cannotConnect(block) && faceFullSquare ||
                block instanceof PaneBlock ||
                block instanceof FenceGateBlock && FenceGateBlock.canWallConnect(state, side);
     }
@@ -146,6 +146,6 @@ public class WallStateFixer implements SchematicConversionFixers.IStateFixer
 
     private boolean shapesDoNotIntersect(VoxelShape voxelShape, VoxelShape voxelShape2)
     {
-        return VoxelShapes.matchesAnywhere(voxelShape2, voxelShape, BooleanBiFunction.ONLY_FIRST) == false;
+        return !VoxelShapes.matchesAnywhere(voxelShape2, voxelShape, BooleanBiFunction.ONLY_FIRST);
     }
 }

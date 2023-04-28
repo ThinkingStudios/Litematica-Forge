@@ -33,19 +33,18 @@ public class InventoryUtils
             {
                 int slotNum = Integer.parseInt(str);
 
-                if (PlayerInventory.isValidHotbarIndex(slotNum) && PICK_BLOCKABLE_SLOTS.contains(slotNum) == false)
+                if (PlayerInventory.isValidHotbarIndex(slotNum) && !PICK_BLOCKABLE_SLOTS.contains(slotNum))
                 {
                     PICK_BLOCKABLE_SLOTS.add(slotNum);
                 }
             }
-            catch (NumberFormatException e)
+            catch (NumberFormatException ignored)
             {
             }
         }
     }
 
-    public static void setPickedItemToHand(ItemStack stack, MinecraftClient mc)
-    {
+    public static void setPickedItemToHand(ItemStack stack, MinecraftClient mc) {
         int slotNum = mc.player.inventory.getSlotWithStack(stack);
         setPickedItemToHand(slotNum, stack, mc);
     }
@@ -67,7 +66,7 @@ public class InventoryUtils
 
             int hotbarSlot = sourceSlot;
 
-            if (sourceSlot == -1 || PlayerInventory.isValidHotbarIndex(sourceSlot) == false)
+            if (sourceSlot == -1 || !PlayerInventory.isValidHotbarIndex(sourceSlot))
             {
                 hotbarSlot = getEmptyPickBlockableHotbarSlot(player.inventory);
             }
@@ -97,7 +96,7 @@ public class InventoryUtils
     public static void schematicWorldPickBlock(ItemStack stack, BlockPos pos,
                                                World schematicWorld, MinecraftClient mc)
     {
-        if (stack.isEmpty() == false)
+        if (!stack.isEmpty())
         {
             PlayerInventory inv = mc.player.inventory;
             stack = stack.copy();
@@ -172,16 +171,13 @@ public class InventoryUtils
 
     private static int getEmptyPickBlockableHotbarSlot(PlayerInventory inventory)
     {
-        for (int i = 0; i < PICK_BLOCKABLE_SLOTS.size(); ++i)
-        {
-            int slotNum = PICK_BLOCKABLE_SLOTS.get(i) - 1;
+        for (Integer pickBlockableSlot : PICK_BLOCKABLE_SLOTS) {
+            int slotNum = pickBlockableSlot - 1;
 
-            if (slotNum >= 0 && slotNum < inventory.main.size())
-            {
+            if (slotNum >= 0 && slotNum < inventory.main.size()) {
                 ItemStack stack = inventory.main.get(slotNum);
 
-                if (stack.isEmpty())
-                {
+                if (stack.isEmpty()) {
                     return slotNum;
                 }
             }
@@ -219,7 +215,7 @@ public class InventoryUtils
         {
             Slot slot = container.slots.get(slotNum);
 
-            if ((isPlayerInv == false || fi.dy.masa.malilib.util.InventoryUtils.isRegularInventorySlot(slot.id, false)) &&
+            if ((!isPlayerInv || fi.dy.masa.malilib.util.InventoryUtils.isRegularInventorySlot(slot.id, false)) &&
                 doesShulkerBoxContainItem(slot.getStack(), stackReference))
             {
                 return slot.id;

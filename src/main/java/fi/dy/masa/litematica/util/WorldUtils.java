@@ -22,7 +22,6 @@ import net.minecraft.block.enums.BlockHalf;
 import net.minecraft.block.enums.ComparatorMode;
 import net.minecraft.block.enums.SlabType;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -125,7 +124,7 @@ public class WorldUtils
 
         LitematicaSchematic litematicaSchematic = LitematicaSchematic.createFromWorld(world, area, info, "?", feedback);
 
-        if (litematicaSchematic != null && ignoreEntities == false)
+        if (litematicaSchematic != null && !ignoreEntities)
         {
             litematicaSchematic.takeEntityDataFromSchematicaSchematic(schematic, subRegionName);
         }
@@ -226,7 +225,7 @@ public class WorldUtils
         litematicaSchematic.placeToWorld(world, schematicPlacement, false); // TODO use a per-chunk version for a bit more speed
 
         Structure template = new Structure();
-        template.saveFromWorld(world, BlockPos.ORIGIN, size, ignoreEntities == false, Blocks.STRUCTURE_VOID);
+        template.saveFromWorld(world, BlockPos.ORIGIN, size, !ignoreEntities, Blocks.STRUCTURE_VOID);
 
         return template;
     }
@@ -236,7 +235,7 @@ public class WorldUtils
         String fileName = fileNameIn;
         String extension = ".nbt";
 
-        if (fileName.endsWith(extension) == false)
+        if (!fileName.endsWith(extension))
         {
             fileName = fileName + extension;
         }
@@ -246,13 +245,13 @@ public class WorldUtils
 
         try
         {
-            if (dir.exists() == false && dir.mkdirs() == false)
+            if (!dir.exists() && !dir.mkdirs())
             {
                 feedback.setString(StringUtils.translate("litematica.error.schematic_write_to_file_failed.directory_creation_failed", dir.getAbsolutePath()));
                 return false;
             }
 
-            if (override == false && file.exists())
+            if (!override && file.exists())
             {
                 feedback.setString(StringUtils.translate("litematica.error.structure_write_to_file_failed.exists", file.getAbsolutePath()));
                 return false;
@@ -285,7 +284,7 @@ public class WorldUtils
 
     public static boolean isClientChunkLoaded(ClientWorld world, int chunkX, int chunkZ)
     {
-        return ((ClientChunkManager) world.getChunkManager()).getChunk(chunkX, chunkZ, ChunkStatus.FULL, false) != null;
+        return world.getChunkManager().getChunk(chunkX, chunkZ, ChunkStatus.FULL, false) != null;
     }
 
     public static void loadChunksSchematicWorld(WorldSchematic world, BlockPos origin, Vec3i areaSize)
@@ -440,7 +439,7 @@ public class WorldUtils
                 return ActionResult.FAIL;
             }
 
-            if (stack.isEmpty() == false)
+            if (!stack.isEmpty())
             {
                 BlockState stateClient = mc.world.getBlockState(pos);
 
@@ -478,7 +477,7 @@ public class WorldUtils
                     Vec3d hit = traceVanilla.getPos();
                     ItemPlacementContext ctx = new ItemPlacementContext(new ItemUsageContext(mc.player, hand, hitResult));
 
-                    if (stateVanilla.canReplace(ctx) == false)
+                    if (!stateVanilla.canReplace(ctx))
                     {
                         posVanilla = posVanilla.offset(sideVanilla);
 
@@ -557,12 +556,7 @@ public class WorldUtils
         BlockHitResult hitResult = (BlockHitResult) trace;
         ItemPlacementContext ctx = new ItemPlacementContext(new ItemUsageContext(player, Hand.MAIN_HAND, hitResult));
 
-        if (stateClient.canReplace(ctx) == false)
-        {
-            return true;
-        }
-
-        return false;
+        return !stateClient.canReplace(ctx);
     }
 
     /**
@@ -649,7 +643,7 @@ public class WorldUtils
         {
             for (Property<?> p : propList)
             {
-                if ((p instanceof DirectionProperty) == false &&
+                if (!(p instanceof DirectionProperty) &&
                     PlacementHandler.WHITELISTED_PROPERTIES.contains(p))
                 {
                     @SuppressWarnings("unchecked")
@@ -775,7 +769,7 @@ public class WorldUtils
             boolean schematicHasAir = worldSchematic.isAir(pos);
 
             // The targeted position is outside the current render range
-            if (schematicHasAir == false && range.isPositionWithinRange(pos) == false)
+            if (!schematicHasAir && !range.isPositionWithinRange(pos))
             {
                 return true;
             }
@@ -791,7 +785,7 @@ public class WorldUtils
             ctx = new ItemPlacementContext(new ItemUsageContext(mc.player, Hand.MAIN_HAND, (BlockHitResult) trace));
 
             // Placement position is already occupied
-            if (stateClient.canReplace(ctx) == false)
+            if (!stateClient.canReplace(ctx))
             {
                 return true;
             }
@@ -800,47 +794,26 @@ public class WorldUtils
             stack = MaterialCache.getInstance().getRequiredBuildItemForState(stateSchematic);
 
             // The player is holding the wrong item for the targeted position
-            if (stack.isEmpty() == false && EntityUtils.getUsedHandForItem(mc.player, stack) == null)
-            {
-                return true;
-            }
+            return !stack.isEmpty() && EntityUtils.getUsedHandForItem(mc.player, stack) == null;
         }
 
         return false;
     }
 
-    public static boolean isPositionWithinRangeOfSchematicRegions(BlockPos pos, int range)
-    {
+    public static boolean isPositionWithinRangeOfSchematicRegions(BlockPos pos, int range) {
         SchematicPlacementManager manager = DataManager.getSchematicPlacementManager();
-        final int minCX = (pos.getX() - range) >> 4;
-        final int minCY = (pos.getY() - range) >> 4;
-        final int minCZ = (pos.getZ() - range) >> 4;
-        final int maxCX = (pos.getX() + range) >> 4;
-        final int maxCY = (pos.getY() + range) >> 4;
-        final int maxCZ = (pos.getZ() + range) >> 4;
         final int x = pos.getX();
         final int y = pos.getY();
         final int z = pos.getZ();
 
-        for (int cy = minCY; cy <= maxCY; ++cy)
-        {
-            for (int cz = minCZ; cz <= maxCZ; ++cz)
-            {
-                for (int cx = minCX; cx <= maxCX; ++cx)
-                {
-                    List<IntBoundingBox> boxes = manager.getTouchedBoxesInSubChunk(new SubChunkPos(cx, cy, cz));
-
-                    for (int i = 0; i < boxes.size(); ++i)
-                    {
-                        IntBoundingBox box = boxes.get(i);
-
-                        if (x >= box.minX - range && x <= box.maxX + range &&
-                            y >= box.minY - range && y <= box.maxY + range &&
-                            z >= box.minZ - range && z <= box.maxZ + range)
-                        {
-                            return true;
-                        }
-                    }
+        for (int cy = (pos.getY() - range) >> 4; cy <= (pos.getY() + range) >> 4; ++cy) {
+            for (int cz = (pos.getZ() - range) >> 4; cz <= (pos.getZ() + range) >> 4; ++cz) {
+                for (int cx = (pos.getX() - range) >> 4; cx <= (pos.getX() + range) >> 4; ++cx) {
+                    if(manager.getTouchedBoxesInSubChunk(new SubChunkPos(cx, cy, cz)).stream().anyMatch(
+                            box -> x >= box.minX - range && x <= box.maxX + range
+                                    && y >= box.minY - range && y <= box.maxY + range
+                                    && z >= box.minZ - range && z <= box.maxZ + range)
+                    ) return true;
                 }
             }
         }
@@ -883,7 +856,7 @@ public class WorldUtils
                     {
                         for (int y = y1; y <= yMax; ++y)
                         {
-                            if (chunk.getBlockState(posMutable.set(x, y, z)).isAir() == false)
+                            if (!chunk.getBlockState(posMutable.set(x, y, z)).isAir())
                             {
                                 return false;
                             }
@@ -926,7 +899,7 @@ public class WorldUtils
                         {
                             for (int x = xMin; x <= xMax; ++x)
                             {
-                                if (chunk.getBlockState(posMutable.set(x, y, z)).isAir() == false)
+                                if (!chunk.getBlockState(posMutable.set(x, y, z)).isAir())
                                 {
                                     return false;
                                 }
@@ -959,7 +932,7 @@ public class WorldUtils
                     {
                         for (int y = y1; y <= yMax; ++y)
                         {
-                            if (chunk.getBlockState(posMutable.set(x, y, z)).isAir() == false)
+                            if (!chunk.getBlockState(posMutable.set(x, y, z)).isAir())
                             {
                                 return false;
                             }

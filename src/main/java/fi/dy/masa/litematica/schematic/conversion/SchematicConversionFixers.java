@@ -173,13 +173,11 @@ public class SchematicConversionFixers
         return state;
     };
 
-    public static final IStateFixer FIXER_CHRORUS_PLANT = (reader, state, pos) -> {
-        return ((ChorusPlantBlock) state.getBlock()).withConnectionProperties(reader, pos);
-    };
+    public static final IStateFixer FIXER_CHRORUS_PLANT = (reader, state, pos) -> ((ChorusPlantBlock) state.getBlock()).withConnectionProperties(reader, pos);
 
     public static final IStateFixer FIXER_DIRT_SNOWY = (reader, state, pos) -> {
         Block block = reader.getBlockState(pos.up()).getBlock();
-        return state.with(SnowyBlock.SNOWY, Boolean.valueOf(block == Blocks.SNOW_BLOCK || block == Blocks.SNOW));
+        return state.with(SnowyBlock.SNOWY, block == Blocks.SNOW_BLOCK || block == Blocks.SNOW);
     };
 
     public static final IStateFixer FIXER_DOOR = (reader, state, pos) -> {
@@ -255,9 +253,7 @@ public class SchematicConversionFixers
         return state.with(FenceGateBlock.IN_WALL, inWall);
     };
 
-    public static final IStateFixer FIXER_FIRE = (reader, state, pos) -> {
-        return AbstractFireBlock.getState(reader, pos);
-    };
+    public static final IStateFixer FIXER_FIRE = (reader, state, pos) -> AbstractFireBlock.getState(reader, pos);
 
     public static final IStateFixer FIXER_FLOWER_POT = (reader, state, pos) -> {
         NbtCompound tag = reader.getBlockEntityData(pos);
@@ -314,8 +310,8 @@ public class SchematicConversionFixers
         if (tag != null)
         {
             state = state
-                        .with(NoteBlock.POWERED, Boolean.valueOf(tag.getBoolean("powered")))
-                        .with(NoteBlock.NOTE, Integer.valueOf(MathHelper.clamp(tag.getByte("note"), 0, 24)))
+                        .with(NoteBlock.POWERED, tag.getBoolean("powered"))
+                        .with(NoteBlock.NOTE, MathHelper.clamp(tag.getByte("note"), 0, 24))
                         .with(NoteBlock.INSTRUMENT, Instrument.fromBlockState(reader.getBlockState(pos.down())));
         }
 
@@ -337,9 +333,7 @@ public class SchematicConversionFixers
         return state;
     };
 
-    public static final IStateFixer FIXER_REDSTONE_REPEATER = (reader, state, pos) -> {
-        return state.with(RepeaterBlock.LOCKED, Boolean.valueOf(getIsRepeaterPoweredOnSide(reader, pos, state)));
-    };
+    public static final IStateFixer FIXER_REDSTONE_REPEATER = (reader, state, pos) -> state.with(RepeaterBlock.LOCKED, getIsRepeaterPoweredOnSide(reader, pos, state));
 
     public static final IStateFixer FIXER_REDSTONE_WIRE = (reader, state, pos) -> {
         RedstoneWireBlock wire = (RedstoneWireBlock) state.getBlock();
@@ -450,9 +444,7 @@ public class SchematicConversionFixers
         return state;
     };
 
-    public static final IStateFixer FIXER_STAIRS = (reader, state, pos) -> {
-        return state.with(StairsBlock.SHAPE, IMixinStairsBlock.invokeGetStairShape(state, reader, pos));
-    };
+    public static final IStateFixer FIXER_STAIRS = (reader, state, pos) -> state.with(StairsBlock.SHAPE, IMixinStairsBlock.invokeGetStairShape(state, reader, pos));
 
     public static final IStateFixer FIXER_STEM = (reader, state, pos) -> {
         StemBlock stem = (StemBlock) state.getBlock();
@@ -477,10 +469,10 @@ public class SchematicConversionFixers
         TripwireBlock wire = (TripwireBlock) state.getBlock();
 
         return state
-                .with(TripwireBlock.NORTH, ((TripwireBlock) wire).shouldConnectTo(reader.getBlockState(pos.north()), Direction.NORTH))
-                .with(TripwireBlock.SOUTH, ((TripwireBlock) wire).shouldConnectTo(reader.getBlockState(pos.south()), Direction.SOUTH))
-                .with(TripwireBlock.WEST, ((TripwireBlock) wire).shouldConnectTo(reader.getBlockState(pos.west()), Direction.WEST))
-                .with(TripwireBlock.EAST, ((TripwireBlock) wire).shouldConnectTo(reader.getBlockState(pos.east()), Direction.EAST));
+                .with(TripwireBlock.NORTH, wire.shouldConnectTo(reader.getBlockState(pos.north()), Direction.NORTH))
+                .with(TripwireBlock.SOUTH, wire.shouldConnectTo(reader.getBlockState(pos.south()), Direction.SOUTH))
+                .with(TripwireBlock.WEST, wire.shouldConnectTo(reader.getBlockState(pos.west()), Direction.WEST))
+                .with(TripwireBlock.EAST, wire.shouldConnectTo(reader.getBlockState(pos.east()), Direction.EAST));
     };
 
     public static final IStateFixer FIXER_VINE = (reader, state, pos) -> {

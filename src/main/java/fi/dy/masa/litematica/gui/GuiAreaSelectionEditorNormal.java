@@ -170,7 +170,7 @@ public class GuiAreaSelectionEditorNormal extends GuiListBase<String, WidgetSele
 
     protected void addRenderingDisabledWarning(int x, int y)
     {
-        if (Configs.Visuals.ENABLE_AREA_SELECTION_RENDERING.getBooleanValue() == false)
+        if (!Configs.Visuals.ENABLE_AREA_SELECTION_RENDERING.getBooleanValue())
         {
             ConfigHotkey hotkey = Hotkeys.TOGGLE_AREA_SELECTION_RENDERING;
             String configName = Configs.Visuals.ENABLE_AREA_SELECTION_RENDERING.getName();
@@ -320,7 +320,7 @@ public class GuiAreaSelectionEditorNormal extends GuiListBase<String, WidgetSele
         ButtonListener listener = new ButtonListener(type, corner, null, this);
         this.addButton(button, listener);
 
-        if (type == ButtonListener.Type.CREATE_SCHEMATIC && projectsMode == false)
+        if (type == ButtonListener.Type.CREATE_SCHEMATIC && !projectsMode)
         {
             button.setHoverStrings("litematica.gui.button.hover.area_editor.shift_for_in_memory");
         }
@@ -369,7 +369,7 @@ public class GuiAreaSelectionEditorNormal extends GuiListBase<String, WidgetSele
             int value = Integer.parseInt(numberString);
             this.selection.setCoordinate(this.getBox(), corner, type, value);
         }
-        catch (NumberFormatException e)
+        catch (NumberFormatException ignored)
         {
         }
     }
@@ -457,7 +457,7 @@ public class GuiAreaSelectionEditorNormal extends GuiListBase<String, WidgetSele
                     SelectionManager manager = DataManager.getSelectionManager();
                     SelectionMode newMode = manager.getSelectionMode().cycle(true);
 
-                    if (newMode == SelectionMode.NORMAL && manager.hasNormalSelection() == false)
+                    if (newMode == SelectionMode.NORMAL && !manager.hasNormalSelection())
                     {
                         this.parent.addMessage(MessageType.WARNING, "litematica.error.area_editor.switch_mode.no_selection");
                     }
@@ -559,12 +559,12 @@ public class GuiAreaSelectionEditorNormal extends GuiListBase<String, WidgetSele
             private final String translationKey;
             @Nullable private final String hoverText;
 
-            private Type(String translationKey)
+            Type(String translationKey)
             {
                 this(translationKey, null);
             }
 
-            private Type(String translationKey, @Nullable String hoverText)
+            Type(String translationKey, @Nullable String hoverText)
             {
                 this.translationKey = translationKey;
                 this.hoverText = hoverText;

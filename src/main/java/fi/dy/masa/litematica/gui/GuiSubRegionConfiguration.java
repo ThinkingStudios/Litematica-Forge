@@ -323,12 +323,12 @@ public class GuiSubRegionConfiguration extends GuiBase
             private final String translationKey;
             @Nullable private final String hoverText;
 
-            private Type(String translationKey)
+            Type(String translationKey)
             {
                 this(translationKey, null);
             }
 
-            private Type(String translationKey, @Nullable String hoverText)
+            Type(String translationKey, @Nullable String hoverText)
             {
                 this.translationKey = translationKey;
                 this.hoverText = hoverText;
@@ -385,7 +385,7 @@ public class GuiSubRegionConfiguration extends GuiBase
                 this.schematicPlacement.moveSubRegionTo(this.placement.getName(), pos, this.parent);
                 this.parent.updateElements();
             }
-            catch (NumberFormatException e)
+            catch (NumberFormatException ignored)
             {
             }
 

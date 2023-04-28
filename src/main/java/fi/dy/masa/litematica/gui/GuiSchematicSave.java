@@ -118,7 +118,7 @@ public class GuiSchematicSave extends GuiSchematicSaveBase implements ICompletio
                 File dir = this.gui.getListWidget().getCurrentDirectory();
                 String fileName = this.gui.getTextFieldText();
 
-                if (dir.isDirectory() == false)
+                if (!dir.isDirectory())
                 {
                     this.gui.addMessage(MessageType.ERROR, "litematica.error.schematic_save.invalid_directory", dir.getAbsolutePath());
                     return;
@@ -152,12 +152,12 @@ public class GuiSchematicSave extends GuiSchematicSaveBase implements ICompletio
                         String fileNameTmp = fileName;
 
                         // The file name extension gets added in the schematic write method, so need to add it here for the check
-                        if (fileNameTmp.endsWith(LitematicaSchematic.FILE_EXTENSION) == false)
+                        if (!fileNameTmp.endsWith(LitematicaSchematic.FILE_EXTENSION))
                         {
                             fileNameTmp += LitematicaSchematic.FILE_EXTENSION;
                         }
 
-                        if (FileUtils.canWriteToFile(dir, fileNameTmp, overwrite) == false)
+                        if (!FileUtils.canWriteToFile(dir, fileNameTmp, overwrite))
                         {
                             this.gui.addMessage(MessageType.ERROR, "litematica.error.schematic_write_to_file_failed.exists", fileNameTmp);
                             return;

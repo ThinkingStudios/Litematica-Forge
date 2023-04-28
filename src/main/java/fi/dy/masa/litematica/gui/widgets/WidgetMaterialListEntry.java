@@ -203,7 +203,7 @@ public class WidgetMaterialListEntry extends WidgetListEntrySortable<MaterialLis
 
         if (this.header1 != null)
         {
-            if (this.listWidget.getSearchBarWidget().isSearchOpen() == false)
+            if (!this.listWidget.getSearchBarWidget().isSearchOpen())
             {
                 this.drawString(x1, y, color, this.header1, matrixStack);
                 this.drawString(x2, y, color, this.header2, matrixStack);
@@ -228,10 +228,10 @@ public class WidgetMaterialListEntry extends WidgetListEntrySortable<MaterialLis
             this.drawString(x2, y, color, String.valueOf(countTotal), matrixStack);
 
             pre = countMissing == 0 ? green : (countAvailable >= countMissing ? gold : red);
-            this.drawString(x3, y, color, pre + String.valueOf(countMissing), matrixStack);
+            this.drawString(x3, y, color, pre + countMissing, matrixStack);
 
             pre = countAvailable >= countMissing ? green : red;
-            this.drawString(x4, y, color, pre + String.valueOf(countAvailable), matrixStack);
+            this.drawString(x4, y, color, pre + countAvailable, matrixStack);
 
             RenderSystem.pushMatrix();
             RenderSystem.disableLighting();
@@ -383,7 +383,7 @@ public class WidgetMaterialListEntry extends WidgetListEntrySortable<MaterialLis
 
             private final String translationKey;
 
-            private ButtonType(String translationKey)
+            ButtonType(String translationKey)
             {
                 this.translationKey = translationKey;
             }

@@ -40,7 +40,7 @@ public class ItemUtils
                     continue;
                 }
 
-                if (tagReference.get(key).equals(tagToCheck.get(key)) == false)
+                if (!tagReference.get(key).equals(tagToCheck.get(key)))
                 {
                     return false;
                 }
@@ -60,7 +60,7 @@ public class ItemUtils
 
     public static void setItemForBlock(World world, BlockPos pos, BlockState state)
     {
-        if (ITEMS_FOR_STATES.containsKey(state) == false)
+        if (!ITEMS_FOR_STATES.containsKey(state))
         {
             ITEMS_FOR_STATES.put(state, getItemForBlock(world, pos, state, false));
         }
@@ -157,13 +157,13 @@ public class ItemUtils
 
     public static String getStackString(ItemStack stack)
     {
-        if (stack.isEmpty() == false)
+        if (!stack.isEmpty())
         {
             Identifier rl = Registry.ITEM.getId(stack.getItem());
 
             return String.format("[%s - display: %s - NBT: %s] (%s)",
                     rl != null ? rl.toString() : "null", stack.getName().getString(),
-                    stack.getTag() != null ? stack.getTag().toString() : "<no NBT>", stack.toString());
+                    stack.getTag() != null ? stack.getTag().toString() : "<no NBT>", stack);
         }
 
         return "<empty>";

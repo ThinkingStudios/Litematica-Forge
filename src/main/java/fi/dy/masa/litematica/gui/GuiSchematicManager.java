@@ -212,7 +212,7 @@ public class GuiSchematicManager extends GuiSchematicBrowserBase implements ISel
 
             File file = entry.getFullPath();
 
-            if (file.exists() == false || file.isFile() == false || file.canRead() == false)
+            if (!file.exists() || !file.isFile() || !file.canRead())
             {
                 this.gui.addMessage(MessageType.ERROR, "litematica.error.schematic_load.cant_read_file", file.getName());
                 return;
@@ -279,12 +279,12 @@ public class GuiSchematicManager extends GuiSchematicBrowserBase implements ISel
             @Nullable
             private final String hoverText;
 
-            private Type(String label)
+            Type(String label)
             {
                 this(label, null);
             }
 
-            private Type(String label, String hoverText)
+            Type(String label, String hoverText)
             {
                 this.label = label;
                 this.hoverText = hoverText;
@@ -432,7 +432,7 @@ public class GuiSchematicManager extends GuiSchematicBrowserBase implements ISel
 
         private final String displayName;
 
-        private ExportType(String displayName)
+        ExportType(String displayName)
         {
             this.displayName = displayName;
         }

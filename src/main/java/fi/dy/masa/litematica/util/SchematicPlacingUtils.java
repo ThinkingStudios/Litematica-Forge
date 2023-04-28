@@ -41,7 +41,7 @@ public class SchematicPlacingUtils
 
         try
         {
-            if (notifyNeighbors == false)
+            if (!notifyNeighbors)
             {
                 WorldUtils.setShouldPreventBlockUpdates(world, true);
             }
@@ -62,8 +62,8 @@ public class SchematicPlacingUtils
                 {
                     Map<BlockPos, NbtCompound> blockEntityMap = schematic.getBlockEntityMapForRegion(regionName);
 
-                    if (placeBlocksWithinChunk(world, chunkPos, regionName, container, blockEntityMap,
-                                               origin, schematicPlacement, placement, replace, notifyNeighbors) == false)
+                    if (!placeBlocksWithinChunk(world, chunkPos, regionName, container, blockEntityMap,
+                            origin, schematicPlacement, placement, replace, notifyNeighbors))
                     {
                         allSuccess = false;
                         Litematica.logger.warn("Invalid/missing schematic data in schematic '{}' for sub-region '{}'", schematic.getMetadata().getName(), regionName);
@@ -71,8 +71,8 @@ public class SchematicPlacingUtils
 
                     List<EntityInfo> entityList = schematic.getEntityListForRegion(regionName);
 
-                    if (schematicPlacement.ignoreEntities() == false &&
-                        placement.ignoreEntities() == false && entityList != null)
+                    if (!schematicPlacement.ignoreEntities() &&
+                            !placement.ignoreEntities() && entityList != null)
                     {
                         placeEntitiesToWorldWithinChunk(world, chunkPos, entityList, origin, schematicPlacement, placement);
                     }

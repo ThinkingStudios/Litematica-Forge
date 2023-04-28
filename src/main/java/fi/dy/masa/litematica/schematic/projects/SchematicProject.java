@@ -82,7 +82,7 @@ public class SchematicProject
     {
         File newFile = new File(this.directory, name + ".json");
 
-        if (newFile.exists() == false)
+        if (!newFile.exists())
         {
             try
             {
@@ -234,7 +234,7 @@ public class SchematicProject
         {
             MinecraftClient mc = MinecraftClient.getInstance();
 
-            if (mc.player == null || mc.player.abilities.creativeMode == false)
+            if (mc.player == null || !mc.player.abilities.creativeMode)
             {
                 InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.error.generic.creative_mode_only");
                 return;
@@ -243,9 +243,7 @@ public class SchematicProject
             this.cacheCurrentAreaFromPlacement();
 
             ToolUtils.deleteSelectionVolumes(this.lastSeenArea, true, () ->
-            {
-                DataManager.getSchematicPlacementManager().pastePlacementToWorld(this.currentPlacement, false, mc);
-            }, mc);
+                    DataManager.getSchematicPlacementManager().pastePlacementToWorld(this.currentPlacement, false, mc), mc);
         }
     }
 
@@ -350,7 +348,7 @@ public class SchematicProject
             String name = nameBase + String.format("%05d", version);
             File file = new File(this.directory, name + LitematicaSchematic.FILE_EXTENSION);
 
-            if (file.exists() == false)
+            if (!file.exists())
             {
                 return name;
             }
@@ -375,7 +373,7 @@ public class SchematicProject
 
     public boolean saveToFile()
     {
-        if (this.dirty == false || JsonUtils.writeJsonToFile(this.toJson(), this.projectFile))
+        if (!this.dirty || JsonUtils.writeJsonToFile(this.toJson(), this.projectFile))
         {
             this.dirty = false;
             return true;
@@ -398,9 +396,8 @@ public class SchematicProject
 
         JsonArray arr = new JsonArray();
 
-        for (int i = 0; i < this.versions.size(); ++i)
-        {
-            arr.add(this.versions.get(i).toJson());
+        for (SchematicVersion version : this.versions) {
+            arr.add(version.toJson());
         }
 
         if (arr.size() > 0)
@@ -493,7 +490,7 @@ public class SchematicProject
             return false;
         }
 
-        if (this.directory == null || this.directory.exists() == false || this.directory.isDirectory() == false)
+        if (this.directory == null || !this.directory.exists() || !this.directory.isDirectory())
         {
             InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.error.schematic_projects.invalid_project_directory");
             return false;
@@ -540,14 +537,7 @@ public class SchematicProject
             }
             else
             {
-                mc.execute(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        SaveCompletionListener.this.saveVersion();
-                    }
-                });
+                mc.execute(SaveCompletionListener.this::saveVersion);
             }
         }
 

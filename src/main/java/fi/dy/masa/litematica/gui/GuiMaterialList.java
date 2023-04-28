@@ -2,7 +2,7 @@ package fi.dy.masa.litematica.gui;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
+
 import fi.dy.masa.litematica.Reference;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.gui.GuiMainMenu.ButtonListenerChangeMenu;
@@ -128,7 +128,7 @@ public class GuiMaterialList extends GuiListBase<MaterialListEntry, WidgetMateri
         long missing = this.materialList.getCountMissing() - this.materialList.getCountMismatched();
         long mismatch = this.materialList.getCountMismatched();
 
-        if (total != 0 && (this.materialList instanceof MaterialListAreaAnalyzer) == false)
+        if (total != 0 && !(this.materialList instanceof MaterialListAreaAnalyzer))
         {
             double pctDone = ((double) (total - (missing + mismatch)) / (double) total) * 100;
             double pctMissing = ((double) missing / (double) total) * 100;
@@ -311,9 +311,8 @@ public class GuiMaterialList extends GuiListBase<MaterialListEntry, WidgetMateri
             DataDump dump = new DataDump(4, csv ? DataDump.Format.CSV : DataDump.Format.ASCII);
             int multiplier = materialList.getMultiplier();
 
-            ArrayList<MaterialListEntry> list = new ArrayList<>();
-            list.addAll(materialList.getMaterialsFiltered(false));
-            Collections.sort(list, new MaterialListSorter(materialList));
+            ArrayList<MaterialListEntry> list = new ArrayList<>(materialList.getMaterialsFiltered(false));
+            list.sort(new MaterialListSorter(materialList));
 
             for (MaterialListEntry entry : list)
             {
@@ -347,7 +346,7 @@ public class GuiMaterialList extends GuiListBase<MaterialListEntry, WidgetMateri
 
             private final String translationKey;
 
-            private Type(String translationKey)
+            Type(String translationKey)
             {
                 this.translationKey = translationKey;
             }

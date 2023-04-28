@@ -10,7 +10,7 @@ public enum OverlayType
 
     private final int priority;
 
-    private OverlayType(int priority)
+    OverlayType(int priority)
     {
         this.priority = priority;
     }

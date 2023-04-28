@@ -459,9 +459,8 @@ public class RenderUtils
     {
         final int size = quads.size();
 
-        for (int i = 0; i < size; i++)
-        {
-            renderQuadOutlinesBatched(pos, buffer, color, quads.get(i).getVertexData());
+        for (BakedQuad quad : quads) {
+            renderQuadOutlinesBatched(pos, buffer, color, quad.getVertexData());
         }
     }
 
@@ -471,9 +470,9 @@ public class RenderUtils
         final int y = pos.getY();
         final int z = pos.getZ();
         final int vertexSize = vertexData.length / 4;
-        final float fx[] = new float[4];
-        final float fy[] = new float[4];
-        final float fz[] = new float[4];
+        final float[] fx = new float[4];
+        final float[] fy = new float[4];
+        final float[] fz = new float[4];
 
         for (int index = 0; index < 4; ++index)
         {
@@ -518,9 +517,8 @@ public class RenderUtils
     {
         final int size = quads.size();
 
-        for (int i = 0; i < size; i++)
-        {
-            renderModelQuadOverlayBatched(pos, buffer, color, quads.get(i).getVertexData());
+        for (BakedQuad quad : quads) {
+            renderModelQuadOverlayBatched(pos, buffer, color, quad.getVertexData());
         }
     }
 

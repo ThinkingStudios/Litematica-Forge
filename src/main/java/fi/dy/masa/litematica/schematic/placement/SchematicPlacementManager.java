@@ -74,7 +74,7 @@ public class SchematicPlacementManager
 
     public boolean hasPendingRebuilds()
     {
-        return this.chunksToRebuild.isEmpty() == false;
+        return !this.chunksToRebuild.isEmpty();
     }
 
     public boolean hasPendingRebuildFor(ChunkPos pos)
@@ -84,7 +84,7 @@ public class SchematicPlacementManager
 
     public boolean processQueuedChunks()
     {
-        if (this.chunksToUnload.isEmpty() == false)
+        if (!this.chunksToUnload.isEmpty())
         {
             WorldSchematic worldSchematic = SchematicWorldHandler.getSchematicWorld();
 
@@ -100,7 +100,7 @@ public class SchematicPlacementManager
         }
 
         //System.out.printf("processQueuedChunks, size: %d\n", this.chunksToRebuild.size());
-        if (this.chunksToRebuild.isEmpty() == false)
+        if (!this.chunksToRebuild.isEmpty())
         {
             ClientWorld worldClient = MinecraftClient.getInstance().world;
 
@@ -122,7 +122,7 @@ public class SchematicPlacementManager
 
                 ChunkPos pos = iter.next();
 
-                if (this.schematicsTouchingChunk.containsKey(pos) == false)
+                if (!this.schematicsTouchingChunk.containsKey(pos))
                 {
                     iter.remove();
                     continue;
@@ -143,7 +143,7 @@ public class SchematicPlacementManager
                     //System.out.printf("placing at %s\n", pos);
                     Collection<SchematicPlacement> placements = this.schematicsTouchingChunk.get(pos);
 
-                    if (placements.isEmpty() == false)
+                    if (!placements.isEmpty())
                     {
                         for (SchematicPlacement placement : placements)
                         {
@@ -162,10 +162,7 @@ public class SchematicPlacementManager
 
             LitematicaRenderer.getInstance().getWorldRenderer().markNeedsUpdate();
 
-            if (this.chunksToRebuild.isEmpty())
-            {
-                return true;
-            }
+            return this.chunksToRebuild.isEmpty();
         }
 
         return false;
@@ -173,7 +170,7 @@ public class SchematicPlacementManager
 
     public void onClientChunkUnload(int chunkX, int chunkZ)
     {
-        if (Configs.Generic.LOAD_ENTIRE_SCHEMATICS.getBooleanValue() == false)
+        if (!Configs.Generic.LOAD_ENTIRE_SCHEMATICS.getBooleanValue())
         {
             WorldSchematic worldSchematic = SchematicWorldHandler.getSchematicWorld();
 
@@ -224,7 +221,7 @@ public class SchematicPlacementManager
 
     public void addSchematicPlacement(SchematicPlacement placement, boolean printMessages)
     {
-        if (this.schematicPlacements.contains(placement) == false)
+        if (!this.schematicPlacements.contains(placement))
         {
             this.schematicPlacements.add(placement);
             this.addTouchedChunksFor(placement);
@@ -243,7 +240,7 @@ public class SchematicPlacementManager
                         InfoUtils.showGuiAndInGameMessage(MessageType.WARNING, "litematica.message.warn.layer_mode_currently_at", mode.getDisplayName());
                     }
 
-                    if (Configs.Visuals.ENABLE_RENDERING.getBooleanValue() == false)
+                    if (!Configs.Visuals.ENABLE_RENDERING.getBooleanValue())
                     {
                         ConfigHotkey hotkey = Hotkeys.TOGGLE_ALL_RENDERING;
                         String configName = Configs.Visuals.ENABLE_RENDERING.getName();
@@ -254,7 +251,7 @@ public class SchematicPlacementManager
                                 "litematica.message.warn.main_rendering_disabled", configName, hotkeyName, hotkeyVal);
                     }
 
-                    if (Configs.Visuals.ENABLE_SCHEMATIC_RENDERING.getBooleanValue() == false)
+                    if (!Configs.Visuals.ENABLE_SCHEMATIC_RENDERING.getBooleanValue())
                     {
                         ConfigHotkey hotkey = Hotkeys.TOGGLE_SCHEMATIC_RENDERING;
                         String configName = Configs.Visuals.ENABLE_SCHEMATIC_RENDERING.getName();
@@ -265,7 +262,7 @@ public class SchematicPlacementManager
                                 "litematica.message.warn.schematic_rendering_disabled", configName, hotkeyName, hotkeyVal);
                     }
 
-                    if (Configs.Visuals.ENABLE_SCHEMATIC_BLOCKS.getBooleanValue() == false)
+                    if (!Configs.Visuals.ENABLE_SCHEMATIC_BLOCKS.getBooleanValue())
                     {
                         ConfigHotkey hotkey = Hotkeys.TOGGLE_SCHEMATIC_BLOCK_RENDERING;
                         String configName = Configs.Visuals.ENABLE_SCHEMATIC_BLOCKS.getName();
@@ -373,7 +370,7 @@ public class SchematicPlacementManager
 
             for (ChunkPos pos : chunks)
             {
-                if (this.schematicsTouchingChunk.containsEntry(pos, placement) == false)
+                if (!this.schematicsTouchingChunk.containsEntry(pos, placement))
                 {
                     this.schematicsTouchingChunk.put(pos, placement);
                     this.updateTouchedBoxesInChunk(pos);
@@ -398,7 +395,7 @@ public class SchematicPlacementManager
                 this.schematicsTouchingChunk.remove(pos, placement);
                 this.updateTouchedBoxesInChunk(pos);
 
-                if (this.schematicsTouchingChunk.containsKey(pos) == false)
+                if (!this.schematicsTouchingChunk.containsKey(pos))
                 {
                     this.chunksToUnload.add(pos);
                 }
@@ -430,7 +427,7 @@ public class SchematicPlacementManager
             this.updateTouchedBoxesInChunk(pos);
             //System.out.printf("removing placement from: %s\n", pos);
 
-            if (this.schematicsTouchingChunk.containsKey(pos) == false)
+            if (!this.schematicsTouchingChunk.containsKey(pos))
             {
                 //System.out.printf("unloading: %s\n", pos);
                 this.chunksToUnload.add(pos);
@@ -444,7 +441,7 @@ public class SchematicPlacementManager
 
         for (ChunkPos pos : chunksPost)
         {
-            if (this.schematicsTouchingChunk.containsEntry(pos, placement) == false)
+            if (!this.schematicsTouchingChunk.containsEntry(pos, placement))
             {
                 this.schematicsTouchingChunk.put(pos, placement);
             }
@@ -466,7 +463,7 @@ public class SchematicPlacementManager
 
         Collection<SchematicPlacement> placements = this.schematicsTouchingChunk.get(pos);
 
-        if (placements.isEmpty() == false)
+        if (!placements.isEmpty())
         {
             for (SchematicPlacement placement : placements)
             {
@@ -498,12 +495,8 @@ public class SchematicPlacementManager
 
     public void markAllPlacementsOfSchematicForRebuild(LitematicaSchematic schematic)
     {
-        for (int i = 0; i < this.schematicPlacements.size(); ++i)
-        {
-            SchematicPlacement placement = this.schematicPlacements.get(i);
-
-            if (placement.getSchematic() == schematic)
-            {
+        for (SchematicPlacement placement : this.schematicPlacements) {
+            if (placement.getSchematic() == schematic) {
                 this.markChunksForRebuild(placement);
             }
         }
@@ -586,7 +579,7 @@ public class SchematicPlacementManager
             BlockPos pos = ((BlockHitResult) trace).getBlockPos();
 
             // Sneaking puts the position inside the targeted block, not sneaking puts it against the targeted face
-            if (mc.player.isSneaking() == false)
+            if (!mc.player.isSneaking())
             {
                 pos = pos.offset(((BlockHitResult) trace).getSide());
             }
@@ -622,7 +615,7 @@ public class SchematicPlacementManager
                 BlockPos old = schematicPlacement.getOrigin();
                 schematicPlacement.setOrigin(pos, InfoUtils.INFO_MESSAGE_CONSUMER);
 
-                if (old.equals(schematicPlacement.getOrigin()) == false)
+                if (!old.equals(schematicPlacement.getOrigin()))
                 {
                     String posStrOld = String.format("x: %d, y: %d, z: %d", old.getX(), old.getY(), old.getZ());
                     String posStrNew = String.format("x: %d, y: %d, z: %d", pos.getX(), pos.getY(), pos.getZ());
@@ -782,27 +775,19 @@ public class SchematicPlacementManager
             int selectedIndex = 0;
             boolean indexValid = false;
 
-            for (int i = 0; i < this.schematicPlacements.size(); ++i)
-            {
-                SchematicPlacement placement = this.schematicPlacements.get(i);
-
-                if (placement.shouldBeSaved() == false)
-                {
+            for (SchematicPlacement placement : this.schematicPlacements) {
+                if (!placement.shouldBeSaved()) {
                     continue;
                 }
 
                 JsonObject objPlacement = placement.toJson();
 
-                if (objPlacement != null)
-                {
+                if (objPlacement != null) {
                     arr.add(objPlacement);
 
-                    if (this.selectedPlacement == placement)
-                    {
+                    if (this.selectedPlacement == placement) {
                         indexValid = true;
-                    }
-                    else if (indexValid == false)
-                    {
+                    } else if (!indexValid) {
                         selectedIndex++;
                     }
                 }

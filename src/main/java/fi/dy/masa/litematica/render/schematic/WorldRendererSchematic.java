@@ -2,7 +2,6 @@ package fi.dy.masa.litematica.render.schematic;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -126,7 +125,7 @@ public class WorldRendererSchematic
         {
             ChunkRenderDataSchematic data = chunkRenderer.chunkRenderData;
 
-            if (data != ChunkRenderDataSchematic.EMPTY && data.isEmpty() == false)
+            if (data != ChunkRenderDataSchematic.EMPTY && !data.isEmpty())
             {
                 ++count;
             }
@@ -273,7 +272,7 @@ public class WorldRendererSchematic
         SubChunkPos viewSubChunk = new SubChunkPos(centerChunkX, viewPos.getY() >> 4, centerChunkZ);
         BlockPos viewPosSubChunk = new BlockPos(viewSubChunk.getX() << 4, viewSubChunk.getY() << 4, viewSubChunk.getZ() << 4);
 
-        this.displayListEntitiesDirty = this.displayListEntitiesDirty || this.chunksToUpdate.isEmpty() == false ||
+        this.displayListEntitiesDirty = this.displayListEntitiesDirty || !this.chunksToUpdate.isEmpty() ||
                 entityX != this.lastCameraX ||
                 entityY != this.lastCameraY ||
                 entityZ != this.lastCameraZ ||
@@ -297,7 +296,7 @@ public class WorldRendererSchematic
             Set<SubChunkPos> set = DataManager.getSchematicPlacementManager().getAllTouchedSubChunks();
             List<SubChunkPos> positions = new ArrayList<>(set.size());
             positions.addAll(set);
-            Collections.sort(positions, new SubChunkPos.DistanceComparator(viewSubChunk));
+            positions.sort(new SubChunkPos.DistanceComparator(viewSubChunk));
 
             //Queue<SubChunkPos> queuePositions = new PriorityQueue<>(new SubChunkPos.DistanceComparator(viewSubChunk));
             //queuePositions.addAll(set);
@@ -307,27 +306,20 @@ public class WorldRendererSchematic
             this.world.getProfiler().swap("iteration");
 
             //while (queuePositions.isEmpty() == false)
-            for (int i = 0; i < positions.size(); ++i)
-            {
+            for (SubChunkPos subChunk : positions) {
                 //SubChunkPos subChunk = queuePositions.poll();
-                SubChunkPos subChunk = positions.get(i);
-
                 // Only render sub-chunks that are within the client's render distance, and that
                 // have been already properly loaded on the client
                 if (Math.abs(subChunk.getX() - centerChunkX) <= renderDistance &&
-                    Math.abs(subChunk.getZ() - centerChunkZ) <= renderDistance &&
-                    this.world.getChunkProvider().isChunkLoaded(subChunk.getX(), subChunk.getZ()))
-                {
+                        Math.abs(subChunk.getZ() - centerChunkZ) <= renderDistance &&
+                        this.world.getChunkProvider().isChunkLoaded(subChunk.getX(), subChunk.getZ())) {
                     BlockPos subChunkCornerPos = new BlockPos(subChunk.getX() << 4, subChunk.getY() << 4, subChunk.getZ() << 4);
                     ChunkRendererSchematicVbo chunkRenderer = this.chunkRendererDispatcher.getChunkRenderer(subChunkCornerPos);
 
-                    if (chunkRenderer != null)
-                    {
-                        if (frustum.isVisible(chunkRenderer.getBoundingBox()))
-                        {
+                    if (chunkRenderer != null) {
+                        if (frustum.isVisible(chunkRenderer.getBoundingBox())) {
                             //if (GuiBase.isCtrlDown()) System.out.printf("add @ %s\n", subChunk);
-                            if (chunkRenderer.needsUpdate() && subChunkCornerPos.equals(viewPosSubChunk))
-                            {
+                            if (chunkRenderer.needsUpdate() && subChunkCornerPos.equals(viewPosSubChunk)) {
                                 chunkRenderer.setNeedsUpdate(true);
                             }
 
@@ -352,7 +344,7 @@ public class WorldRendererSchematic
                 BlockPos pos = chunkRendererTmp.getOrigin().add(8, 8, 8);
                 boolean isNear = pos.getSquaredDistance(viewPos) < 1024.0D;
 
-                if (chunkRendererTmp.needsImmediateUpdate() == false && isNear == false)
+                if (!chunkRendererTmp.needsImmediateUpdate() && !isNear)
                 {
                     this.chunksToUpdate.add(chunkRendererTmp);
                 }
@@ -379,7 +371,7 @@ public class WorldRendererSchematic
     {
         this.displayListEntitiesDirty |= this.renderDispatcher.runChunkUploads(finishTimeNano);
 
-        if (this.chunksToUpdate.isEmpty() == false)
+        if (!this.chunksToUpdate.isEmpty())
         {
             Iterator<ChunkRendererSchematicVbo> iterator = this.chunksToUpdate.iterator();
 
@@ -467,7 +459,7 @@ public class WorldRendererSchematic
         {
             ChunkRendererSchematicVbo renderer = this.renderInfos.get(i);
 
-            if (renderer.getChunkRenderData().isBlockLayerEmpty(renderLayer) == false)
+            if (!renderer.getChunkRenderData().isBlockLayerEmpty(renderLayer))
             {
                 BlockPos chunkOrigin = renderer.getOrigin();
                 VertexBuffer buffer = renderer.getBlocksVertexBufferByLayer(renderLayer);
@@ -525,7 +517,7 @@ public class WorldRendererSchematic
             {
                 ChunkRenderDataSchematic compiledChunk = renderer.getChunkRenderData();
 
-                if (compiledChunk.isOverlayTypeEmpty(type) == false)
+                if (!compiledChunk.isOverlayTypeEmpty(type))
                 {
                     BlockPos chunkOrigin = renderer.getOrigin();
                     VertexBuffer buffer = renderer.getOverlayVertexBuffer(type);
@@ -632,14 +624,14 @@ public class WorldRendererSchematic
             for (ChunkRendererSchematicVbo chunkRenderer : this.renderInfos)
             {
                 BlockPos pos = chunkRenderer.getOrigin();
-                WorldChunk chunk = (WorldChunk) this.world.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
+                WorldChunk chunk = this.world.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
                 TypeFilterableList<Entity> list = chunk.getEntitySectionArray()[pos.getY() >> 4];
 
-                if (list.isEmpty() == false)
+                if (!list.isEmpty())
                 {
                     for (Entity entityTmp : list)
                     {
-                        if (layerRange.isPositionWithinRange((int) entityTmp.getX(), (int) entityTmp.getY(), (int) entityTmp.getZ()) == false)
+                        if (!layerRange.isPositionWithinRange((int) entityTmp.getX(), (int) entityTmp.getY(), (int) entityTmp.getZ()))
                         {
                             continue;
                         }
@@ -666,7 +658,7 @@ public class WorldRendererSchematic
                 ChunkRenderDataSchematic data = chunkRenderer.getChunkRenderData();
                 List<BlockEntity> tiles = data.getBlockEntities();
 
-                if (tiles.isEmpty() == false) 
+                if (!tiles.isEmpty())
                 {
                     BlockPos chunkOrigin = chunkRenderer.getOrigin();
                     ChunkSchematic chunk = this.world.getChunkProvider().getChunk(chunkOrigin.getX() >> 4, chunkOrigin.getZ() >> 4);
@@ -686,7 +678,7 @@ public class WorldRendererSchematic
 
                                 matrices.pop();
                             }
-                            catch (Exception e)
+                            catch (Exception ignored)
                             {
                             }
                         }
@@ -708,7 +700,7 @@ public class WorldRendererSchematic
 
                         matrices.pop();
                     }
-                    catch (Exception e)
+                    catch (Exception ignored)
                     {
                     }
                 }

@@ -47,9 +47,9 @@ public class SchematicHolder
 
     public void addSchematic(LitematicaSchematic schematic, boolean allowDuplicates)
     {
-        if (allowDuplicates || this.schematics.contains(schematic) == false)
+        if (allowDuplicates || !this.schematics.contains(schematic))
         {
-            if (allowDuplicates == false && schematic.getFile() != null)
+            if (!allowDuplicates && schematic.getFile() != null)
             {
                 for (LitematicaSchematic tmp : this.schematics)
                 {

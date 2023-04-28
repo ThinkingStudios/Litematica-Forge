@@ -73,11 +73,11 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
             this.mc.player.sendChatMessage("/gamerule sendCommandFeedback false");
         }
 
-        while (this.chunks.isEmpty() == false)
+        while (!this.chunks.isEmpty())
         {
             ChunkPos pos = this.chunks.get(0);
 
-            if (this.canProcessChunk(pos, worldSchematic, worldClient) == false)
+            if (!this.canProcessChunk(pos, worldSchematic, worldClient))
             {
                 // There is already a box in progress, we must finish that before
                 // moving to the next box
@@ -93,7 +93,7 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
                 }
             }
 
-            while (this.boxesInCurrentChunk.isEmpty() == false)
+            while (!this.boxesInCurrentChunk.isEmpty())
             {
                 IntBoundingBox box = this.boxesInCurrentChunk.get(0);
 
@@ -159,7 +159,7 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
         Chunk chunkClient = worldClient.getChunk(pos.x, pos.z);
         PasteNbtBehavior nbtBehavior = (PasteNbtBehavior) Configs.Generic.PASTE_NBT_BEHAVIOR.getOptionListValue();
 
-        if (this.boxInProgress == false)
+        if (!this.boxInProgress)
         {
             this.currentX = box.minX;
             this.currentY = box.minY;
@@ -189,11 +189,11 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
             BlockState stateSchematic = chunkSchematic.getBlockState(posMutable);
             BlockState stateClient = chunkClient.getBlockState(posMutable);
 
-            if (stateSchematic.isAir() == false || stateClient.isAir() == false)
+            if (!stateSchematic.isAir() || !stateClient.isAir())
             {
-                if (this.changedBlockOnly == false || stateClient != stateSchematic)
+                if (!this.changedBlockOnly || stateClient != stateSchematic)
                 {
-                    if ((this.replace == ReplaceBehavior.NONE && stateClient.isAir() == false) ||
+                    if ((this.replace == ReplaceBehavior.NONE && !stateClient.isAir()) ||
                                 (this.replace == ReplaceBehavior.WITH_NON_AIR && stateSchematic.isAir()))
                     {
                         continue;
@@ -231,7 +231,7 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
 
         if (this.currentIndex >= this.boxVolume)
         {
-            if (Configs.Generic.PASTE_IGNORE_ENTITIES.getBooleanValue() == false)
+            if (!Configs.Generic.PASTE_IGNORE_ENTITIES.getBooleanValue())
             {
                 this.summonEntities(box, worldSchematic, player);
             }
@@ -413,14 +413,14 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
 
     public static boolean isPositionAndSidesEmpty(World world, BlockPos.Mutable centerPos, BlockPos.Mutable pos)
     {
-        if (world.isAir(centerPos) == false)
+        if (!world.isAir(centerPos))
         {
             return false;
         }
 
         for (Direction side : PositionUtils.ALL_DIRECTIONS)
         {
-            if (world.isAir(pos.set(centerPos, side)) == false)
+            if (!world.isAir(pos.set(centerPos, side)))
             {
                 return false;
             }
@@ -433,7 +433,7 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
     {
         ItemStack stack = state.getBlock().getPickStack(world, pos, state);
 
-        if (stack.isEmpty() == false)
+        if (!stack.isEmpty())
         {
             addBlockEntityNbt(stack, be);
             player.inventory.offHand.set(0, stack);

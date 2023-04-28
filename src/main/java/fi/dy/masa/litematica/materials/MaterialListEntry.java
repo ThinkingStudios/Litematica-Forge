@@ -80,11 +80,8 @@ public class MaterialListEntry
         MaterialListEntry other = (MaterialListEntry) obj;
         if (this.item == null)
         {
-            if (other.item != null)
-                return false;
+            return other.item == null;
         }
-        else if (! this.item.equals(other.item))
-            return false;
-        return true;
+        else return this.item.equals(other.item);
     }
 }

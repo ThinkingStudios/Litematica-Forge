@@ -18,7 +18,7 @@ import net.minecraft.world.chunk.WorldChunk;
 import javax.annotation.Nullable;
 import java.util.Map;
 
-@Mixin(WorldChunk.class)
+@Mixin(value = WorldChunk.class, priority = 999)
 public abstract class MixinWorldChunk implements Chunk {
     @Shadow @Final private ChunkSection[] sections;
     @Shadow @Final @Nullable public static ChunkSection EMPTY_SECTION;

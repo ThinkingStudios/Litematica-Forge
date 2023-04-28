@@ -1,7 +1,6 @@
 package fi.dy.masa.litematica.scheduler.tasks;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -74,7 +73,7 @@ public abstract class TaskBase implements ITask, IInfoHudRenderer
     @Override
     public boolean shouldRemove()
     {
-        return this.canExecute() == false;
+        return !this.canExecute();
     }
 
     @Override
@@ -120,7 +119,7 @@ public abstract class TaskBase implements ITask, IInfoHudRenderer
         {
             for (int cz = chunkZ - radius; cz <= chunkZ + radius; ++cz)
             {
-                if (WorldUtils.isClientChunkLoaded(world, cx, cz) == false)
+                if (!WorldUtils.isClientChunkLoaded(world, cx, cz))
                 {
                     return false;
                 }
@@ -135,13 +134,12 @@ public abstract class TaskBase implements ITask, IInfoHudRenderer
         List<String> hudLines = new ArrayList<>();
         PlayerEntity player = this.mc.player;
 
-        if (player != null && requiredChunks.isEmpty() == false)
+        if (player != null && !requiredChunks.isEmpty())
         {
-            List<ChunkPos> list = new ArrayList<>();
-            list.addAll(requiredChunks);
+            List<ChunkPos> list = new ArrayList<>(requiredChunks);
             PositionUtils.CHUNK_POS_COMPARATOR.setReferencePosition(new BlockPos(player.getPos()));
             PositionUtils.CHUNK_POS_COMPARATOR.setClosestFirst(true);
-            Collections.sort(list, PositionUtils.CHUNK_POS_COMPARATOR);
+            list.sort(PositionUtils.CHUNK_POS_COMPARATOR);
 
             String pre = GuiBase.TXT_WHITE + GuiBase.TXT_BOLD;
             String title = StringUtils.translate("litematica.gui.label.missing_chunks", this.name, requiredChunks.size());

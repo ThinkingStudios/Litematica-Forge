@@ -240,7 +240,7 @@ public class SelectionManager
 
             File newFile = new File(dir, newFileName + ".json");
 
-            if (newFile.exists() == false && (copy || file.renameTo(newFile)))
+            if (!newFile.exists() && (copy || file.renameTo(newFile)))
             {
                 String newId = newFile.getAbsolutePath();
                 AreaSelection selection;

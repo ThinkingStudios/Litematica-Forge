@@ -23,9 +23,9 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 public class SchematicConversionMaps
 {
-    private static final Object2IntOpenHashMap<String> OLD_BLOCK_NAME_TO_SHIFTED_BLOCK_ID = DataFixUtils.make(new Object2IntOpenHashMap<>(), (map) -> { map.defaultReturnValue(-1); });
+    private static final Object2IntOpenHashMap<String> OLD_BLOCK_NAME_TO_SHIFTED_BLOCK_ID = DataFixUtils.make(new Object2IntOpenHashMap<>(), (map) -> map.defaultReturnValue(-1));
     private static final Int2ObjectOpenHashMap<String> ID_META_TO_UPDATED_NAME = new Int2ObjectOpenHashMap<>();
-    private static final Object2IntOpenHashMap<BlockState> BLOCKSTATE_TO_ID_META = DataFixUtils.make(new Object2IntOpenHashMap<>(), (map) -> { map.defaultReturnValue(-1); });
+    private static final Object2IntOpenHashMap<BlockState> BLOCKSTATE_TO_ID_META = DataFixUtils.make(new Object2IntOpenHashMap<>(), (map) -> map.defaultReturnValue(-1));
     private static final Int2ObjectOpenHashMap<BlockState> ID_META_TO_BLOCKSTATE = new Int2ObjectOpenHashMap<>();
     private static final HashMap<String, String> OLD_NAME_TO_NEW_NAME = new HashMap<>();
     private static final HashMap<String, String> NEW_NAME_TO_OLD_NAME = new HashMap<>();
@@ -103,11 +103,11 @@ public class SchematicConversionMaps
 
         int idOldLog = (17 << 4) | 12;
         int idNewLog = (162 << 4) | 12;
-        ID_META_TO_BLOCKSTATE.put(idOldLog | 0, Blocks.OAK_WOOD.getDefaultState().with(PillarBlock.AXIS, Direction.Axis.Y));
+        ID_META_TO_BLOCKSTATE.put(idOldLog, Blocks.OAK_WOOD.getDefaultState().with(PillarBlock.AXIS, Direction.Axis.Y));
         ID_META_TO_BLOCKSTATE.put(idOldLog | 1, Blocks.SPRUCE_WOOD.getDefaultState().with(PillarBlock.AXIS, Direction.Axis.Y));
         ID_META_TO_BLOCKSTATE.put(idOldLog | 2, Blocks.BIRCH_WOOD.getDefaultState().with(PillarBlock.AXIS, Direction.Axis.Y));
         ID_META_TO_BLOCKSTATE.put(idOldLog | 3, Blocks.JUNGLE_WOOD.getDefaultState().with(PillarBlock.AXIS, Direction.Axis.Y));
-        ID_META_TO_BLOCKSTATE.put(idNewLog | 0, Blocks.ACACIA_WOOD.getDefaultState().with(PillarBlock.AXIS, Direction.Axis.Y));
+        ID_META_TO_BLOCKSTATE.put(idNewLog, Blocks.ACACIA_WOOD.getDefaultState().with(PillarBlock.AXIS, Direction.Axis.Y));
         ID_META_TO_BLOCKSTATE.put(idNewLog | 1, Blocks.DARK_OAK_WOOD.getDefaultState().with(PillarBlock.AXIS, Direction.Axis.Y));
 
         // These will get converted to the correct type in the state fixers
@@ -184,7 +184,7 @@ public class SchematicConversionMaps
                     newStateTag.putString("Name", newName);
                 }
 
-                if (oldName.equals(newName) == false)
+                if (!oldName.equals(newName))
                 {
                     OLD_NAME_TO_NEW_NAME.putIfAbsent(oldName, newName);
                     NEW_NAME_TO_OLD_NAME.putIfAbsent(newName, oldName);
@@ -228,7 +228,7 @@ public class SchematicConversionMaps
                     String oldBlockName = oldStateTag.getString("Name");
                     String newBlockName = OLD_NAME_TO_NEW_NAME.get(oldBlockName);
 
-                    if (newBlockName != null && newBlockName.equals(oldBlockName) == false)
+                    if (newBlockName != null && !newBlockName.equals(oldBlockName))
                     {
                         for (String oldStateString : oldStateStrings)
                         {

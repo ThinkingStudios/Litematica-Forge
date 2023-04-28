@@ -68,9 +68,9 @@ public class ChunkRenderWorkerLitematica implements Runnable
         {
             if (task.getStatus() != ChunkRenderTaskSchematic.Status.PENDING)
             {
-                if (task.isFinished() == false)
+                if (!task.isFinished())
                 {
-                    LOGGER.warn("Chunk render task was {} when I expected it to be pending; ignoring task", (Object) task.getStatus());
+                    LOGGER.warn("Chunk render task was {} when I expected it to be pending; ignoring task", task.getStatus());
                 }
 
                 return;
@@ -110,9 +110,9 @@ public class ChunkRenderWorkerLitematica implements Runnable
             {
                 if (task.getStatus() != ChunkRenderTaskSchematic.Status.COMPILING)
                 {
-                    if (task.isFinished() == false)
+                    if (!task.isFinished())
                     {
-                        LOGGER.warn("Chunk render task was {} when I expected it to be compiling; aborting task", (Object) task.getStatus());
+                        LOGGER.warn("Chunk render task was {} when I expected it to be compiling; aborting task", task.getStatus());
                     }
 
                     this.freeRenderBuilder(task);
@@ -126,17 +126,17 @@ public class ChunkRenderWorkerLitematica implements Runnable
                 task.getLock().unlock();
             }
 
-            final ChunkRenderDataSchematic chunkRenderData = (ChunkRenderDataSchematic) task.getChunkRenderData();
+            final ChunkRenderDataSchematic chunkRenderData = task.getChunkRenderData();
             ArrayList<ListenableFuture<Object>> futuresList = Lists.newArrayList();
             BufferBuilderCache buffers = task.getBufferCache();
-            ChunkRendererSchematicVbo renderChunk = (ChunkRendererSchematicVbo) task.getRenderChunk();
+            ChunkRendererSchematicVbo renderChunk = task.getRenderChunk();
 
             if (taskType == ChunkRenderTaskSchematic.Type.REBUILD_CHUNK)
             {
                 //if (GuiBase.isCtrlDown()) System.out.printf("pre uploadChunk()\n");
                 for (RenderLayer layer : RenderLayer.getBlockLayers())
                 {
-                    if (chunkRenderData.isBlockLayerEmpty(layer) == false)
+                    if (!chunkRenderData.isBlockLayerEmpty(layer))
                     {
                         //if (GuiBase.isCtrlDown()) System.out.printf("REBUILD_CHUNK pre uploadChunkBlocks()\n");
                         //System.out.printf("REBUILD_CHUNK pre uploadChunkBlocks(%s)\n", layer.toString());
@@ -147,7 +147,7 @@ public class ChunkRenderWorkerLitematica implements Runnable
 
                 for (OverlayRenderType type : OverlayRenderType.values())
                 {
-                    if (chunkRenderData.isOverlayTypeEmpty(type) == false)
+                    if (!chunkRenderData.isOverlayTypeEmpty(type))
                     {
                         //if (GuiBase.isCtrlDown()) System.out.printf("REBUILD_CHUNK pre uploadChunkOverlay()\n");
                         BufferBuilder buffer = buffers.getOverlayBuffer(type);
@@ -159,14 +159,14 @@ public class ChunkRenderWorkerLitematica implements Runnable
             {
                 RenderLayer layer = RenderLayer.getTranslucent();
 
-                if (chunkRenderData.isBlockLayerEmpty(layer) == false)
+                if (!chunkRenderData.isBlockLayerEmpty(layer))
                 {
                     //System.out.printf("RESORT_TRANSPARENCY pre uploadChunkBlocks(%s)\n", layer.toString());
                     BufferBuilder buffer = buffers.getBlockBufferByLayer(layer);
                     futuresList.add(this.chunkRenderDispatcher.uploadChunkBlocks(RenderLayer.getTranslucent(), buffer, renderChunk, chunkRenderData, task.getDistanceSq()));
                 }
 
-                if (chunkRenderData.isOverlayTypeEmpty(OverlayRenderType.QUAD) == false)
+                if (!chunkRenderData.isOverlayTypeEmpty(OverlayRenderType.QUAD))
                 {
                     //if (GuiBase.isCtrlDown()) System.out.printf("RESORT_TRANSPARENCY pre uploadChunkOverlay()\n");
                     BufferBuilder buffer = buffers.getOverlayBuffer(OverlayRenderType.QUAD);
@@ -176,14 +176,7 @@ public class ChunkRenderWorkerLitematica implements Runnable
 
             final ListenableFuture<List<Object>> listenablefuture = Futures.allAsList(futuresList);
 
-            task.addFinishRunnable(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    listenablefuture.cancel(false);
-                }
-            });
+            task.addFinishRunnable(() -> listenablefuture.cancel(false));
 
             Futures.addCallback(listenablefuture, new FutureCallback<List<Object>>()
             {
@@ -204,9 +197,9 @@ public class ChunkRenderWorkerLitematica implements Runnable
                                 break label49;
                             }
 
-                            if (task.isFinished() == false)
+                            if (!task.isFinished())
                             {
-                                ChunkRenderWorkerLitematica.LOGGER.warn("Chunk render task was {} when I expected it to be uploading; aborting task", (Object)task.getStatus());
+                                ChunkRenderWorkerLitematica.LOGGER.warn("Chunk render task was {} when I expected it to be uploading; aborting task", task.getStatus());
                             }
                         }
                         finally
@@ -225,7 +218,7 @@ public class ChunkRenderWorkerLitematica implements Runnable
                 {
                     ChunkRenderWorkerLitematica.this.freeRenderBuilder(task);
 
-                    if ((throwable instanceof CancellationException) == false && (throwable instanceof InterruptedException) == false)
+                    if (!(throwable instanceof CancellationException) && !(throwable instanceof InterruptedException))
                     {
                         MinecraftClient.getInstance().setCrashReport(CrashReport.create(throwable, "Rendering Litematica chunk"));
                     }

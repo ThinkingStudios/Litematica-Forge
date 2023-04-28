@@ -287,7 +287,7 @@ public class GuiPlacementConfiguration  extends GuiListBase<SubRegionPlacement, 
 
     protected void updateElements()
     {
-        String label = StringUtils.translate("litematica.gui.button.schematic_placement.reset_sub_region_placements");;
+        String label = StringUtils.translate("litematica.gui.button.schematic_placement.reset_sub_region_placements");
         boolean enabled = true;
 
         if (this.placement.isRegionPlacementModified())
@@ -317,7 +317,7 @@ public class GuiPlacementConfiguration  extends GuiListBase<SubRegionPlacement, 
     @Override
     public void onSelectionChange(SubRegionPlacement entry)
     {
-        this.placement.setSelectedSubRegionName(entry != null && entry.getName().equals(this.placement.getSelectedSubRegionName()) == false ? entry.getName() : null);
+        this.placement.setSelectedSubRegionName(entry != null && !entry.getName().equals(this.placement.getSelectedSubRegionName()) ? entry.getName() : null);
     }
 
     @Override
@@ -467,12 +467,12 @@ public class GuiPlacementConfiguration  extends GuiListBase<SubRegionPlacement, 
             private final String translationKey;
             @Nullable private final String hoverText;
 
-            private Type(String translationKey)
+            Type(String translationKey)
             {
                 this(translationKey, null);
             }
 
-            private Type(String translationKey, @Nullable String hoverText)
+            Type(String translationKey, @Nullable String hoverText)
             {
                 this.translationKey = translationKey;
                 this.hoverText = hoverText;
@@ -527,7 +527,7 @@ public class GuiPlacementConfiguration  extends GuiListBase<SubRegionPlacement, 
 
                 this.parent.updateElements();
             }
-            catch (NumberFormatException e)
+            catch (NumberFormatException ignored)
             {
             }
 

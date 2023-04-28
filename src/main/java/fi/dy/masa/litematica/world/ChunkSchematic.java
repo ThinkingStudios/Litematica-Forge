@@ -45,7 +45,7 @@ public class ChunkSchematic extends WorldChunk
         {
             ChunkSection chunkSection = sections[cy];
 
-            if (ChunkSection.isEmpty(chunkSection) == false)
+            if (!ChunkSection.isEmpty(chunkSection))
             {
                 return chunkSection.getBlockState(x, y & 0xF, z);
             }
@@ -84,7 +84,7 @@ public class ChunkSchematic extends WorldChunk
                 this.getSectionArray()[y >> 4] = section;
             }
 
-            if (state.isAir() == false)
+            if (!state.isAir())
             {
                 this.isEmpty = false;
             }

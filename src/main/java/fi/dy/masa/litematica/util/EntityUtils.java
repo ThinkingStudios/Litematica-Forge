@@ -1,10 +1,12 @@
 package fi.dy.masa.litematica.util;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import javax.annotation.Nullable;
 import com.google.common.base.Predicate;
+import fi.dy.masa.litematica.config.Configs;
+import fi.dy.masa.litematica.data.DataManager;
+import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
+import fi.dy.masa.litematica.schematic.placement.SubRegionPlacement;
+import fi.dy.masa.malilib.util.Constants;
+import fi.dy.masa.malilib.util.InventoryUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -15,25 +17,18 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
-import fi.dy.masa.litematica.config.Configs;
-import fi.dy.masa.litematica.data.DataManager;
-import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
-import fi.dy.masa.litematica.schematic.placement.SubRegionPlacement;
-import fi.dy.masa.malilib.util.Constants;
-import fi.dy.masa.malilib.util.InventoryUtils;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public class EntityUtils
 {
-    public static final Predicate<Entity> NOT_PLAYER = new Predicate<Entity>()
-    {
-        @Override
-        public boolean apply(@Nullable Entity entity)
-        {
-            return (entity instanceof PlayerEntity) == false;
-        }
-    };
+    public static final java.util.function.Predicate<Entity> NOT_PLAYER = (Predicate<Entity>) entity -> !(entity instanceof PlayerEntity);
 
     public static boolean hasToolItem(LivingEntity entity)
     {
@@ -56,7 +51,7 @@ public class EntityUtils
 
         if (ItemStack.areItemsEqualIgnoreDamage(toolItem, stackHand))
         {
-            return toolItem.hasTag() == false || ItemUtils.areTagsEqualIgnoreDamage(toolItem, stackHand);
+            return !toolItem.hasTag() || ItemUtils.areTagsEqualIgnoreDamage(toolItem, stackHand);
         }
 
         return false;
@@ -157,7 +152,7 @@ public class EntityUtils
                 return entity;
             }
         }
-        catch (Exception e)
+        catch (Exception ignored)
         {
         }
 
@@ -244,7 +239,7 @@ public class EntityUtils
         BlockPos regionPosRelTransformed = PositionUtils.getTransformedBlockPos(regionPos, schematicPlacement.getMirror(), schematicPlacement.getRotation());
         BlockPos posEndAbs = PositionUtils.getTransformedPlacementPosition(regionSize.add(-1, -1, -1), schematicPlacement, placement).add(regionPosRelTransformed).add(origin);
         BlockPos regionPosAbs = regionPosRelTransformed.add(origin);
-        net.minecraft.util.math.Box bb = PositionUtils.createEnclosingAABB(regionPosAbs, posEndAbs);
+        Box bb = PositionUtils.createEnclosingAABB(regionPosAbs, posEndAbs);
 
         return world.getOtherEntities(null, bb, null);
     }
@@ -252,8 +247,8 @@ public class EntityUtils
     public static boolean shouldPickBlock(PlayerEntity player)
     {
         return Configs.Generic.PICK_BLOCK_ENABLED.getBooleanValue() &&
-                (Configs.Generic.TOOL_ITEM_ENABLED.getBooleanValue() == false ||
-                hasToolItem(player) == false) &&
+                (!Configs.Generic.TOOL_ITEM_ENABLED.getBooleanValue() ||
+                        !hasToolItem(player)) &&
                 Configs.Visuals.ENABLE_RENDERING.getBooleanValue() &&
                 Configs.Visuals.ENABLE_SCHEMATIC_RENDERING.getBooleanValue();
     }

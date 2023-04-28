@@ -289,7 +289,7 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
         }
         else if (this.mismatchInfo != null &&
                 (this.mismatchEntry.mismatchType != MismatchType.CORRECT_STATE ||
-                 this.mismatchEntry.blockMismatch.stateExpected.isAir() == false)) 
+                        !this.mismatchEntry.blockMismatch.stateExpected.isAir()))
         {
             this.drawString(x1 + 20, y, color, this.mismatchInfo.nameExpected, matrixStack);
 
@@ -429,7 +429,7 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
             Block block = state.getBlock();
             String key = block.getTranslationKey() + ".name";
             String name = StringUtils.translate(key);
-            name = key.equals(name) == false ? name : stack.getName().getString();
+            name = !key.equals(name) ? name : stack.getName().getString();
 
             return name;
         }
@@ -563,7 +563,7 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
 
     private static void renderModel(BakedModel model, BlockState state, MatrixStack matrixStack)
     {
-        if (model.isBuiltin() == false)
+        if (!model.isBuiltin())
         {
             Tessellator tessellator = Tessellator.getInstance();
             BufferBuilder buffer = tessellator.getBuffer();
@@ -635,7 +635,7 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
 
             private final String translationKey;
 
-            private ButtonType(String translationKey)
+            ButtonType(String translationKey)
             {
                 this.translationKey = translationKey;
             }

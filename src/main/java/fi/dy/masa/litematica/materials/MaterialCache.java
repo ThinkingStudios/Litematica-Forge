@@ -58,7 +58,7 @@ public class MaterialCache
 
     public static MaterialCache getInstance()
     {
-        if (INSTANCE.hasReadFromFile == false)
+        if (!INSTANCE.hasReadFromFile)
         {
             INSTANCE.readFromFile();
         }
@@ -137,12 +137,7 @@ public class MaterialCache
     {
         Block block = state.getBlock();
 
-        if (block instanceof FlowerPotBlock && block != Blocks.FLOWER_POT)
-        {
-            return true;
-        }
-
-        return false;
+        return block instanceof FlowerPotBlock && block != Blocks.FLOWER_POT;
     }
 
     public ImmutableList<ItemStack> getItems(BlockState state)
@@ -168,10 +163,9 @@ public class MaterialCache
         Block block = state.getBlock();
 
         if (block == Blocks.PISTON_HEAD ||
-            block == Blocks.PISTON_HEAD ||
-            block == Blocks.NETHER_PORTAL ||
-            block == Blocks.END_PORTAL ||
-            block == Blocks.END_GATEWAY)
+                block == Blocks.NETHER_PORTAL ||
+                block == Blocks.END_PORTAL ||
+                block == Blocks.END_GATEWAY)
         {
             return ItemStack.EMPTY;
         }
@@ -312,7 +306,7 @@ public class MaterialCache
 
     public boolean writeToFile()
     {
-        if (this.dirty == false)
+        if (!this.dirty)
         {
             return false;
         }
@@ -322,7 +316,7 @@ public class MaterialCache
 
         try
         {
-            if (dir.exists() == false && dir.mkdirs() == false)
+            if (!dir.exists() && !dir.mkdirs())
             {
                 Litematica.logger.warn("Failed to write the material list cache to file '{}'", file.getAbsolutePath());
                 return false;
@@ -347,7 +341,7 @@ public class MaterialCache
     {
         File file = this.getCacheFile();
 
-        if (file.exists() == false || file.canRead() == false)
+        if (!file.exists() || !file.canRead())
         {
             return;
         }

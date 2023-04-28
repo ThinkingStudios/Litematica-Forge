@@ -47,9 +47,8 @@ public class ChunkRenderDispatcherSchematic
     {
         final int len = this.renderers.length;
 
-        for (int i = 0; i < len; ++i)
-        {
-            this.renderers[i].deleteGlResources();
+        for (ChunkRendererSchematicVbo chunkRendererSchematicVbo : this.renderers) {
+            chunkRendererSchematicVbo.deleteGlResources();
         }
     }
 

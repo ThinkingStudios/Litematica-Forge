@@ -54,7 +54,7 @@ public class ChunkCacheSchematic implements BlockRenderView
             {
                 WorldChunk chunk = this.chunkArray[cx - this.chunkStartX][cz - this.chunkStartZ];
 
-                if (chunk != null && chunk.areSectionsEmptyBetween(pos.getY(), pos.getY() + 15) == false)
+                if (chunk != null && !chunk.areSectionsEmptyBetween(pos.getY(), pos.getY() + 15))
                 {
                     this.empty = false;
                     break;
@@ -129,7 +129,7 @@ public class ChunkCacheSchematic implements BlockRenderView
     @Override
     public int getColor(BlockPos pos, ColorResolver colorResolver)
     {
-        return colorResolver.getColor(this.worldClient.getBiome(pos), (double)pos.getX(), (double)pos.getZ());
+        return colorResolver.getColor(this.worldClient.getBiome(pos), pos.getX(), pos.getZ());
     }
 
     @Override

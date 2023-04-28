@@ -147,7 +147,6 @@ public class WidgetSchematicBrowser extends WidgetFileBrowserBase
                 Vec3i areaSize = meta.getEnclosingSize();
                 String tmp = String.format("%d x %d x %d", areaSize.getX(), areaSize.getY(), areaSize.getZ());
                 this.drawString(matrixStack, tmp, x + 4, y, valueColor);
-                y += 12;
             }
             else
             {
@@ -159,8 +158,8 @@ public class WidgetSchematicBrowser extends WidgetFileBrowserBase
                 String tmp = String.format("%d x %d x %d", areaSize.getX(), areaSize.getY(), areaSize.getZ());
                 str = StringUtils.translate("litematica.gui.label.schematic_info.enclosing_size_value", tmp);
                 this.drawString(matrixStack, str, x, y, textColor);
-                y += 12;
             }
+            y += 12;
 
             /*
             str = StringUtils.translate("litematica.gui.label.schematic_info.description");
@@ -205,7 +204,7 @@ public class WidgetSchematicBrowser extends WidgetFileBrowserBase
         File file = new File(entry.getDirectory(), entry.getName());
         SchematicMetadata meta = this.cachedMetadata.get(file);
 
-        if (meta == null && this.cachedMetadata.containsKey(file) == false)
+        if (meta == null && !this.cachedMetadata.containsKey(file))
         {
             if (entry.getName().endsWith(LitematicaSchematic.FILE_EXTENSION))
             {

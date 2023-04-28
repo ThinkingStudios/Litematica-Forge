@@ -135,7 +135,7 @@ public class GuiSchematicLoad extends GuiSchematicBrowserBase
 
             File file = entry.getFullPath();
 
-            if (file.exists() == false || file.isFile() == false || file.canRead() == false)
+            if (!file.exists() || !file.isFile() || !file.canRead())
             {
                 this.gui.addMessage(MessageType.ERROR, "litematica.error.schematic_load.cant_read_file", file.getName());
                 return;
@@ -181,7 +181,7 @@ public class GuiSchematicLoad extends GuiSchematicBrowserBase
                     {
                         BlockPos pos = new BlockPos(this.gui.mc.player.getPos());
                         String name = schematic.getMetadata().getName();
-                        boolean enabled = GuiBase.isShiftDown() == false;
+                        boolean enabled = !GuiBase.isShiftDown();
 
                         SchematicPlacementManager manager = DataManager.getSchematicPlacementManager();
                         SchematicPlacement placement = SchematicPlacement.createFor(schematic, pos, name, enabled, enabled);
@@ -221,7 +221,7 @@ public class GuiSchematicLoad extends GuiSchematicBrowserBase
 
             private final String translationKey;
 
-            private Type(String translationKey)
+            Type(String translationKey)
             {
                 this.translationKey = translationKey;
             }

@@ -27,12 +27,12 @@ public enum ToolMode
     @Nullable private BlockState blockPrimary;
     @Nullable private BlockState blockSecondary;
 
-    private ToolMode(String unlocName, boolean creativeOnly, boolean usesSchematic)
+    ToolMode(String unlocName, boolean creativeOnly, boolean usesSchematic)
     {
         this(unlocName, creativeOnly, usesSchematic, false, false);
     }
 
-    private ToolMode(String unlocName, boolean creativeOnly, boolean usesSchematic, boolean usesBlockPrimary, boolean usesBlockSecondary)
+    ToolMode(String unlocName, boolean creativeOnly, boolean usesSchematic, boolean usesBlockPrimary, boolean usesBlockSecondary)
     {
         this.unlocName = unlocName;
         this.creativeOnly = creativeOnly;
@@ -53,7 +53,7 @@ public enum ToolMode
 
     public boolean getUsesAreaSelection()
     {
-        return this.getUsesSchematic() == false || DataManager.getSchematicProjectsManager().hasProjectOpen();
+        return !this.getUsesSchematic() || DataManager.getSchematicProjectsManager().hasProjectOpen();
     }
 
     public boolean getUsesBlockPrimary()
@@ -114,7 +114,7 @@ public enum ToolMode
 
             ToolMode mode = values[nextId];
 
-            if (isCreative || mode.creativeOnly == false)
+            if (isCreative || !mode.creativeOnly)
             {
                 return mode;
             }

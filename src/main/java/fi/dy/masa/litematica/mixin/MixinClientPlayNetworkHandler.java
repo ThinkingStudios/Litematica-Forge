@@ -42,7 +42,7 @@ public abstract class MixinClientPlayNetworkHandler
     @Inject(method = "onUnloadChunk", at = @At("RETURN"))
     private void onChunkUnload(UnloadChunkS2CPacket packet, CallbackInfo ci)
     {
-        if (Configs.Generic.LOAD_ENTIRE_SCHEMATICS.getBooleanValue() == false)
+        if (!Configs.Generic.LOAD_ENTIRE_SCHEMATICS.getBooleanValue())
         {
             DataManager.getSchematicPlacementManager().onClientChunkUnload(packet.getX(), packet.getZ());
         }

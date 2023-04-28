@@ -11,7 +11,7 @@ public enum CornerSelectionMode implements IConfigOptionListEntry
     private final String configString;
     private final String translationKey;
 
-    private CornerSelectionMode(String configString, String translationKey)
+    CornerSelectionMode(String configString, String translationKey)
     {
         this.configString = configString;
         this.translationKey = translationKey;

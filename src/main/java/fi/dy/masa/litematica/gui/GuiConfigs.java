@@ -159,7 +159,7 @@ public class GuiConfigs extends GuiConfigsBase
 
         private final String translationKey;
 
-        private ConfigGuiTab(String translationKey)
+        ConfigGuiTab(String translationKey)
         {
             this.translationKey = translationKey;
         }

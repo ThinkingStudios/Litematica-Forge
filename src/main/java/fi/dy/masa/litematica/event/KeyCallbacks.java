@@ -278,7 +278,7 @@ public class KeyCallbacks
             }
             else if (key == Hotkeys.OPEN_GUI_SELECTION_MANAGER.getKeybind())
             {
-                if (DataManager.getSchematicProjectsManager().hasProjectOpen() == false)
+                if (!DataManager.getSchematicProjectsManager().hasProjectOpen())
                 {
                     GuiBase.openGui(new GuiAreaSelectionManager());
                 }
@@ -439,7 +439,7 @@ public class KeyCallbacks
                 {
                     // Only do the pick block here, if it's not bound to the use button.
                     // If it's bound to the use button, then it will be done from the input handling.
-                    if (KeybindMulti.hotkeyMatchesKeybind(Hotkeys.PICK_BLOCK_LAST, this.mc.options.keyUse) == false)
+                    if (!KeybindMulti.hotkeyMatchesKeybind(Hotkeys.PICK_BLOCK_LAST, this.mc.options.keyUse))
                     {
                         WorldUtils.doSchematicWorldPickBlock(false, this.mc);
                     }
@@ -476,7 +476,7 @@ public class KeyCallbacks
                 SchematicUtils.cloneSelectionArea(this.mc);
                 return true;
             }
-            else if (key == Hotkeys.EXECUTE_OPERATION.getKeybind() && ((hasTool && toolEnabled) || Configs.Generic.EXECUTE_REQUIRE_TOOL.getBooleanValue() == false))
+            else if (key == Hotkeys.EXECUTE_OPERATION.getKeybind() && ((hasTool && toolEnabled) || !Configs.Generic.EXECUTE_REQUIRE_TOOL.getBooleanValue()))
             {
                 if (DataManager.getSchematicProjectsManager().hasProjectOpen())
                 {

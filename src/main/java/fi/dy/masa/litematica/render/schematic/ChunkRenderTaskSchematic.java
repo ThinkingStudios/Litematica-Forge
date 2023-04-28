@@ -11,7 +11,7 @@ public class ChunkRenderTaskSchematic implements Comparable<ChunkRenderTaskSchem
 {
     private final ChunkRendererSchematicVbo chunkRenderer;
     private final ChunkRenderTaskSchematic.Type type;
-    private final List<Runnable> listFinishRunnables = Lists.<Runnable>newArrayList();
+    private final List<Runnable> listFinishRunnables = Lists.newArrayList();
     private final ReentrantLock lock = new ReentrantLock();
     private final Supplier<Vec3d> cameraPosSupplier;
     private final double distanceSq;
@@ -146,17 +146,17 @@ public class ChunkRenderTaskSchematic implements Comparable<ChunkRenderTaskSchem
         return this.distanceSq;
     }
 
-    public static enum Status
+    public enum Status
     {
         PENDING,
         COMPILING,
         UPLOADING,
-        DONE;
+        DONE
     }
 
-    public static enum Type
+    public enum Type
     {
         REBUILD_CHUNK,
-        RESORT_TRANSPARENCY;
+        RESORT_TRANSPARENCY
     }
 }

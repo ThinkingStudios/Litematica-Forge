@@ -168,7 +168,7 @@ public class SchematicConverter
 
     private boolean needsPostProcess(BlockState state)
     {
-        return state.isAir() == false && this.fixersPerBlock.containsKey(state.getBlock().getClass());
+        return !state.isAir() && this.fixersPerBlock.containsKey(state.getBlock().getClass());
     }
 
     @Nullable

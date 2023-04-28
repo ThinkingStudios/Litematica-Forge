@@ -203,7 +203,7 @@ public class WidgetAreaSelectionEntry extends WidgetDirectoryEntry
 
             private final String labelKey;
 
-            private ButtonType(String labelKey)
+            ButtonType(String labelKey)
             {
                 this.labelKey = labelKey;
             }

@@ -117,7 +117,7 @@ public abstract class TaskPasteSchematicPerChunkBase extends TaskBase implements
     @Nullable
     public IntBoundingBox getClampedArea(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, LayerRange range)
     {
-        if (range.intersectsBox(minX, minY, minZ, maxX, maxY, maxZ) == false)
+        if (!range.intersectsBox(minX, minY, minZ, maxX, maxY, maxZ))
         {
             return null;
         }
@@ -154,7 +154,7 @@ public abstract class TaskPasteSchematicPerChunkBase extends TaskBase implements
     @Override
     public boolean canExecute()
     {
-        return this.chunks.isEmpty() == false &&
+        return !this.chunks.isEmpty() &&
                this.mc.world != null &&
                this.mc.player != null &&
                SchematicWorldHandler.getSchematicWorld() != null;
@@ -162,7 +162,7 @@ public abstract class TaskPasteSchematicPerChunkBase extends TaskBase implements
 
     protected boolean canProcessChunk(ChunkPos pos, WorldSchematic worldSchematic, ClientWorld worldClient)
     {
-        if (worldSchematic.getChunkProvider().isChunkLoaded(pos.x, pos.z) == false ||
+        if (!worldSchematic.getChunkProvider().isChunkLoaded(pos.x, pos.z) ||
             DataManager.getSchematicPlacementManager().hasPendingRebuildFor(pos))
         {
             return false;

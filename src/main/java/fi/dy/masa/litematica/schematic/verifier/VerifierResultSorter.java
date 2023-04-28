@@ -60,14 +60,14 @@ public class VerifierResultSorter implements Comparator<BlockMismatch>
 
             if (res != 0)
             {
-                return reverse == false ? res * -1 : res;
+                return !reverse ? res * -1 : res;
             }
 
             String name2_1 = ItemUtils.getItemForState(state2_1).getName().getString();
             String name2_2 = ItemUtils.getItemForState(state2_2).getName().getString();
             res = name2_1.compareTo(name2_2);
 
-            return reverse == false ? res * -1 : res;
+            return !reverse ? res * -1 : res;
         }
     }
 }

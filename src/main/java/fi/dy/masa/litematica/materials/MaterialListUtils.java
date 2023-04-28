@@ -63,7 +63,7 @@ public class MaterialListUtils
     {
         List<MaterialListEntry> list = new ArrayList<>();
 
-        if (countsTotal.isEmpty() == false)
+        if (!countsTotal.isEmpty())
         {
             MaterialCache cache = MaterialCache.getInstance();
             Object2IntOpenHashMap<ItemType> itemTypesTotal = new Object2IntOpenHashMap<>();
@@ -109,7 +109,7 @@ public class MaterialListUtils
             {
                 ItemStack stack = cache.getRequiredBuildItemForState(state);
 
-                if (stack.isEmpty() == false)
+                if (!stack.isEmpty())
                 {
                     ItemType type = new ItemType(stack, false, true);
                     itemTypesOut.addTo(type, blockStatesIn.getInt(state) * stack.getCount());

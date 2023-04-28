@@ -168,7 +168,7 @@ public class GuiSchematicVerifier   extends GuiListBase<BlockMismatchEntry, Widg
                 else
                 {
                     label = StringUtils.translate("litematica.gui.button.schematic_verifier.start");
-                    enabled = this.verifier.isActive() == false;
+                    enabled = !this.verifier.isActive();
                 }
                 break;
 
@@ -266,7 +266,7 @@ public class GuiSchematicVerifier   extends GuiListBase<BlockMismatchEntry, Widg
                 this.verifier.toggleMismatchEntrySelected(entry.blockMismatch);
             }
 
-            if (Configs.InfoOverlays.VERIFIER_OVERLAY_ENABLED.getBooleanValue() == false)
+            if (!Configs.InfoOverlays.VERIFIER_OVERLAY_ENABLED.getBooleanValue())
             {
                 String name = Configs.InfoOverlays.VERIFIER_OVERLAY_ENABLED.getName();
                 String hotkeyName = Hotkeys.TOGGLE_VERIFIER_OVERLAY_RENDERING.getName();
@@ -373,16 +373,14 @@ public class GuiSchematicVerifier   extends GuiListBase<BlockMismatchEntry, Widg
                 return false;
             if (mismatchType != other.mismatchType)
                 return false;
-            if (type != other.type)
-                return false;
-            return true;
+            return type == other.type;
         }
 
         public enum Type
         {
             HEADER,
             CATEGORY_TITLE,
-            DATA;
+            DATA
         }
     }
 
@@ -500,7 +498,7 @@ public class GuiSchematicVerifier   extends GuiListBase<BlockMismatchEntry, Widg
             RESET_VERIFIER,
             SET_LIST_TYPE,
             RESET_IGNORED,
-            TOGGLE_INFO_HUD;
+            TOGGLE_INFO_HUD
         }
     }
 }

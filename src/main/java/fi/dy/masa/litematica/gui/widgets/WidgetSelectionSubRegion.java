@@ -170,7 +170,7 @@ public class WidgetSelectionSubRegion extends WidgetListEntryBase<String>
 
             private final String labelKey;
 
-            private ButtonType(String labelKey)
+            ButtonType(String labelKey)
             {
                 this.labelKey = labelKey;
             }

@@ -125,7 +125,7 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
     {
         boolean toolEnabled = Configs.Visuals.ENABLE_RENDERING.getBooleanValue() && Configs.Generic.TOOL_ITEM_ENABLED.getBooleanValue();
 
-        if (toolEnabled == false || EntityUtils.hasToolItem(mc.player) == false)
+        if (!toolEnabled || !EntityUtils.hasToolItem(mc.player))
         {
             return false;
         }

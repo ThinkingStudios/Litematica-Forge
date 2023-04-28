@@ -157,11 +157,11 @@ public class SubRegionPlacement
 
     public boolean isRegionPlacementModified(BlockPos originalPosition)
     {
-        return this.isEnabled() == false ||
+        return !this.isEnabled() ||
                this.ignoreEntities() ||
                this.getMirror() != BlockMirror.NONE ||
                this.getRotation() != BlockRotation.NONE ||
-               this.getPos().equals(originalPosition) == false;
+                !this.getPos().equals(originalPosition);
     }
 
     public JsonObject toJson()
@@ -231,6 +231,6 @@ public class SubRegionPlacement
     {
         ANY,
         PLACEMENT_ENABLED,
-        RENDERING_ENABLED;
+        RENDERING_ENABLED
     }
 }

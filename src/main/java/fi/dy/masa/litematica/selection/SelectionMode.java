@@ -9,7 +9,7 @@ public enum SelectionMode
 
     private final String translationKey;
 
-    private SelectionMode(String translationKey)
+    SelectionMode(String translationKey)
     {
         this.translationKey = translationKey;
     }

@@ -224,7 +224,7 @@ public class DataManager implements IDirectoryCache
                 {
                     configGuiTab = ConfigGuiTab.valueOf(root.get("config_gui_tab").getAsString());
                 }
-                catch (Exception e) {}
+                catch (Exception ignored) {}
 
                 if (configGuiTab == null)
                 {
@@ -246,7 +246,7 @@ public class DataManager implements IDirectoryCache
 
     public static void save(boolean forceSave)
     {
-        if (canSave == false && forceSave == false)
+        if (!canSave && !forceSave)
         {
             return;
         }
@@ -339,7 +339,7 @@ public class DataManager implements IDirectoryCache
             {
                 this.operationMode = ToolMode.valueOf(obj.get("operation_mode").getAsString());
             }
-            catch (Exception e) {}
+            catch (Exception ignored) {}
 
             if (this.operationMode == null)
             {
@@ -397,7 +397,7 @@ public class DataManager implements IDirectoryCache
     {
         File dir = FileUtils.getCanonicalFileIfPossible(new File(FileUtils.getMinecraftDirectory(), "schematics"));
 
-        if (dir.exists() == false && dir.mkdirs() == false)
+        if (!dir.exists() && !dir.mkdirs())
         {
             Litematica.logger.warn("Failed to create the schematic directory '{}'", dir.getAbsolutePath());
         }
@@ -421,7 +421,7 @@ public class DataManager implements IDirectoryCache
             dir = FileUtils.getCanonicalFileIfPossible(new File(getCurrentConfigDirectory(), "area_selections"));
         }
 
-        if (dir.exists() == false && dir.mkdirs() == false)
+        if (!dir.exists() && !dir.mkdirs())
         {
             Litematica.logger.warn("Failed to create the area selections base directory '{}'", dir.getAbsolutePath());
         }
@@ -433,7 +433,7 @@ public class DataManager implements IDirectoryCache
     {
         File dir = getCurrentConfigDirectory();
 
-        if (dir.exists() == false && dir.mkdirs() == false)
+        if (!dir.exists() && !dir.mkdirs())
         {
             Litematica.logger.warn("Failed to create the config directory '{}'", dir.getAbsolutePath());
         }

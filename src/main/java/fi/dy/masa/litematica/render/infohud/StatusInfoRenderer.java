@@ -105,16 +105,16 @@ public class StatusInfoRenderer implements IInfoHudRenderer
 
     private boolean shouldOverrideShowStatusHud()
     {
-        if (Configs.InfoOverlays.STATUS_INFO_HUD_AUTO.getBooleanValue() == false)
+        if (!Configs.InfoOverlays.STATUS_INFO_HUD_AUTO.getBooleanValue())
         {
             return false;
         }
 
         return  DataManager.getRenderLayerRange().getLayerMode() != LayerMode.ALL ||
-                Configs.Visuals.ENABLE_RENDERING.getBooleanValue() == false ||
-                Configs.Visuals.ENABLE_SCHEMATIC_RENDERING.getBooleanValue() == false ||
-                Configs.Visuals.ENABLE_SCHEMATIC_BLOCKS.getBooleanValue() == false ||
-                Configs.Visuals.ENABLE_SCHEMATIC_OVERLAY.getBooleanValue() == false ||
-                Configs.Visuals.ENABLE_AREA_SELECTION_RENDERING.getBooleanValue() == false;
+                !Configs.Visuals.ENABLE_RENDERING.getBooleanValue() ||
+                !Configs.Visuals.ENABLE_SCHEMATIC_RENDERING.getBooleanValue() ||
+                !Configs.Visuals.ENABLE_SCHEMATIC_BLOCKS.getBooleanValue() ||
+                !Configs.Visuals.ENABLE_SCHEMATIC_OVERLAY.getBooleanValue() ||
+                !Configs.Visuals.ENABLE_AREA_SELECTION_RENDERING.getBooleanValue();
     }
 }

@@ -141,14 +141,14 @@ public class PositionUtils
                         posMutable1.set(bb.minX, bb.minY, bb.minZ);
                         posMutable2.set(bb.maxX, bb.maxY, bb.maxZ);
 
-                        if (arePositionsWithinWorld(world, posMutable1, posMutable2) == false)
+                        if (!arePositionsWithinWorld(world, posMutable1, posMutable2))
                         {
                             return false;
                         }
                     }
                 }
             }
-            else if (isBoxWithinWorld(world, box) == false)
+            else if (!isBoxWithinWorld(world, box))
             {
                 return false;
             }
@@ -368,7 +368,7 @@ public class PositionUtils
 
         boolean notOverlapping = boxXMin > chunkXMax || boxZMin > chunkZMax || boxXMax < chunkXMin || boxZMax < chunkZMin;
 
-        if (notOverlapping == false)
+        if (!notOverlapping)
         {
             final int xMin = Math.max(chunkXMin, boxXMin);
             final int yMin = Math.min(box.getPos1().getY(), box.getPos2().getY());
@@ -616,7 +616,7 @@ public class PositionUtils
                 {
                     break;
                 }
-                else if (grow == false && emptySides == 0)
+                else if (!grow && emptySides == 0)
                 {
                     break;
                 }
@@ -701,7 +701,7 @@ public class PositionUtils
                 x = -x;
                 break;
             default:
-                if (isRotated == false)
+                if (!isRotated)
                 {
                     return pos;
                 }
@@ -1036,6 +1036,6 @@ public class PositionUtils
     {
         NONE,
         CORNER_1,
-        CORNER_2;
+        CORNER_2
     }
 }

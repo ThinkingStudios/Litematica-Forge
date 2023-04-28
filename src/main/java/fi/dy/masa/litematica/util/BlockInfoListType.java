@@ -11,7 +11,7 @@ public enum BlockInfoListType implements IConfigOptionListEntry
     private final String configString;
     private final String translationKey;
 
-    private BlockInfoListType(String configString, String translationKey)
+    BlockInfoListType(String configString, String translationKey)
     {
         this.configString = configString;
         this.translationKey = translationKey;

@@ -49,7 +49,7 @@ public class TaskScheduler
     {
         synchronized (this)
         {
-            if (this.tasks.isEmpty() == false)
+            if (!this.tasks.isEmpty())
             {
                 for (int i = 0; i < this.tasks.size(); ++i)
                 {
@@ -74,7 +74,7 @@ public class TaskScheduler
                 }
             }
 
-            if (this.tasksToAdd.isEmpty() == false)
+            if (!this.tasksToAdd.isEmpty())
             {
                 this.addNewTasks();
             }
@@ -83,9 +83,7 @@ public class TaskScheduler
 
     private void addNewTasks()
     {
-        for (int i = 0; i < this.tasksToAdd.size(); ++i)
-        {
-            ITask task = this.tasksToAdd.get(i);
+        for (ITask task : this.tasksToAdd) {
             task.init();
             this.tasks.add(task);
         }
@@ -188,9 +186,7 @@ public class TaskScheduler
     {
         synchronized (this)
         {
-            for (int i = 0; i < this.tasks.size(); ++i)
-            {
-                ITask task = this.tasks.get(i);
+            for (ITask task : this.tasks) {
                 task.stop();
             }
 

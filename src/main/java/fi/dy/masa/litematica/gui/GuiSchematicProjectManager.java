@@ -203,12 +203,12 @@ public class GuiSchematicProjectManager extends GuiListBase<SchematicVersion, Wi
             private final String translationKey;
             @Nullable private final String hoverText;
 
-            private Type(String label)
+            Type(String label)
             {
                 this(label, null);
             }
 
-            private Type(String translationKey, String hoverText)
+            Type(String translationKey, String hoverText)
             {
                 this.translationKey = translationKey;
                 this.hoverText = hoverText;

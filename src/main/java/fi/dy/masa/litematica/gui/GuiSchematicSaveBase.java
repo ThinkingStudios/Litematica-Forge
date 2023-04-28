@@ -204,7 +204,7 @@ public abstract class GuiSchematicSaveBase extends GuiSchematicBrowserBase imple
 
         private final String labelKey;
 
-        private ButtonType(String labelKey)
+        ButtonType(String labelKey)
         {
             this.labelKey = labelKey;
         }

@@ -99,7 +99,7 @@ public class WidgetListMaterialList extends WidgetListBase<MaterialListEntry, Wi
     {
         super.refreshBrowserEntries();
 
-        if (this.scrollbarRestored == false && lastScrollbarPosition <= this.scrollBar.getMaxValue())
+        if (!this.scrollbarRestored && lastScrollbarPosition <= this.scrollBar.getMaxValue())
         {
             // This needs to happen after the setMaxValue() has been called in reCreateListEntryWidgets()
             this.scrollBar.setValue(lastScrollbarPosition);

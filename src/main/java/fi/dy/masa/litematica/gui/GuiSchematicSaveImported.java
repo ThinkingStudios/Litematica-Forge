@@ -67,7 +67,7 @@ public class GuiSchematicSaveImported extends GuiSchematicSaveBase
                 File dir = this.gui.getListWidget().getCurrentDirectory();
                 String fileName = this.gui.getTextFieldText();
 
-                if (dir.isDirectory() == false)
+                if (!dir.isDirectory())
                 {
                     this.gui.addMessage(MessageType.ERROR, "litematica.error.schematic_save.invalid_directory", dir.getAbsolutePath());
                     return;

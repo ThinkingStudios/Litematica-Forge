@@ -12,7 +12,7 @@ public enum ReplaceBehavior implements IConfigOptionListEntry
     private final String configString;
     private final String translationKey;
 
-    private ReplaceBehavior(String configString, String translationKey)
+    ReplaceBehavior(String configString, String translationKey)
     {
         this.configString = configString;
         this.translationKey = translationKey;

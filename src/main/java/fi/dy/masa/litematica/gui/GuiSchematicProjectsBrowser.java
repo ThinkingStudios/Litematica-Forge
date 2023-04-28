@@ -200,12 +200,12 @@ public class GuiSchematicProjectsBrowser extends GuiListBase<DirectoryEntry, Wid
             @Nullable
             private final String hoverText;
 
-            private Type(String label)
+            Type(String label)
             {
                 this(label, null);
             }
 
-            private Type(String translationKey, String hoverText)
+            Type(String translationKey, String hoverText)
             {
                 this.translationKey = translationKey;
                 this.hoverText = hoverText;
@@ -240,7 +240,7 @@ public class GuiSchematicProjectsBrowser extends GuiListBase<DirectoryEntry, Wid
         {
             File file = new File(this.dir, projectName + ".json");
 
-            if (file.exists() == false)
+            if (!file.exists())
             {
                 DataManager.getSchematicProjectsManager().createNewProject(this.dir, projectName);
                 // In here we need to add the message to the manager GUI, because InfoUtils.showGuiOrInGameMessage()

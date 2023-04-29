@@ -2,13 +2,13 @@ package fi.dy.masa.litematica.render;
 
 import javax.annotation.Nullable;
 import com.mojang.blaze3d.systems.RenderSystem;
-import org.joml.Matrix4f;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.Matrix4f;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.config.Hotkeys;
 import fi.dy.masa.litematica.render.schematic.WorldRendererSchematic;
@@ -217,6 +217,7 @@ public class LitematicaRenderer
             boolean renderThrough = Configs.Visuals.SCHEMATIC_OVERLAY_RENDER_THROUGH.getBooleanValue() || Hotkeys.RENDER_OVERLAY_THROUGH_BLOCKS.getKeybind().isKeybindHeld();
             float lineWidth = (float) (renderThrough ? Configs.Visuals.SCHEMATIC_OVERLAY_OUTLINE_WIDTH_THROUGH.getDoubleValue() : Configs.Visuals.SCHEMATIC_OVERLAY_OUTLINE_WIDTH.getDoubleValue());
 
+            RenderSystem.disableTexture();
             RenderSystem.disableCull();
             //TODO: RenderSystem.alphaFunc(GL11.GL_GREATER, 0.001F);
             RenderSystem.enablePolygonOffset();
@@ -232,6 +233,7 @@ public class LitematicaRenderer
             RenderSystem.polygonOffset(0f, 0f);
             RenderSystem.disablePolygonOffset();
             RenderSystem.enableCull();
+            RenderSystem.enableTexture();
         }
     }
 

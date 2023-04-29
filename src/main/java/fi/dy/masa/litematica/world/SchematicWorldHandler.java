@@ -5,12 +5,9 @@ import javax.annotation.Nullable;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.registry.BuiltinRegistries;
-import net.minecraft.registry.RegistryEntryLookup;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.util.registry.BuiltinRegistries;
+import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.dimension.DimensionTypes;
 
@@ -50,15 +47,13 @@ public class SchematicWorldHandler
 
     public static WorldSchematic createSchematicWorld(@Nullable WorldRendererSchematic worldRenderer)
     {
-        World world = MinecraftClient.getInstance().world;
-        if (world == null)
+        if (MinecraftClient.getInstance().world == null)
         {
             return null;
         }
 
         ClientWorld.Properties levelInfo = new ClientWorld.Properties(Difficulty.PEACEFUL, false, true);
-        RegistryEntryLookup.RegistryLookup lookup = world.getRegistryManager().createRegistryLookup();
-        RegistryEntry<DimensionType> entry = lookup.getOrThrow(RegistryKeys.DIMENSION_TYPE).getOrThrow(DimensionTypes.OVERWORLD);
+        RegistryEntry<DimensionType> entry = BuiltinRegistries.DIMENSION_TYPE.entryOf(DimensionTypes.OVERWORLD);
         return new WorldSchematic(levelInfo, entry, MinecraftClient.getInstance()::getProfiler, worldRenderer);
     }
 

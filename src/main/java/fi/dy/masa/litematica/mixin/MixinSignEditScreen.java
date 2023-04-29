@@ -7,22 +7,22 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.client.gui.screen.ingame.AbstractSignEditScreen;
+import net.minecraft.client.gui.screen.ingame.SignEditScreen;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.util.WorldUtils;
 
-@Mixin(value = AbstractSignEditScreen.class, priority = 990)
-public class MixinAbstractSignEditScreen
+@Mixin(value = SignEditScreen.class, priority = 990)
+public class MixinSignEditScreen
 {
-    @Shadow @Final protected SignBlockEntity blockEntity;
-    @Shadow @Final protected String[] text;
+    @Shadow @Final private SignBlockEntity sign;
+    @Shadow @Final private String[] text;
 
     @Inject(method = "init", at = @At("HEAD"))
     private void insertSignText(CallbackInfo ci)
     {
         if (Configs.Generic.SIGN_TEXT_PASTE.getBooleanValue())
         {
-            WorldUtils.insertSignTextFromSchematic(this.blockEntity, this.text);
+            WorldUtils.insertSignTextFromSchematic(this.sign, this.text);
         }
     }
 }

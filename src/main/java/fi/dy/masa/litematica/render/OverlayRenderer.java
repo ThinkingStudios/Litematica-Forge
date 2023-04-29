@@ -16,19 +16,11 @@ import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
-import net.minecraft.registry.Registries;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
-import fi.dy.masa.malilib.config.HudAlignment;
-import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.gui.LeftRight;
-import fi.dy.masa.malilib.util.BlockUtils;
-import fi.dy.masa.malilib.util.Color4f;
-import fi.dy.masa.malilib.util.GuiUtils;
-import fi.dy.masa.malilib.util.InventoryUtils;
-import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.config.Hotkeys;
 import fi.dy.masa.litematica.data.DataManager;
@@ -49,6 +41,14 @@ import fi.dy.masa.litematica.util.PositionUtils.Corner;
 import fi.dy.masa.litematica.util.RayTraceUtils;
 import fi.dy.masa.litematica.util.RayTraceUtils.RayTraceWrapper;
 import fi.dy.masa.litematica.world.SchematicWorldHandler;
+import fi.dy.masa.malilib.config.HudAlignment;
+import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.gui.LeftRight;
+import fi.dy.masa.malilib.util.BlockUtils;
+import fi.dy.masa.malilib.util.Color4f;
+import fi.dy.masa.malilib.util.GuiUtils;
+import fi.dy.masa.malilib.util.InventoryUtils;
+import fi.dy.masa.malilib.util.WorldUtils;
 
 public class OverlayRenderer
 {
@@ -138,6 +138,7 @@ public class OverlayRenderer
             fi.dy.masa.malilib.render.RenderUtils.setupBlend();
             RenderSystem.enableDepthTest();
             RenderSystem.depthMask(false);
+            RenderSystem.disableTexture();
 
             if (renderAreas)
             {
@@ -221,6 +222,7 @@ public class OverlayRenderer
                 }
             }
 
+            RenderSystem.enableTexture();
             RenderSystem.depthMask(true);
         }
     }
@@ -630,7 +632,7 @@ public class OverlayRenderer
 
     private void addBlockInfoLines(BlockState state)
     {
-        this.blockInfoLines.add(String.valueOf(Registries.BLOCK.getId(state.getBlock())));
+        this.blockInfoLines.add(String.valueOf(Registry.BLOCK.getId(state.getBlock())));
         this.blockInfoLines.addAll(BlockUtils.getFormattedBlockStateProperties(state));
     }
 
@@ -681,6 +683,7 @@ public class OverlayRenderer
 
             RenderSystem.depthMask(false);
             RenderSystem.disableCull();
+            RenderSystem.disableTexture();
             fi.dy.masa.malilib.render.RenderUtils.setupBlend();
             RenderSystem.enablePolygonOffset();
             RenderSystem.polygonOffset(-0.8f, -1.8f);
@@ -697,6 +700,7 @@ public class OverlayRenderer
             }
 
             RenderSystem.disablePolygonOffset();
+            RenderSystem.enableTexture();
             RenderSystem.disableBlend();
             RenderSystem.enableCull();
             RenderSystem.depthMask(true);

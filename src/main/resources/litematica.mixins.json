@@ -12,7 +12,6 @@
     "IMixinStairsBlock",
     "IMixinVineBlock",
     "IMixinWorldTickScheduler",
-    "MixinAbstractSignEditScreen",
     "MixinBlock",
     "MixinBlockItem",
     "MixinBlockStateFlattening",
@@ -26,6 +25,7 @@
     "MixinModelOverrideList",
     "MixinRailBlocks",
     "MixinServerPlayNetworkHandler",
+    "MixinSignEditScreen",
     "MixinWorld",
     "MixinWorldChunk",
     "MixinWorldRenderer"

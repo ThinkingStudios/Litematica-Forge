@@ -176,7 +176,7 @@ public class MaterialListHudRenderer implements IInfoHudRenderer
 
         for (int i = 0; i < size; ++i)
         {
-            mc.getItemRenderer().renderInGui(matrixStack, list.get(i).getStack(), x, y);
+            mc.getItemRenderer().renderInGui(list.get(i).getStack(), x, y);
             y += lineHeight;
         }
 
@@ -288,6 +288,7 @@ public class MaterialListHudRenderer implements IInfoHudRenderer
     {
         List<Slot> slots = gui.getScreenHandler().slots;
 
+        RenderSystem.disableTexture();
         RenderUtils.setupBlend();
         int guiX = ((IMixinHandledScreen) gui).litematica_getX();
         int guiY = ((IMixinHandledScreen) gui).litematica_getY();
@@ -303,6 +304,7 @@ public class MaterialListHudRenderer implements IInfoHudRenderer
         }
 
         RenderUtils.color(1f, 1f, 1f, 1f);
+        RenderSystem.enableTexture();
     }
 
     public static void renderOutlinedBox(int x, int y, int width, int height, int colorBg, int colorBorder, float zLevel)

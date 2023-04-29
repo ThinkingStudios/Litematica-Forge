@@ -9,14 +9,12 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 import com.mojang.blaze3d.systems.RenderSystem;
-import org.joml.Matrix4f;
 
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.GlUniform;
-import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BufferBuilderStorage;
@@ -25,6 +23,7 @@ import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.Shader;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.BlockRenderManager;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
@@ -38,7 +37,9 @@ import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.BlockRenderView;
 
 import fi.dy.masa.litematica.config.Configs;
@@ -251,7 +252,7 @@ public class WorldRendererSchematic
         this.renderDispatcher.setCameraPosition(cameraPos);
 
         this.world.getProfiler().swap("culling");
-        BlockPos viewPos = BlockPos.ofFloored(cameraX, cameraY + (double) entity.getStandingEyeHeight(), cameraZ);
+        BlockPos viewPos = new BlockPos(cameraX, cameraY + (double) entity.getStandingEyeHeight(), cameraZ);
         final int centerChunkX = (viewPos.getX() >> 4);
         final int centerChunkZ = (viewPos.getZ() >> 4);
         final int renderDistance = this.mc.options.getViewDistance().getValue();
@@ -451,8 +452,8 @@ public class WorldRendererSchematic
         int increment = reverse ? -1 : 1;
         int count = 0;
 
-        ShaderProgram shader = RenderSystem.getShader();
-        BufferRenderer.reset();
+        Shader shader = RenderSystem.getShader();
+        BufferRenderer.unbindAll();
 
         boolean renderAsTranslucent = Configs.Visuals.RENDER_BLOCKS_AS_TRANSLUCENT.getBooleanValue();
 
@@ -485,7 +486,7 @@ public class WorldRendererSchematic
                 }
 
                 buffer.bind();
-                buffer.draw();
+                buffer.drawElements();
                 VertexBuffer.unbind();
                 startedDrawing = true;
                 ++count;
@@ -499,7 +500,7 @@ public class WorldRendererSchematic
 
         if (chunkOffsetUniform != null)
         {
-            chunkOffsetUniform.set(0.0F, 0.0F, 0.0F);
+            chunkOffsetUniform.set(Vec3f.ZERO);
         }
 
         shader.unbind();
@@ -524,7 +525,7 @@ public class WorldRendererSchematic
         this.renderBlockOverlay(OverlayRenderType.QUAD, matrices, camera, projMatrix);
     }
 
-    protected static void initShader(ShaderProgram shader, MatrixStack matrices, Matrix4f projMatrix)
+    protected static void initShader(Shader shader, MatrixStack matrices, Matrix4f projMatrix)
     {
         for (int i = 0; i < 12; ++i) shader.addSampler("Sampler" + i, RenderSystem.getShaderTexture(i));
 
@@ -565,11 +566,11 @@ public class WorldRendererSchematic
             RenderSystem.enableDepthTest();
         }
 
-        ShaderProgram originalShader = RenderSystem.getShader();
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        Shader originalShader = RenderSystem.getShader();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
-        ShaderProgram shader = RenderSystem.getShader();
-        BufferRenderer.reset();
+        Shader shader = RenderSystem.getShader();
+        BufferRenderer.unbindAll();
 
         for (int i = this.renderInfos.size() - 1; i >= 0; --i)
         {

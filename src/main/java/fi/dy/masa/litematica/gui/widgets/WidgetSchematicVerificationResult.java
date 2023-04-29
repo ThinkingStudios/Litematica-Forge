@@ -3,7 +3,6 @@ package fi.dy.masa.litematica.gui.widgets;
 import java.util.List;
 import javax.annotation.Nullable;
 import com.mojang.blaze3d.systems.RenderSystem;
-import org.joml.Quaternionf;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -24,11 +23,13 @@ import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Quaternion;
+import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.math.random.LocalRandom;
+import net.minecraft.util.registry.Registry;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.gui.button.ButtonBase;
 import fi.dy.masa.malilib.gui.button.ButtonGeneric;
@@ -322,8 +323,8 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
             }
             else
             {
-                this.mc.getItemRenderer().renderInGui(matrixStack, this.mismatchInfo.stackExpected, x1, y);
-                this.mc.getItemRenderer().renderGuiItemOverlay(matrixStack, this.textRenderer, this.mismatchInfo.stackExpected, x1, y, null);
+                this.mc.getItemRenderer().renderInGui(this.mismatchInfo.stackExpected, x1, y);
+                this.mc.getItemRenderer().renderGuiItemOverlay(this.textRenderer, this.mismatchInfo.stackExpected, x1, y, null);
             }
 
             if (this.mismatchEntry.mismatchType != MismatchType.CORRECT_STATE)
@@ -337,8 +338,8 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
                 }
                 else
                 {
-                    this.mc.getItemRenderer().renderInGui(matrixStack, this.mismatchInfo.stackFound, x2, y);
-                    this.mc.getItemRenderer().renderGuiItemOverlay(matrixStack, this.textRenderer, this.mismatchInfo.stackFound, x2, y, null);
+                    this.mc.getItemRenderer().renderInGui(this.mismatchInfo.stackFound, x2, y);
+                    this.mc.getItemRenderer().renderGuiItemOverlay(this.textRenderer, this.mismatchInfo.stackFound, x2, y, null);
                 }
             }
 
@@ -402,8 +403,8 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
 
             Block blockExpected = this.stateExpected.getBlock();
             Block blockFound = this.stateFound.getBlock();
-            Identifier rl1 = Registries.BLOCK.getId(blockExpected);
-            Identifier rl2 = Registries.BLOCK.getId(blockFound);
+            Identifier rl1 = Registry.BLOCK.getId(blockExpected);
+            Identifier rl2 = Registry.BLOCK.getId(blockFound);
 
             this.blockRegistrynameExpected = rl1 != null ? rl1.toString() : "<null>";
             this.blockRegistrynameFound = rl2 != null ? rl2.toString() : "<null>";
@@ -508,8 +509,8 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
                 }
                 else
                 {
-                    mc.getItemRenderer().renderInGui(matrixStack, this.stackExpected, x1, iconY);
-                    mc.getItemRenderer().renderGuiItemOverlay(matrixStack, textRenderer, this.stackExpected, x1, iconY, null);
+                    mc.getItemRenderer().renderInGui(this.stackExpected, x1, iconY);
+                    mc.getItemRenderer().renderGuiItemOverlay(textRenderer, this.stackExpected, x1, iconY, null);
                 }
 
                 if (useBlockModelFound)
@@ -519,8 +520,8 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
                 }
                 else
                 {
-                    mc.getItemRenderer().renderInGui(matrixStack, this.stackFound, x2, iconY);
-                    mc.getItemRenderer().renderGuiItemOverlay(matrixStack, textRenderer, this.stackFound, x2, iconY, null);
+                    mc.getItemRenderer().renderInGui(this.stackFound, x2, iconY);
+                    mc.getItemRenderer().renderGuiItemOverlay(textRenderer, this.stackFound, x2, iconY, null);
                 }
 
                 //mc.getRenderItem().zLevel -= 100;
@@ -549,10 +550,8 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
         matrixStack.translate(x + 8.0, y + 8.0, z + 100.0);
         matrixStack.scale(16, -16, 16);
 
-        Quaternionf rot = new Quaternionf().rotationXYZ(30 * (float) (Math.PI / 180.0), 225 * (float) (Math.PI / 180.0), 0.0F);
-        matrixStack.multiply(rot);
-        //matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(30));
-        //matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(225));
+        matrixStack.multiply(new Quaternion(Vec3f.POSITIVE_X, 30, true));
+        matrixStack.multiply(new Quaternion(Vec3f.POSITIVE_Y, 225, true));
         matrixStack.scale(0.625f, 0.625f, 0.625f);
         matrixStack.translate(-0.5, -0.5, -0.5);
 
@@ -575,7 +574,7 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
             int[] light = new int[] { l, l, l, l };
             float[] brightness = new float[] { 0.75f, 0.75f, 0.75f, 1.0f };
 
-            RenderSystem.setShader(GameRenderer::getRenderTypeTranslucentProgram);
+            RenderSystem.setShader(GameRenderer::getRenderTypeTranslucentShader);
             DiffuseLighting.enableGuiDepthLighting();
 
             for (Direction face : PositionUtils.ALL_DIRECTIONS)

@@ -35,6 +35,6 @@ side = "BOTH"
 [[dependencies.litematica]]
 modId = "malilib"
 mandatory = true
-versionRange = "*"
+versionRange = "[0.1,)"
 ordering = "NONE"
 side = "BOTH"

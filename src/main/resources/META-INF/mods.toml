@@ -5,7 +5,7 @@ license = "LGPLv3"
 [[mods]]
 modId = "litematica"
 version = "${version}"
-displayName = "Litematica-Forge"
+displayName = "Forgematica"
 displayURL="https://github.com/ThinkingStudios/Litematica-Forge" #optional
 logoFile="icon.png" #optional
 credits="masa" #optional

@@ -27,7 +27,6 @@ dependencies {
     forge "net.minecraftforge:forge:${project.forge_version}"
 
     modImplementation "com.github.ThinkingStudios:MaLiLib-Forge:${project.malilib_version}"
-    modImplementation "com.github.PortingLab:ForgedFabricLoaderAPI:${project.ffl_version}"
 
     implementation "com.google.code.findbugs:jsr305:3.0.2"
 }

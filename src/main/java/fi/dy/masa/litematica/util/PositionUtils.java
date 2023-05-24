@@ -68,14 +68,12 @@ public class PositionUtils
 
     public static Vec3i[] getEdgeNeighborOffsets(Direction.Axis axis, int cornerIndex)
     {
-        switch (axis)
-        {
-            case X: return EDGE_NEIGHBOR_OFFSETS_X[cornerIndex];
-            case Y: return EDGE_NEIGHBOR_OFFSETS_Y[cornerIndex];
-            case Z: return EDGE_NEIGHBOR_OFFSETS_Z[cornerIndex];
-        }
+        return switch (axis) {
+            case X -> EDGE_NEIGHBOR_OFFSETS_X[cornerIndex];
+            case Y -> EDGE_NEIGHBOR_OFFSETS_Y[cornerIndex];
+            case Z -> EDGE_NEIGHBOR_OFFSETS_Z[cornerIndex];
+        };
 
-        return null;
     }
 
     public static long getChunkPosLong(BlockPos blockPos)
@@ -149,14 +147,14 @@ public class PositionUtils
                         posMutable1.set(bb.minX, bb.minY, bb.minZ);
                         posMutable2.set(bb.maxX, bb.maxY, bb.maxZ);
 
-                        if (arePositionsWithinWorld(world, posMutable1, posMutable2) == false)
+                        if (!arePositionsWithinWorld(world, posMutable1, posMutable2))
                         {
                             return false;
                         }
                     }
                 }
             }
-            else if (isBoxWithinWorld(world, box) == false)
+            else if (!isBoxWithinWorld(world, box))
             {
                 return false;
             }
@@ -396,7 +394,7 @@ public class PositionUtils
 
         boolean notOverlapping = boxXMin > chunkXMax || boxZMin > chunkZMax || boxXMax < chunkXMin || boxZMax < chunkZMin;
 
-        if (notOverlapping == false)
+        if (!notOverlapping)
         {
             final int xMin = Math.max(chunkXMin, boxXMin);
             final int yMin = Math.min(box.getPos1().getY(), box.getPos2().getY());
@@ -460,23 +458,28 @@ public class PositionUtils
             int boxMaxY = Math.max(box.getPos1().getY(), box.getPos2().getY());
             int boxMaxZ = Math.max(box.getPos1().getZ(), box.getPos2().getZ());
 
-            switch (range.getAxis())
-            {
-                case X:
-                    if (rangeMax < boxMinX || rangeMin > boxMaxX) { continue; }
+            switch (range.getAxis()) {
+                case X -> {
+                    if (rangeMax < boxMinX || rangeMin > boxMaxX) {
+                        continue;
+                    }
                     boxMinX = Math.max(boxMinX, rangeMin);
                     boxMaxX = Math.min(boxMaxX, rangeMax);
-                    break;
-                case Y:
-                    if (rangeMax < boxMinY || rangeMin > boxMaxY) { continue; }
+                }
+                case Y -> {
+                    if (rangeMax < boxMinY || rangeMin > boxMaxY) {
+                        continue;
+                    }
                     boxMinY = Math.max(boxMinY, rangeMin);
                     boxMaxY = Math.min(boxMaxY, rangeMax);
-                    break;
-                case Z:
-                    if (rangeMax < boxMinZ || rangeMin > boxMaxZ) { continue; }
+                }
+                case Z -> {
+                    if (rangeMax < boxMinZ || rangeMin > boxMaxZ) {
+                        continue;
+                    }
                     boxMinZ = Math.max(boxMinZ, rangeMin);
                     boxMaxZ = Math.min(boxMaxZ, rangeMax);
-                    break;
+                }
             }
 
             final int boxMinChunkX = boxMinX >> 4;
@@ -558,17 +561,10 @@ public class PositionUtils
     public static BlockPos getModifiedPosition(BlockPos pos, int value, CoordinateType type)
     {
 
-        switch (type)
-        {
-            case X:
-                pos = new BlockPos(     value, pos.getY(), pos.getZ());
-                break;
-            case Y:
-                pos = new BlockPos(pos.getX(),      value, pos.getZ());
-                break;
-            case Z:
-                pos = new BlockPos(pos.getX(), pos.getY(),      value);
-                break;
+        switch (type) {
+            case X -> pos = new BlockPos(value, pos.getY(), pos.getZ());
+            case Y -> pos = new BlockPos(pos.getX(), value, pos.getZ());
+            case Z -> pos = new BlockPos(pos.getX(), pos.getY(), value);
         }
 
         return pos;
@@ -576,14 +572,12 @@ public class PositionUtils
 
     public static int getCoordinate(BlockPos pos, CoordinateType type)
     {
-        switch (type)
-        {
-            case X: return pos.getX();
-            case Y: return pos.getY();
-            case Z: return pos.getZ();
-        }
+        return switch (type) {
+            case X -> pos.getX();
+            case Y -> pos.getY();
+            case Z -> pos.getZ();
+        };
 
-        return 0;
     }
 
     public static Box growOrShrinkBox(Box box, int amount)
@@ -736,7 +730,7 @@ public class PositionUtils
                 {
                     break;
                 }
-                else if (grow == false && emptySides == 0)
+                else if (!grow && emptySides == 0)
                 {
                     break;
                 }
@@ -757,31 +751,21 @@ public class PositionUtils
         int z = pos.getZ();
         boolean isMirrored = true;
 
-        switch (mirror)
-        {
+        switch (mirror) {
             // LEFT_RIGHT is essentially NORTH_SOUTH
-            case LEFT_RIGHT:
-                z = -z;
-                break;
+            case LEFT_RIGHT -> z = -z;
+
             // FRONT_BACK is essentially EAST_WEST
-            case FRONT_BACK:
-                x = -x;
-                break;
-            default:
-                isMirrored = false;
+            case FRONT_BACK -> x = -x;
+            default -> isMirrored = false;
         }
 
-        switch (rotation)
-        {
-            case CLOCKWISE_90:
-                return new BlockPos(-z, y,  x);
-            case COUNTERCLOCKWISE_90:
-                return new BlockPos( z, y, -x);
-            case CLOCKWISE_180:
-                return new BlockPos(-x, y, -z);
-            default:
-                return isMirrored ? new BlockPos(x, y, z) : pos;
-        }
+        return switch (rotation) {
+            case CLOCKWISE_90 -> new BlockPos(-z, y, x);
+            case COUNTERCLOCKWISE_90 -> new BlockPos(z, y, -x);
+            case CLOCKWISE_180 -> new BlockPos(-x, y, -z);
+            default -> isMirrored ? new BlockPos(x, y, z) : pos;
+        };
     }
 
     public static BlockPos getReverseTransformedBlockPos(BlockPos pos, BlockMirror mirror, BlockRotation rotation)
@@ -792,39 +776,33 @@ public class PositionUtils
         boolean isRotated = true;
         int tmp = x;
 
-        switch (rotation)
-        {
-            case CLOCKWISE_90:
+        switch (rotation) {
+            case CLOCKWISE_90 -> {
                 x = z;
                 z = -tmp;
-                break;
-            case COUNTERCLOCKWISE_90:
+            }
+            case COUNTERCLOCKWISE_90 -> {
                 x = -z;
                 z = tmp;
-                break;
-            case CLOCKWISE_180:
+            }
+            case CLOCKWISE_180 -> {
                 x = -x;
                 z = -z;
-                break;
-            default:
-                isRotated = false;
+            }
+            default -> isRotated = false;
         }
 
-        switch (mirror)
-        {
+        switch (mirror) {
             // LEFT_RIGHT is essentially NORTH_SOUTH
-            case LEFT_RIGHT:
-                z = -z;
-                break;
+            case LEFT_RIGHT -> z = -z;
+
             // FRONT_BACK is essentially EAST_WEST
-            case FRONT_BACK:
-                x = -x;
-                break;
-            default:
-                if (isRotated == false)
-                {
+            case FRONT_BACK -> x = -x;
+            default -> {
+                if (!isRotated) {
                     return pos;
                 }
+            }
         }
 
         return new BlockPos(x, y, z);
@@ -859,19 +837,14 @@ public class PositionUtils
                 noRotation = true;
         }
 
-        switch (mirror)
-        {
-            case LEFT_RIGHT:
-                z = -z;
-                break;
-            case FRONT_BACK:
-                x = -x;
-                break;
-            default:
-                if (noRotation)
-                {
+        switch (mirror) {
+            case LEFT_RIGHT -> z = -z;
+            case FRONT_BACK -> x = -x;
+            default -> {
+                if (noRotation) {
                     return pos;
                 }
+            }
         }
 
         return new BlockPos(x, y, z);
@@ -884,44 +857,28 @@ public class PositionUtils
         double z = originalPos.z;
         boolean transformed = true;
 
-        switch (mirror)
-        {
-            case LEFT_RIGHT:
-                z = 1.0D - z;
-                break;
-            case FRONT_BACK:
-                x = 1.0D - x;
-                break;
-            default:
-                transformed = false;
+        switch (mirror) {
+            case LEFT_RIGHT -> z = 1.0D - z;
+            case FRONT_BACK -> x = 1.0D - x;
+            default -> transformed = false;
         }
 
-        switch (rotation)
-        {
-            case COUNTERCLOCKWISE_90:
-                return new Vec3d(z, y, 1.0D - x);
-            case CLOCKWISE_90:
-                return new Vec3d(1.0D - z, y, x);
-            case CLOCKWISE_180:
-                return new Vec3d(1.0D - x, y, 1.0D - z);
-            default:
-                return transformed ? new Vec3d(x, y, z) : originalPos;
-        }
+        return switch (rotation) {
+            case COUNTERCLOCKWISE_90 -> new Vec3d(z, y, 1.0D - x);
+            case CLOCKWISE_90 -> new Vec3d(1.0D - z, y, x);
+            case CLOCKWISE_180 -> new Vec3d(1.0D - x, y, 1.0D - z);
+            default -> transformed ? new Vec3d(x, y, z) : originalPos;
+        };
     }
 
     public static BlockRotation getReverseRotation(BlockRotation rotationIn)
     {
-        switch (rotationIn)
-        {
-            case COUNTERCLOCKWISE_90:
-                return BlockRotation.CLOCKWISE_90;
-            case CLOCKWISE_90:
-                return BlockRotation.COUNTERCLOCKWISE_90;
-            case CLOCKWISE_180:
-                return BlockRotation.CLOCKWISE_180;
-            default:
-                return rotationIn;
-        }
+        return switch (rotationIn) {
+            case COUNTERCLOCKWISE_90 -> BlockRotation.CLOCKWISE_90;
+            case CLOCKWISE_90 -> BlockRotation.COUNTERCLOCKWISE_90;
+            case CLOCKWISE_180 -> BlockRotation.CLOCKWISE_180;
+            default -> rotationIn;
+        };
     }
 
     public static BlockPos getModifiedPartiallyLockedPosition(BlockPos posOriginal, BlockPos posNew, int lockMask)
@@ -1022,43 +979,33 @@ public class PositionUtils
 
     public static String getRotationNameShort(BlockRotation rotation)
     {
-        switch (rotation)
-        {
-            case CLOCKWISE_90:          return "CW_90";
-            case CLOCKWISE_180:         return "CW_180";
-            case COUNTERCLOCKWISE_90:   return "CCW_90";
-            case NONE:
-            default:                    return "NONE";
-        }
+        return switch (rotation) {
+            case CLOCKWISE_90 -> "CW_90";
+            case CLOCKWISE_180 -> "CW_180";
+            case COUNTERCLOCKWISE_90 -> "CCW_90";
+            default -> "NONE";
+        };
     }
 
     public static String getMirrorName(BlockMirror mirror)
     {
-        switch (mirror)
-        {
-            case FRONT_BACK:    return "FRONT_BACK";
-            case LEFT_RIGHT:    return "LEFT_RIGHT";
-            case NONE:
-            default:            return "NONE";
-        }
+        return switch (mirror) {
+            case FRONT_BACK -> "FRONT_BACK";
+            case LEFT_RIGHT -> "LEFT_RIGHT";
+            default -> "NONE";
+        };
     }
 
     public static float getRotatedYaw(float yaw, BlockRotation rotation)
     {
         yaw = MathHelper.wrapDegrees(yaw);
 
-        switch (rotation)
-        {
-            case CLOCKWISE_180:
-                yaw += 180.0F;
-                break;
-            case COUNTERCLOCKWISE_90:
-                yaw += 270.0F;
-                break;
-            case CLOCKWISE_90:
-                yaw += 90.0F;
-                break;
-            default:
+        switch (rotation) {
+            case CLOCKWISE_180 -> yaw += 180.0F;
+            case COUNTERCLOCKWISE_90 -> yaw += 270.0F;
+            case CLOCKWISE_90 -> yaw += 90.0F;
+            default -> {
+            }
         }
 
         return yaw;
@@ -1068,15 +1015,11 @@ public class PositionUtils
     {
         yaw = MathHelper.wrapDegrees(yaw);
 
-        switch (mirror)
-        {
-            case LEFT_RIGHT:
-                yaw = 180.0F - yaw;
-                break;
-            case FRONT_BACK:
-                yaw = -yaw;
-                break;
-            default:
+        switch (mirror) {
+            case LEFT_RIGHT -> yaw = 180.0F - yaw;
+            case FRONT_BACK -> yaw = -yaw;
+            default -> {
+            }
         }
 
         return yaw;
@@ -1117,33 +1060,30 @@ public class PositionUtils
     @Nullable
     public static IntBoundingBox getClampedArea(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, LayerRange range)
     {
-        if (range.intersectsBox(minX, minY, minZ, maxX, maxY, maxZ) == false)
+        if (!range.intersectsBox(minX, minY, minZ, maxX, maxY, maxZ))
         {
             return null;
         }
 
-        switch (range.getAxis())
-        {
-            case X:
-            {
+        switch (range.getAxis()) {
+            case X -> {
                 final int clampedMinX = Math.max(minX, range.getLayerMin());
                 final int clampedMaxX = Math.min(maxX, range.getLayerMax());
                 return IntBoundingBox.createProper(clampedMinX, minY, minZ, clampedMaxX, maxY, maxZ);
             }
-            case Y:
-            {
+            case Y -> {
                 final int clampedMinY = Math.max(minY, range.getLayerMin());
                 final int clampedMaxY = Math.min(maxY, range.getLayerMax());
                 return IntBoundingBox.createProper(minX, clampedMinY, minZ, maxX, clampedMaxY, maxZ);
             }
-            case Z:
-            {
+            case Z -> {
                 final int clampedMinZ = Math.max(minZ, range.getLayerMin());
                 final int clampedMaxZ = Math.min(maxZ, range.getLayerMax());
                 return IntBoundingBox.createProper(minX, minY, clampedMinZ, maxX, maxY, clampedMaxZ);
             }
-            default:
+            default -> {
                 return null;
+            }
         }
     }
 

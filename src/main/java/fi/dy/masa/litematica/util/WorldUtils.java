@@ -133,7 +133,7 @@ public class WorldUtils
 
         LitematicaSchematic litematicaSchematic = LitematicaSchematic.createFromWorld(world, area, info, "?", feedback);
 
-        if (litematicaSchematic != null && ignoreEntities == false)
+        if (litematicaSchematic != null && !ignoreEntities)
         {
             litematicaSchematic.takeEntityDataFromSchematicaSchematic(schematic, subRegionName);
         }
@@ -234,7 +234,7 @@ public class WorldUtils
         litematicaSchematic.placeToWorld(world, schematicPlacement, false); // TODO use a per-chunk version for a bit more speed
 
         StructureTemplate template = new StructureTemplate();
-        template.saveFromWorld(world, BlockPos.ORIGIN, size, ignoreEntities == false, Blocks.STRUCTURE_VOID);
+        template.saveFromWorld(world, BlockPos.ORIGIN, size, !ignoreEntities, Blocks.STRUCTURE_VOID);
 
         return template;
     }
@@ -244,7 +244,7 @@ public class WorldUtils
         String fileName = fileNameIn;
         String extension = ".nbt";
 
-        if (fileName.endsWith(extension) == false)
+        if (!fileName.endsWith(extension))
         {
             fileName = fileName + extension;
         }
@@ -254,13 +254,13 @@ public class WorldUtils
 
         try
         {
-            if (dir.exists() == false && dir.mkdirs() == false)
+            if (!dir.exists() && !dir.mkdirs())
             {
                 feedback.setString(StringUtils.translate("litematica.error.schematic_write_to_file_failed.directory_creation_failed", dir.getAbsolutePath()));
                 return false;
             }
 
-            if (override == false && file.exists())
+            if (!override && file.exists())
             {
                 feedback.setString(StringUtils.translate("litematica.error.structure_write_to_file_failed.exists", file.getAbsolutePath()));
                 return false;
@@ -489,7 +489,7 @@ public class WorldUtils
                 return ActionResult.FAIL;
             }
 
-            if (stack.isEmpty() == false)
+            if (!stack.isEmpty())
             {
                 BlockState stateClient = mc.world.getBlockState(pos);
 
@@ -527,7 +527,7 @@ public class WorldUtils
                     Vec3d hit = traceVanilla.getPos();
                     ItemPlacementContext ctx = new ItemPlacementContext(new ItemUsageContext(mc.player, hand, hitResult));
 
-                    if (stateVanilla.canReplace(ctx) == false)
+                    if (!stateVanilla.canReplace(ctx))
                     {
                         posVanilla = posVanilla.offset(sideVanilla);
 
@@ -612,7 +612,7 @@ public class WorldUtils
         BlockHitResult hitResult = (BlockHitResult) trace;
         ItemPlacementContext ctx = new ItemPlacementContext(new ItemUsageContext(player, Hand.MAIN_HAND, hitResult));
 
-        if (stateClient.canReplace(ctx) == false)
+        if (!stateClient.canReplace(ctx))
         {
             return true;
         }
@@ -737,8 +737,7 @@ public class WorldUtils
         {
             for (Property<?> p : propList)
             {
-                if ((p instanceof DirectionProperty) == false &&
-                    PlacementHandler.WHITELISTED_PROPERTIES.contains(p))
+                if (!(p instanceof DirectionProperty) && PlacementHandler.WHITELISTED_PROPERTIES.contains(p))
                 {
                     @SuppressWarnings("unchecked")
                     Property<T> prop = (Property<T>) p;
@@ -875,7 +874,7 @@ public class WorldUtils
             boolean schematicHasAir = worldSchematic.isAir(pos);
 
             // The targeted position is outside the current render range
-            if (schematicHasAir == false && range.isPositionWithinRange(pos) == false)
+            if (!schematicHasAir && !range.isPositionWithinRange(pos))
             {
                 return true;
             }
@@ -891,7 +890,7 @@ public class WorldUtils
             ctx = new ItemPlacementContext(new ItemUsageContext(mc.player, Hand.MAIN_HAND, blockHitResult));
 
             // Placement position is already occupied
-            if (stateClient.canReplace(ctx) == false)
+            if (!stateClient.canReplace(ctx))
             {
                 return true;
             }
@@ -900,7 +899,7 @@ public class WorldUtils
             stack = MaterialCache.getInstance().getRequiredBuildItemForState(stateSchematic);
 
             // The player is holding the wrong item for the targeted position
-            if (stack.isEmpty() == false && EntityUtils.getUsedHandForItem(mc.player, stack) == null)
+            if (!stack.isEmpty() && EntityUtils.getUsedHandForItem(mc.player, stack) == null)
             {
                 return true;
             }
@@ -955,10 +954,8 @@ public class WorldUtils
     {
         BlockPos.Mutable posMutable = new BlockPos.Mutable();
 
-        switch (axis)
-        {
-            case Z:
-            {
+        switch (axis) {
+            case Z -> {
                 int x1 = Math.min(pos1.getX(), pos2.getX());
                 int x2 = Math.max(pos1.getX(), pos2.getX());
                 int y1 = Math.min(pos1.getY(), pos2.getY());
@@ -967,30 +964,23 @@ public class WorldUtils
                 int cxMin = (x1 >> 4);
                 int cxMax = (x2 >> 4);
 
-                for (int cx = cxMin; cx <= cxMax; ++cx)
-                {
+                for (int cx = cxMin; cx <= cxMax; ++cx) {
                     Chunk chunk = world.getChunk(cx, z >> 4);
-                    int xMin = Math.max(x1,  cx << 4      );
+                    int xMin = Math.max(x1, cx << 4);
                     int xMax = Math.min(x2, (cx << 4) + 15);
                     int yMax = Math.min(y2, chunk.getHighestNonEmptySectionYOffset() + 15);
 
-                    for (int x = xMin; x <= xMax; ++x)
-                    {
-                        for (int y = y1; y <= yMax; ++y)
-                        {
-                            if (chunk.getBlockState(posMutable.set(x, y, z)).isAir() == false)
-                            {
+                    for (int x = xMin; x <= xMax; ++x) {
+                        for (int y = y1; y <= yMax; ++y) {
+                            if (!chunk.getBlockState(posMutable.set(x, y, z)).isAir()) {
                                 return false;
                             }
                         }
                     }
                 }
 
-                break;
             }
-
-            case Y:
-            {
+            case Y -> {
                 int x1 = Math.min(pos1.getX(), pos2.getX());
                 int x2 = Math.max(pos1.getX(), pos2.getX());
                 int y = pos1.getY();
@@ -1001,28 +991,22 @@ public class WorldUtils
                 int czMin = (z1 >> 4);
                 int czMax = (z2 >> 4);
 
-                for (int cz = czMin; cz <= czMax; ++cz)
-                {
-                    for (int cx = cxMin; cx <= cxMax; ++cx)
-                    {
+                for (int cz = czMin; cz <= czMax; ++cz) {
+                    for (int cx = cxMin; cx <= cxMax; ++cx) {
                         Chunk chunk = world.getChunk(cx, cz);
 
-                        if (y > chunk.getHighestNonEmptySectionYOffset() + 15)
-                        {
+                        if (y > chunk.getHighestNonEmptySectionYOffset() + 15) {
                             continue;
                         }
 
-                        int xMin = Math.max(x1,  cx << 4      );
+                        int xMin = Math.max(x1, cx << 4);
                         int xMax = Math.min(x2, (cx << 4) + 15);
-                        int zMin = Math.max(z1,  cz << 4      );
+                        int zMin = Math.max(z1, cz << 4);
                         int zMax = Math.min(z2, (cz << 4) + 15);
 
-                        for (int z = zMin; z <= zMax; ++z)
-                        {
-                            for (int x = xMin; x <= xMax; ++x)
-                            {
-                                if (chunk.getBlockState(posMutable.set(x, y, z)).isAir() == false)
-                                {
+                        for (int z = zMin; z <= zMax; ++z) {
+                            for (int x = xMin; x <= xMax; ++x) {
+                                if (!chunk.getBlockState(posMutable.set(x, y, z)).isAir()) {
                                     return false;
                                 }
                             }
@@ -1030,11 +1014,8 @@ public class WorldUtils
                     }
                 }
 
-                break;
             }
-
-            case X:
-            {
+            case X -> {
                 int x = pos1.getX();
                 int z1 = Math.min(pos1.getZ(), pos2.getZ());
                 int z2 = Math.max(pos1.getZ(), pos2.getZ());
@@ -1043,26 +1024,21 @@ public class WorldUtils
                 int czMin = (z1 >> 4);
                 int czMax = (z2 >> 4);
 
-                for (int cz = czMin; cz <= czMax; ++cz)
-                {
+                for (int cz = czMin; cz <= czMax; ++cz) {
                     Chunk chunk = world.getChunk(x >> 4, cz);
-                    int zMin = Math.max(z1,  cz << 4      );
+                    int zMin = Math.max(z1, cz << 4);
                     int zMax = Math.min(z2, (cz << 4) + 15);
                     int yMax = Math.min(y2, chunk.getHighestNonEmptySectionYOffset() + 15);
 
-                    for (int z = zMin; z <= zMax; ++z)
-                    {
-                        for (int y = y1; y <= yMax; ++y)
-                        {
-                            if (chunk.getBlockState(posMutable.set(x, y, z)).isAir() == false)
-                            {
+                    for (int z = zMin; z <= zMax; ++z) {
+                        for (int y = y1; y <= yMax; ++y) {
+                            if (!chunk.getBlockState(posMutable.set(x, y, z)).isAir()) {
                                 return false;
                             }
                         }
                     }
                 }
 
-                break;
             }
         }
 

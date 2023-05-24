@@ -53,7 +53,7 @@ public class SchematicPlacingUtils
 
         try
         {
-            if (notifyNeighbors == false)
+            if (!notifyNeighbors)
             {
                 WorldUtils.setShouldPreventBlockUpdates(world, true);
             }
@@ -76,9 +76,9 @@ public class SchematicPlacingUtils
                     Map<BlockPos, OrderedTick<Block>> scheduledBlockTicks = schematic.getScheduledBlockTicksForRegion(regionName);
                     Map<BlockPos, OrderedTick<Fluid>> scheduledFluidTicks = schematic.getScheduledFluidTicksForRegion(regionName);
 
-                    if (placeBlocksWithinChunk(world, chunkPos, regionName, container, blockEntityMap,
-                                               origin, schematicPlacement, placement, scheduledBlockTicks,
-                                               scheduledFluidTicks, replace, notifyNeighbors) == false)
+                    if (!placeBlocksWithinChunk(world, chunkPos, regionName, container, blockEntityMap,
+                            origin, schematicPlacement, placement, scheduledBlockTicks,
+                            scheduledFluidTicks, replace, notifyNeighbors))
                     {
                         allSuccess = false;
                         Litematica.logger.warn("Invalid/missing schematic data in schematic '{}' for sub-region '{}'", schematic.getMetadata().getName(), regionName);
@@ -86,8 +86,8 @@ public class SchematicPlacingUtils
 
                     List<EntityInfo> entityList = schematic.getEntityListForRegion(regionName);
 
-                    if (schematicPlacement.ignoreEntities() == false &&
-                        placement.ignoreEntities() == false && entityList != null)
+                    if (!schematicPlacement.ignoreEntities() &&
+                            !placement.ignoreEntities() && entityList != null)
                     {
                         placeEntitiesToWorldWithinChunk(world, chunkPos, entityList, origin, schematicPlacement, placement);
                     }
@@ -268,7 +268,7 @@ public class SchematicPlacingUtils
         {
             IntBoundingBox box = new IntBoundingBox(startX, startY, startZ, endX, endY, endZ);
 
-            if (scheduledBlockTicks != null && scheduledBlockTicks.isEmpty() == false)
+            if (scheduledBlockTicks != null && !scheduledBlockTicks.isEmpty())
             {
                 WorldTickScheduler<Block> scheduler = serverWorld.getBlockTickScheduler();
 
@@ -294,7 +294,7 @@ public class SchematicPlacingUtils
                 }
             }
 
-            if (scheduledFluidTicks != null && scheduledFluidTicks.isEmpty() == false)
+            if (scheduledFluidTicks != null && !scheduledFluidTicks.isEmpty())
             {
                 WorldTickScheduler<Fluid> scheduler = serverWorld.getFluidTickScheduler();
 

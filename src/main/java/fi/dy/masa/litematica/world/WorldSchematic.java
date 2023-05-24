@@ -145,7 +145,7 @@ public class WorldSchematic extends World
         int chunkX = MathHelper.floor(entity.getX() / 16.0D);
         int chunkZ = MathHelper.floor(entity.getZ() / 16.0D);
 
-        if (this.chunkManagerSchematic.isChunkLoaded(chunkX, chunkZ) == false)
+        if (!this.chunkManagerSchematic.isChunkLoaded(chunkX, chunkZ))
         {
             return false;
         }

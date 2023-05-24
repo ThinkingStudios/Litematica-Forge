@@ -11,11 +11,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.BuiltinBiomes;
-import net.minecraft.world.biome.source.FixedBiomeSource;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.WorldChunk;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 public class ChunkSchematic extends WorldChunk
 {
@@ -88,7 +85,7 @@ public class ChunkSchematic extends WorldChunk
 
             y &= 0xF;
 
-            if (state.isAir() == false)
+            if (!state.isAir())
             {
                 this.isEmpty = false;
             }

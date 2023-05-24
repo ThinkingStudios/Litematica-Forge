@@ -205,7 +205,7 @@ public class PlacementHandler
         {
             for (Property<?> p : propList)
             {
-                if ((p instanceof DirectionProperty) == false &&
+                if (!(p instanceof DirectionProperty) &&
                     WHITELISTED_PROPERTIES.contains(p))
                 {
                     @SuppressWarnings("unchecked")
@@ -222,7 +222,7 @@ public class PlacementHandler
                     {
                         T value = list.get(valueIndex);
 
-                        if (state.get(prop).equals(value) == false &&
+                        if (!state.get(prop).equals(value) &&
                             value != SlabType.DOUBLE) // don't allow duping slabs by forcing a double slab via the protocol
                         {
                             //System.out.printf("applying %s: %s\n", prop.getName(), value);
@@ -257,7 +257,7 @@ public class PlacementHandler
         {
             facing = Direction.byId(decodedFacingIndex);
 
-            if (property.getValues().contains(facing) == false)
+            if (!property.getValues().contains(facing))
             {
                 facing = context.getEntity().getHorizontalFacing().getOpposite();
             }
@@ -272,7 +272,7 @@ public class PlacementHandler
                 BlockPos headPos = context.pos.offset(facing);
                 ItemPlacementContext ctx = context.getItemPlacementContext();
 
-                if (context.getWorld().getBlockState(headPos).canReplace(ctx) == false)
+                if (!context.getWorld().getBlockState(headPos).canReplace(ctx))
                 {
                     return null;
                 }

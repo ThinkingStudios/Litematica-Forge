@@ -170,7 +170,7 @@ public class GuiAreaSelectionEditorNormal extends GuiListBase<String, WidgetSele
 
     protected void addRenderingDisabledWarning(int x, int y)
     {
-        if (Configs.Visuals.ENABLE_AREA_SELECTION_RENDERING.getBooleanValue() == false)
+        if (!Configs.Visuals.ENABLE_AREA_SELECTION_RENDERING.getBooleanValue())
         {
             ConfigHotkey hotkey = Hotkeys.TOGGLE_AREA_SELECTION_RENDERING;
             String configName = Configs.Visuals.ENABLE_AREA_SELECTION_RENDERING.getName();
@@ -251,20 +251,19 @@ public class GuiAreaSelectionEditorNormal extends GuiListBase<String, WidgetSele
         String text = "";
         ButtonListener.Type type = null;
 
-        switch (coordType)
-        {
-            case X:
+        switch (coordType) {
+            case X -> {
                 text = String.valueOf(pos.getX());
                 type = ButtonListener.Type.NUDGE_COORD_X;
-                break;
-            case Y:
+            }
+            case Y -> {
                 text = String.valueOf(pos.getY());
                 type = ButtonListener.Type.NUDGE_COORD_Y;
-                break;
-            case Z:
+            }
+            case Z -> {
                 text = String.valueOf(pos.getZ());
                 type = ButtonListener.Type.NUDGE_COORD_Z;
-                break;
+            }
         }
 
         GuiTextFieldInteger textField = new GuiTextFieldInteger(x + offset, y, width, 16, this.textRenderer);
@@ -320,7 +319,7 @@ public class GuiAreaSelectionEditorNormal extends GuiListBase<String, WidgetSele
         ButtonListener listener = new ButtonListener(type, corner, null, this);
         this.addButton(button, listener);
 
-        if (type == ButtonListener.Type.CREATE_SCHEMATIC && projectsMode == false)
+        if (type == ButtonListener.Type.CREATE_SCHEMATIC && !projectsMode)
         {
             button.setHoverStrings("litematica.gui.button.hover.area_editor.shift_for_in_memory");
         }
@@ -439,47 +438,25 @@ public class GuiAreaSelectionEditorNormal extends GuiListBase<String, WidgetSele
 
             this.parent.setNextMessageType(MessageType.ERROR);
 
-            switch (this.type)
-            {
-                case NUDGE_COORD_X:
-                    this.parent.moveCoordinate(amount, this.corner, this.coordinateType);
-                    break;
-
-                case NUDGE_COORD_Y:
-                    this.parent.moveCoordinate(amount, this.corner, this.coordinateType);
-                    break;
-
-                case NUDGE_COORD_Z:
-                    this.parent.moveCoordinate(amount, this.corner, this.coordinateType);
-                    break;
-
-                case CHANGE_SELECTION_MODE:
+            switch (this.type) {
+                case NUDGE_COORD_X -> this.parent.moveCoordinate(amount, this.corner, this.coordinateType);
+                case NUDGE_COORD_Y -> this.parent.moveCoordinate(amount, this.corner, this.coordinateType);
+                case NUDGE_COORD_Z -> this.parent.moveCoordinate(amount, this.corner, this.coordinateType);
+                case CHANGE_SELECTION_MODE -> {
                     SelectionManager manager = DataManager.getSelectionManager();
                     SelectionMode newMode = manager.getSelectionMode().cycle(true);
-
-                    if (newMode == SelectionMode.NORMAL && manager.hasNormalSelection() == false)
-                    {
+                    if (newMode == SelectionMode.NORMAL && !manager.hasNormalSelection()) {
                         this.parent.addMessage(MessageType.WARNING, "litematica.error.area_editor.switch_mode.no_selection");
-                    }
-                    else
-                    {
+                    } else {
                         manager.switchSelectionMode();
                         manager.openEditGui(null);
                         return;
                     }
-
-                    break;
-
-                case CHANGE_CORNER_MODE:
-                    Configs.Generic.SELECTION_CORNERS_MODE.setOptionListValue(Configs.Generic.SELECTION_CORNERS_MODE.getOptionListValue().cycle(false));
-                    break;
-
-                case CREATE_SCHEMATIC:
-                    SchematicUtils.saveSchematic(GuiBase.isShiftDown());
-                    break;
-
-                case ANALYZE_AREA:
-                {
+                }
+                case CHANGE_CORNER_MODE ->
+                        Configs.Generic.SELECTION_CORNERS_MODE.setOptionListValue(Configs.Generic.SELECTION_CORNERS_MODE.getOptionListValue().cycle(false));
+                case CREATE_SCHEMATIC -> SchematicUtils.saveSchematic(GuiBase.isShiftDown());
+                case ANALYZE_AREA -> {
                     MaterialListAreaAnalyzer list = new MaterialListAreaAnalyzer(this.parent.selection);
                     DataManager.setMaterialList(list);
                     GuiMaterialList gui = new GuiMaterialList(list);
@@ -487,55 +464,36 @@ public class GuiAreaSelectionEditorNormal extends GuiListBase<String, WidgetSele
                     list.reCreateMaterialList(); // This is after changing the GUI, so that the task message goes to the new GUI
                     return;
                 }
-
-                case CREATE_SUB_REGION:
-                {
+                case CREATE_SUB_REGION -> {
                     GuiTextInput gui = new GuiTextInput(512, "litematica.gui.title.area_editor.sub_region_name", "", null, new SubRegionCreator(this.parent));
                     gui.setParent(this.parent);
                     GuiBase.openGui(gui);
-                    break;
                 }
-
-                case SET_SELECTION_NAME:
-                {
+                case SET_SELECTION_NAME -> {
                     this.parent.renameSelection();
-                    break;
                 }
-
-                case SET_BOX_NAME:
-                {
+                case SET_BOX_NAME -> {
                     this.parent.renameSubRegion();
-                    break;
                 }
-
-                case MOVE_TO_PLAYER:
-                    if (this.parent.mc.player != null)
-                    {
+                case MOVE_TO_PLAYER -> {
+                    if (this.parent.mc.player != null) {
                         BlockPos pos = fi.dy.masa.malilib.util.PositionUtils.getEntityBlockPos(this.parent.mc.player);
 
-                        if (this.corner == Corner.NONE)
-                        {
+                        if (this.corner == Corner.NONE) {
                             this.parent.selection.setExplicitOrigin(pos);
-                        }
-                        else
-                        {
+                        } else {
                             this.parent.selection.setSelectedSubRegionCornerPos(pos, this.corner);
                         }
                     }
-                    break;
-
-                case TOGGLE_ORIGIN_ENABLED:
+                }
+                case TOGGLE_ORIGIN_ENABLED -> {
                     BlockPos origin = this.parent.selection.getExplicitOrigin();
-
-                    if (origin == null)
-                    {
+                    if (origin == null) {
                         this.parent.createOrigin();
-                    }
-                    else
-                    {
+                    } else {
                         this.parent.selection.setExplicitOrigin(null);
                     }
-                    break;
+                }
             }
 
             this.parent.initGui(); // Re-create buttons/text fields

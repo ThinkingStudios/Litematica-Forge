@@ -63,7 +63,7 @@ public class AreaSelection
     {
         this.calculatedOriginDirty = true;
 
-        if (Configs.Visuals.ENABLE_AREA_SELECTION_RENDERING.getBooleanValue() == false)
+        if (!Configs.Visuals.ENABLE_AREA_SELECTION_RENDERING.getBooleanValue())
         {
             StatusInfoRenderer.getInstance().startOverrideDelay();
         }
@@ -233,7 +233,7 @@ public class AreaSelection
      */
     public boolean addSubRegionBox(Box box, boolean replace)
     {
-        if (replace || this.subRegionBoxes.containsKey(box.getName()) == false)
+        if (replace || !this.subRegionBoxes.containsKey(box.getName()))
         {
             this.subRegionBoxes.put(box.getName(), box);
             this.markDirty();
@@ -264,7 +264,7 @@ public class AreaSelection
 
     public boolean removeSelectedSubRegionBox()
     {
-        boolean success = this.currentBox != null ? this.subRegionBoxes.remove(this.currentBox) != null : false;
+        boolean success = this.currentBox != null && this.subRegionBoxes.remove(this.currentBox) != null;
         this.currentBox = null;
         this.markDirty();
         return success;

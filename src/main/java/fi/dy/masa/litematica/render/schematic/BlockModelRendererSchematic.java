@@ -80,7 +80,7 @@ public class BlockModelRendererSchematic
             random.setSeed(seedIn);
             List<BakedQuad> quads = modelIn.getQuads(stateIn, side, random);
 
-            if (quads.isEmpty() == false)
+            if (!quads.isEmpty())
             {
                 if (this.shouldRenderModelSide(worldIn, stateIn, posIn, side))
                 {
@@ -93,7 +93,7 @@ public class BlockModelRendererSchematic
         random.setSeed(seedIn);
         List<BakedQuad> quads = modelIn.getQuads(stateIn, null, random);
 
-        if (quads.isEmpty() == false)
+        if (!quads.isEmpty())
         {
             this.renderQuadsSmooth(worldIn, stateIn, posIn, matrices, vertexConsumer, quads, quadBounds, bitset, aoFace, overlay);
             renderedSomething = true;
@@ -114,7 +114,7 @@ public class BlockModelRendererSchematic
             random.setSeed(seedIn);
             List<BakedQuad> quads = modelIn.getQuads(stateIn, side, random);
 
-            if (quads.isEmpty() == false)
+            if (!quads.isEmpty())
             {
                 if (this.shouldRenderModelSide(worldIn, stateIn, posIn, side))
                 {
@@ -128,7 +128,7 @@ public class BlockModelRendererSchematic
         random.setSeed(seedIn);
         List<BakedQuad> quads = modelIn.getQuads(stateIn, null, random);
 
-        if (quads.isEmpty() == false)
+        if (!quads.isEmpty())
         {
             this.renderQuadsFlat(worldIn, stateIn, posIn, -1, overlay, true, matrices, vertexConsumer, quads, bitset);
             renderedSomething = true;
@@ -257,31 +257,31 @@ public class BlockModelRendererSchematic
         float min = 1.0E-4F;
         float max = 0.9999F;
 
-        switch (face)
-        {
-            case DOWN:
+        switch (face) {
+            case DOWN -> {
                 flags.set(1, minX >= min || minZ >= min || maxX <= max || maxZ <= max);
                 flags.set(0, minY == maxY && (minY < min || state.isFullCube(world, pos)));
-                break;
-            case UP:
+            }
+            case UP -> {
                 flags.set(1, minX >= min || minZ >= min || maxX <= max || maxZ <= max);
                 flags.set(0, minY == maxY && (maxY > max || state.isFullCube(world, pos)));
-                break;
-            case NORTH:
+            }
+            case NORTH -> {
                 flags.set(1, minX >= min || minY >= min || maxX <= max || maxY <= max);
                 flags.set(0, minZ == maxZ && (minZ < min || state.isFullCube(world, pos)));
-                break;
-            case SOUTH:
+            }
+            case SOUTH -> {
                 flags.set(1, minX >= min || minY >= min || maxX <= max || maxY <= max);
                 flags.set(0, minZ == maxZ && (maxZ > max || state.isFullCube(world, pos)));
-                break;
-            case WEST:
+            }
+            case WEST -> {
                 flags.set(1, minY >= min || minZ >= min || maxY <= max || maxZ <= max);
                 flags.set(0, minX == maxX && (minX < min || state.isFullCube(world, pos)));
-                break;
-            case EAST:
+            }
+            case EAST -> {
                 flags.set(1, minY >= min || minZ >= min || maxY <= max || maxZ <= max);
                 flags.set(0, minX == maxX && (maxX > max || state.isFullCube(world, pos)));
+            }
         }
     }
 

@@ -305,7 +305,7 @@ public class SchematicUtils
     {
         ItemStack stack = mc.player.getMainHandStack();
 
-        if ((stack.isEmpty() == false && (stack.getItem() instanceof BlockItem)) ||
+        if ((!stack.isEmpty() && (stack.getItem() instanceof BlockItem)) ||
             (stack.isEmpty() && ToolMode.REBUILD.getPrimaryBlock() != null))
         {
             WorldSchematic worldSchematic = SchematicWorldHandler.getSchematicWorld();
@@ -364,8 +364,8 @@ public class SchematicUtils
         {
             posMutable.move(direction);
 
-            if (range.isPositionWithinRange(posMutable) == false ||
-                world.getChunkProvider().isChunkLoaded(posMutable.getX() >> 4, posMutable.getZ() >> 4) == false ||
+            if (!range.isPositionWithinRange(posMutable) ||
+                    !world.getChunkProvider().isChunkLoaded(posMutable.getX() >> 4, posMutable.getZ() >> 4) ||
                 world.getBlockState(posMutable) != stateStart)
             {
                 posMutable.move(direction.getOpposite());
@@ -399,7 +399,7 @@ public class SchematicUtils
             SubChunkPos cpos = new SubChunkPos(pos);
             List<PlacementPart> list = DataManager.getSchematicPlacementManager().getAllPlacementsTouchingChunk(pos);
 
-            if (list.isEmpty() == false)
+            if (!list.isEmpty())
             {
                 for (PlacementPart part : list)
                 {
@@ -420,13 +420,13 @@ public class SchematicUtils
                             int totalBlocks = part.getPlacement().getSchematic().getMetadata().getTotalBlocks();
                             int increment = 0;
 
-                            if (stateOriginal.isAir() == false)
+                            if (!stateOriginal.isAir())
                             {
-                                increment = state.isAir() == false ? 0 : -1;
+                                increment = !state.isAir() ? 0 : -1;
                             }
                             else
                             {
-                                increment = state.isAir() == false ? 1 : 0;
+                                increment = !state.isAir() ? 1 : 0;
                             }
 
                             totalBlocks += increment;
@@ -458,7 +458,7 @@ public class SchematicUtils
         {
             List<PlacementPart> list = DataManager.getSchematicPlacementManager().getAllPlacementsTouchingChunk(posStart);
 
-            if (list.isEmpty() == false)
+            if (!list.isEmpty())
             {
                 for (PlacementPart part : list)
                 {
@@ -495,13 +495,13 @@ public class SchematicUtils
                                     {
                                         BlockState stateOriginal = container.get(x, y, z);
 
-                                        if (stateOriginal.isAir() == false)
+                                        if (!stateOriginal.isAir())
                                         {
-                                            increment = state.isAir() == false ? 0 : -1;
+                                            increment = !state.isAir() ? 0 : -1;
                                         }
                                         else
                                         {
-                                            increment = state.isAir() == false ? 1 : 0;
+                                            increment = !state.isAir() ? 1 : 0;
                                         }
 
                                         totalBlocks += increment;
@@ -552,7 +552,7 @@ public class SchematicUtils
             SchematicPlacementManager manager = DataManager.getSchematicPlacementManager();
             List<PlacementPart> list = manager.getAllPlacementsTouchingChunk(posStart);
 
-            if (list.isEmpty() == false)
+            if (!list.isEmpty())
             {
                 for (PlacementPart part : list)
                 {
@@ -581,7 +581,7 @@ public class SchematicUtils
             SchematicPlacementManager manager = DataManager.getSchematicPlacementManager();
             List<PlacementPart> list = manager.getAllPlacementsTouchingChunk(pos);
 
-            if (list.isEmpty() == false)
+            if (!list.isEmpty())
             {
                 for (PlacementPart part : list)
                 {
@@ -696,7 +696,7 @@ public class SchematicUtils
                     {
                         BlockState oldState = container.get(x, y, z);
 
-                        if (oldState != stateOriginal && oldState.isAir() == false)
+                        if (oldState != stateOriginal && !oldState.isAir())
                         {
                             container.set(x, y, z, air);
                             --totalBlocks;
@@ -745,13 +745,13 @@ public class SchematicUtils
         int totalBlocks = schematicPlacement.getSchematic().getMetadata().getTotalBlocks();
         int increment = 0;
 
-        if (stateOriginalIn.isAir() == false)
+        if (!stateOriginalIn.isAir())
         {
-            increment = stateNewIn.isAir() == false ? 0 : -1;
+            increment = !stateNewIn.isAir() ? 0 : -1;
         }
         else
         {
-            increment = stateNewIn.isAir() == false ? 1 : 0;
+            increment = !stateNewIn.isAir() ? 1 : 0;
         }
 
         for (String regionName : regions)
@@ -855,7 +855,7 @@ public class SchematicUtils
 
     public static void moveCurrentlySelectedWorldRegionTo(BlockPos pos, MinecraftClient mc)
     {
-        if (mc.player == null || EntityUtils.isCreativeMode(mc.player) == false)
+        if (mc.player == null || !EntityUtils.isCreativeMode(mc.player))
         {
             InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.error.generic.creative_mode_only");
             return;

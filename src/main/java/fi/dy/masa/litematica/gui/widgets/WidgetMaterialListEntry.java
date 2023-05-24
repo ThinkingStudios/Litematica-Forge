@@ -126,15 +126,14 @@ public class WidgetMaterialListEntry extends WidgetListEntrySortable<MaterialLis
         int x3 = x2 + maxCountLength1 + 20;
         int x4 = x3 + maxCountLength2 + 20;
 
-        switch (column)
-        {
-            case 0: return x1;
-            case 1: return x2;
-            case 2: return x3;
-            case 3: return x4;
-            case 4: return x4 + maxCountLength3 + 20;
-            default: return x1;
-        }
+        return switch (column) {
+            case 0 -> x1;
+            case 1 -> x2;
+            case 2 -> x3;
+            case 3 -> x4;
+            case 4 -> x4 + maxCountLength3 + 20;
+            default -> x1;
+        };
     }
 
     @Override
@@ -152,22 +151,14 @@ public class WidgetMaterialListEntry extends WidgetListEntrySortable<MaterialLis
 
         int column = this.getMouseOverColumn(mouseX, mouseY);
 
-        switch (column)
-        {
-            case 0:
-                this.materialList.setSortCriteria(SortCriteria.NAME);
-                break;
-            case 1:
-                this.materialList.setSortCriteria(SortCriteria.COUNT_TOTAL);
-                break;
-            case 2:
-                this.materialList.setSortCriteria(SortCriteria.COUNT_MISSING);
-                break;
-            case 3:
-                this.materialList.setSortCriteria(SortCriteria.COUNT_AVAILABLE);
-                break;
-            default:
+        switch (column) {
+            case 0 -> this.materialList.setSortCriteria(SortCriteria.NAME);
+            case 1 -> this.materialList.setSortCriteria(SortCriteria.COUNT_TOTAL);
+            case 2 -> this.materialList.setSortCriteria(SortCriteria.COUNT_MISSING);
+            case 3 -> this.materialList.setSortCriteria(SortCriteria.COUNT_AVAILABLE);
+            default -> {
                 return false;
+            }
         }
 
         // Re-create the widgets
@@ -203,7 +194,7 @@ public class WidgetMaterialListEntry extends WidgetListEntrySortable<MaterialLis
 
         if (this.header1 != null)
         {
-            if (this.listWidget.getSearchBarWidget().isSearchOpen() == false)
+            if (!this.listWidget.getSearchBarWidget().isSearchOpen())
             {
                 this.drawString(x1, y, color, this.header1, matrixStack);
                 this.drawString(x2, y, color, this.header2, matrixStack);
@@ -228,10 +219,10 @@ public class WidgetMaterialListEntry extends WidgetListEntrySortable<MaterialLis
             this.drawString(x2, y, color, String.valueOf(countTotal), matrixStack);
 
             pre = countMissing == 0 ? green : (countAvailable >= countMissing ? gold : red);
-            this.drawString(x3, y, color, pre + String.valueOf(countMissing), matrixStack);
+            this.drawString(x3, y, color, pre + countMissing, matrixStack);
 
             pre = countAvailable >= countMissing ? green : red;
-            this.drawString(x4, y, color, pre + String.valueOf(countAvailable), matrixStack);
+            this.drawString(x4, y, color, pre + countAvailable, matrixStack);
 
             matrixStack.push();
             //TODO: RenderSystem.disableLighting();

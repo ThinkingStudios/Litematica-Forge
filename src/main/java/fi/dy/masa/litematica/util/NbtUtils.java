@@ -55,7 +55,7 @@ public class NbtUtils
     @Nullable
     public static NbtCompound readNbtFromFile(File file)
     {
-        if (file.exists() == false || file.canRead() == false)
+        if (!file.exists() || !file.canRead())
         {
             return null;
         }

@@ -186,13 +186,15 @@ public class SchematicPlacementManager
                     //System.out.printf("placing at %s\n", pos);
                     Collection<SchematicPlacement> placements = this.schematicsTouchingChunk.get(pos);
 
-                    if (placements.isEmpty() == false)
+                    if (!placements.isEmpty())
                     {
+                        ReplaceBehavior behavior = (ReplaceBehavior) Configs.Generic.PLACEMENT_REPLACE_BEHAVIOR.getOptionListValue();
+
                         for (SchematicPlacement placement : placements)
                         {
                             if (placement.isEnabled())
                             {
-                                SchematicPlacingUtils.placeToWorldWithinChunk(worldSchematic, pos, placement, ReplaceBehavior.WITH_NON_AIR, false);
+                                SchematicPlacingUtils.placeToWorldWithinChunk(worldSchematic, pos, placement, behavior, false);
                             }
                         }
 

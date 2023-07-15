@@ -1,6 +1,10 @@
 package fi.dy.masa.litematica.render;
 
-import java.util.List;
+import fi.dy.masa.litematica.util.ItemUtils;
+import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.render.RenderUtils;
+import fi.dy.masa.malilib.util.BlockUtils;
+import fi.dy.masa.malilib.util.StringUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -8,11 +12,8 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import fi.dy.masa.litematica.util.ItemUtils;
-import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.render.RenderUtils;
-import fi.dy.masa.malilib.util.BlockUtils;
-import fi.dy.masa.malilib.util.StringUtils;
+
+import java.util.List;
 
 public class BlockInfo
 {

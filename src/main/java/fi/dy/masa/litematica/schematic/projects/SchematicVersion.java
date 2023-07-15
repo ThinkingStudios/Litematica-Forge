@@ -1,10 +1,11 @@
 package fi.dy.masa.litematica.schematic.projects;
 
-import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import fi.dy.masa.malilib.util.JsonUtils;
 import net.minecraft.util.math.BlockPos;
+
+import javax.annotation.Nullable;
 
 public class SchematicVersion
 {

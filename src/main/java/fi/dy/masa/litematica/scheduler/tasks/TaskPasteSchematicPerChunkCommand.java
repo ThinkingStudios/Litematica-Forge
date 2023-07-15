@@ -1,14 +1,19 @@
 package fi.dy.masa.litematica.scheduler.tasks;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Queue;
-import java.util.Set;
-import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import com.google.common.collect.Queues;
+import fi.dy.masa.litematica.config.Configs;
+import fi.dy.masa.litematica.data.DataManager;
+import fi.dy.masa.litematica.render.infohud.InfoHud;
+import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
+import fi.dy.masa.litematica.util.EntityUtils;
+import fi.dy.masa.litematica.util.PasteNbtBehavior;
+import fi.dy.masa.litematica.util.ReplaceBehavior;
+import fi.dy.masa.litematica.world.ChunkSchematic;
+import fi.dy.masa.malilib.gui.Message.MessageType;
+import fi.dy.masa.malilib.util.InfoUtils;
+import fi.dy.masa.malilib.util.IntBoundingBox;
+import fi.dy.masa.malilib.util.LayerRange;
+import fi.dy.masa.malilib.util.PositionUtils;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.block.BlockState;
@@ -24,28 +29,15 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.WorldChunk;
-import fi.dy.masa.malilib.gui.Message.MessageType;
-import fi.dy.masa.malilib.util.InfoUtils;
-import fi.dy.masa.malilib.util.IntBoundingBox;
-import fi.dy.masa.malilib.util.LayerRange;
-import fi.dy.masa.malilib.util.PositionUtils;
-import fi.dy.masa.litematica.config.Configs;
-import fi.dy.masa.litematica.data.DataManager;
-import fi.dy.masa.litematica.render.infohud.InfoHud;
-import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
-import fi.dy.masa.litematica.util.EntityUtils;
-import fi.dy.masa.litematica.util.PasteNbtBehavior;
-import fi.dy.masa.litematica.util.ReplaceBehavior;
-import fi.dy.masa.litematica.world.ChunkSchematic;
+
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.function.Consumer;
 
 public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChunkBase
 {

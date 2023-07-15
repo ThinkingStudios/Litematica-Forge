@@ -1,9 +1,10 @@
 package fi.dy.masa.litematica.scheduler;
 
-import java.util.ArrayList;
-import java.util.List;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.client.MinecraftClient;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TaskScheduler
 {

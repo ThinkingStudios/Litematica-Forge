@@ -1,16 +1,17 @@
 package fi.dy.masa.litematica.scheduler.tasks;
 
-import java.util.Collection;
-import java.util.Set;
 import com.google.common.collect.ImmutableList;
-import net.minecraft.util.math.ChunkPos;
-import fi.dy.masa.malilib.util.IntBoundingBox;
-import fi.dy.masa.malilib.util.LayerRange;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import fi.dy.masa.litematica.util.PositionUtils;
 import fi.dy.masa.litematica.util.ReplaceBehavior;
+import fi.dy.masa.malilib.util.IntBoundingBox;
+import fi.dy.masa.malilib.util.LayerRange;
+import net.minecraft.util.math.ChunkPos;
+
+import java.util.Collection;
+import java.util.Set;
 
 public abstract class TaskPasteSchematicPerChunkBase extends TaskProcessChunkMultiPhase
 {

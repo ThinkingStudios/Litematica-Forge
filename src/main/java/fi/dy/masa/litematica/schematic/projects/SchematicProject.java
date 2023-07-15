@@ -1,17 +1,10 @@
 package fi.dy.masa.litematica.schematic.projects;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import javax.annotation.Nullable;
-import org.apache.commons.io.FileUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.math.BlockPos;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.scheduler.TaskScheduler;
 import fi.dy.masa.litematica.scheduler.tasks.TaskSaveSchematic;
@@ -28,6 +21,14 @@ import fi.dy.masa.malilib.interfaces.ICompletionListener;
 import fi.dy.masa.malilib.util.GuiUtils;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.math.BlockPos;
+import org.apache.commons.io.FileUtils;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SchematicProject
 {

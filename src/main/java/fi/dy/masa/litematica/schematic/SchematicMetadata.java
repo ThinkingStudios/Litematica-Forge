@@ -1,11 +1,12 @@
 package fi.dy.masa.litematica.schematic;
 
-import javax.annotation.Nullable;
+import fi.dy.masa.malilib.util.Constants;
+import fi.dy.masa.malilib.util.NBTUtils;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
-import fi.dy.masa.malilib.util.Constants;
-import fi.dy.masa.malilib.util.NBTUtils;
+
+import javax.annotation.Nullable;
 
 public class SchematicMetadata
 {

@@ -1,14 +1,17 @@
 package fi.dy.masa.litematica.schematic;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.annotation.Nullable;
+import fi.dy.masa.litematica.Litematica;
+import fi.dy.masa.litematica.schematic.LitematicaSchematic.EntityInfo;
+import fi.dy.masa.litematica.schematic.container.LitematicaBlockStateContainer;
+import fi.dy.masa.litematica.schematic.conversion.SchematicConversionFixers.IStateFixer;
+import fi.dy.masa.litematica.schematic.conversion.SchematicConverter;
+import fi.dy.masa.litematica.util.EntityUtils;
+import fi.dy.masa.litematica.util.NbtUtils;
+import fi.dy.masa.litematica.util.PositionUtils;
+import fi.dy.masa.malilib.gui.Message.MessageType;
+import fi.dy.masa.malilib.util.Constants;
+import fi.dy.masa.malilib.util.InfoUtils;
+import fi.dy.masa.malilib.util.NBTUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -27,18 +30,10 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
-import fi.dy.masa.litematica.Litematica;
-import fi.dy.masa.litematica.schematic.LitematicaSchematic.EntityInfo;
-import fi.dy.masa.litematica.schematic.container.LitematicaBlockStateContainer;
-import fi.dy.masa.litematica.schematic.conversion.SchematicConversionFixers.IStateFixer;
-import fi.dy.masa.litematica.schematic.conversion.SchematicConverter;
-import fi.dy.masa.litematica.util.EntityUtils;
-import fi.dy.masa.litematica.util.NbtUtils;
-import fi.dy.masa.litematica.util.PositionUtils;
-import fi.dy.masa.malilib.gui.Message.MessageType;
-import fi.dy.masa.malilib.util.Constants;
-import fi.dy.masa.malilib.util.InfoUtils;
-import fi.dy.masa.malilib.util.NBTUtils;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.util.*;
 
 public class SchematicaSchematic
 {

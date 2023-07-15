@@ -1,25 +1,22 @@
 package fi.dy.masa.litematica.schematic.conversion;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import javax.annotation.Nullable;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.serialization.Dynamic;
+import fi.dy.masa.litematica.Litematica;
+import fi.dy.masa.litematica.schematic.LitematicaSchematic;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.PillarBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.datafixer.TypeReferences;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.StringNbtReader;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.nbt.*;
 import net.minecraft.util.math.Direction;
-import fi.dy.masa.litematica.Litematica;
-import fi.dy.masa.litematica.schematic.LitematicaSchematic;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class SchematicConversionMaps
 {

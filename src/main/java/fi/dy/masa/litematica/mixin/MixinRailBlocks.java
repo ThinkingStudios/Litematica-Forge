@@ -1,18 +1,13 @@
 package fi.dy.masa.litematica.mixin;
 
+import fi.dy.masa.litematica.config.Configs;
+import net.minecraft.block.*;
+import net.minecraft.block.enums.RailShape;
+import net.minecraft.util.BlockRotation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import fi.dy.masa.litematica.config.Configs;
-import net.minecraft.block.AbstractRailBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.DetectorRailBlock;
-import net.minecraft.block.PoweredRailBlock;
-import net.minecraft.block.RailBlock;
-import net.minecraft.block.enums.RailShape;
-import net.minecraft.util.BlockRotation;
 
 @Mixin({ RailBlock.class, DetectorRailBlock.class, PoweredRailBlock.class})
 public abstract class MixinRailBlocks extends AbstractRailBlock

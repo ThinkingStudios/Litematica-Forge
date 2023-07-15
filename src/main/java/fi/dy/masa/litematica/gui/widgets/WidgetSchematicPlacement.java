@@ -1,8 +1,5 @@
 package fi.dy.masa.litematica.gui.widgets;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import com.google.common.collect.ImmutableList;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.gui.GuiPlacementConfiguration;
@@ -21,6 +18,10 @@ import fi.dy.masa.malilib.util.StringUtils;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class WidgetSchematicPlacement extends WidgetListEntryBase<SchematicPlacement>
 {

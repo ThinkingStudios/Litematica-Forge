@@ -1,12 +1,5 @@
 package fi.dy.masa.litematica.gui;
 
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
-import javax.annotation.Nullable;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.util.ScreenshotRecorder;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.gui.GuiMainMenu.ButtonListenerChangeMenu;
@@ -28,6 +21,14 @@ import fi.dy.masa.malilib.interfaces.IConfirmationListener;
 import fi.dy.masa.malilib.interfaces.IStringConsumerFeedback;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.StringUtils;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.texture.NativeImage;
+import net.minecraft.client.util.ScreenshotRecorder;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
 
 public class GuiSchematicManager extends GuiSchematicBrowserBase implements ISelectionListener<DirectoryEntry>
 {

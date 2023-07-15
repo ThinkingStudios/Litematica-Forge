@@ -1,11 +1,11 @@
 package fi.dy.masa.litematica.mixin;
 
+import fi.dy.masa.litematica.config.Configs;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.util.math.Vec3d;
-import fi.dy.masa.litematica.config.Configs;
 
 @Mixin(value = ServerPlayNetworkHandler.class, priority = 1010)
 public class MixinServerPlayNetworkHandler

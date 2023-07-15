@@ -1,15 +1,16 @@
 package fi.dy.masa.litematica.mixin;
 
-import java.util.function.Supplier;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import fi.dy.masa.litematica.util.WorldUtils;
 import net.minecraft.block.Block;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
-import fi.dy.masa.litematica.util.WorldUtils;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.function.Supplier;
 
 @Mixin(Block.class)
 public class MixinBlock

@@ -1,9 +1,9 @@
 package fi.dy.masa.litematica.scheduler.tasks;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import javax.annotation.Nullable;
+import fi.dy.masa.litematica.config.Configs;
+import fi.dy.masa.litematica.data.DataManager;
+import fi.dy.masa.litematica.util.ToBooleanFunction;
+import fi.dy.masa.malilib.util.IntBoundingBox;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.text.Text;
@@ -11,10 +11,11 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import fi.dy.masa.litematica.config.Configs;
-import fi.dy.masa.litematica.data.DataManager;
-import fi.dy.masa.litematica.util.ToBooleanFunction;
-import fi.dy.masa.malilib.util.IntBoundingBox;
+
+import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
 
 public abstract class TaskProcessChunkMultiPhase extends TaskProcessChunkBase
 {

@@ -1,6 +1,5 @@
 package fi.dy.masa.litematica.gui;
 
-import javax.annotation.Nullable;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.gui.GuiMainMenu.ButtonListenerChangeMenu;
 import fi.dy.masa.litematica.gui.widgets.WidgetListPlacementSubRegions;
@@ -28,6 +27,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
+
+import javax.annotation.Nullable;
 
 public class GuiPlacementConfiguration  extends GuiListBase<SubRegionPlacement, WidgetPlacementSubRegion, WidgetListPlacementSubRegions>
                                         implements ISelectionListener<SubRegionPlacement>

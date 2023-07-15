@@ -1,12 +1,6 @@
 package fi.dy.masa.litematica.gui.widgets;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import com.google.common.collect.ImmutableList;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
 import fi.dy.masa.litematica.gui.GuiSubRegionConfiguration;
 import fi.dy.masa.litematica.gui.Icons;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic;
@@ -21,6 +15,13 @@ import fi.dy.masa.malilib.gui.button.IButtonActionListener;
 import fi.dy.masa.malilib.gui.widgets.WidgetListEntryBase;
 import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.StringUtils;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class WidgetPlacementSubRegion extends WidgetListEntryBase<SubRegionPlacement>
 {

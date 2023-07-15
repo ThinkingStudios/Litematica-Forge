@@ -1,6 +1,5 @@
 package fi.dy.masa.litematica.world;
 
-import javax.annotation.Nullable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
@@ -9,6 +8,8 @@ import net.minecraft.world.chunk.ChunkNibbleArray;
 import net.minecraft.world.chunk.ChunkProvider;
 import net.minecraft.world.chunk.light.ChunkLightingView;
 import net.minecraft.world.chunk.light.LightingProvider;
+
+import javax.annotation.Nullable;
 
 public class FakeLightingProvider extends LightingProvider
 {

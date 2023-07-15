@@ -1,13 +1,5 @@
 package fi.dy.masa.litematica.schematic.placement;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import javax.annotation.Nullable;
-import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -38,6 +30,11 @@ import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import org.apache.commons.lang3.tuple.Pair;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.util.*;
 
 public class SchematicPlacement
 {

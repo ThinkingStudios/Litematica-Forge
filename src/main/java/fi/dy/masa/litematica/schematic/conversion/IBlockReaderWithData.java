@@ -1,9 +1,10 @@
 package fi.dy.masa.litematica.schematic.conversion;
 
-import javax.annotation.Nullable;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
+
+import javax.annotation.Nullable;
 
 public interface IBlockReaderWithData extends BlockView
 {

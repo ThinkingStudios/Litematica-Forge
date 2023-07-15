@@ -1,22 +1,10 @@
 package fi.dy.masa.litematica.event;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.config.Hotkeys;
 import fi.dy.masa.litematica.data.DataManager;
-import fi.dy.masa.litematica.gui.GuiAreaSelectionManager;
-import fi.dy.masa.litematica.gui.GuiConfigs;
+import fi.dy.masa.litematica.gui.*;
 import fi.dy.masa.litematica.gui.GuiConfigs.ConfigGuiTab;
-import fi.dy.masa.litematica.gui.GuiMainMenu;
-import fi.dy.masa.litematica.gui.GuiMaterialList;
-import fi.dy.masa.litematica.gui.GuiPlacementConfiguration;
-import fi.dy.masa.litematica.gui.GuiRenderLayer;
-import fi.dy.masa.litematica.gui.GuiSchematicLoadedList;
-import fi.dy.masa.litematica.gui.GuiSchematicPlacementsList;
-import fi.dy.masa.litematica.gui.GuiSchematicVerifier;
-import fi.dy.masa.litematica.gui.GuiSubRegionConfiguration;
 import fi.dy.masa.litematica.materials.MaterialListBase;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import fi.dy.masa.litematica.schematic.placement.SubRegionPlacement;
@@ -25,27 +13,19 @@ import fi.dy.masa.litematica.selection.CornerSelectionMode;
 import fi.dy.masa.litematica.selection.SelectionManager;
 import fi.dy.masa.litematica.tool.ToolMode;
 import fi.dy.masa.litematica.tool.ToolModeData;
-import fi.dy.masa.litematica.util.EntityUtils;
-import fi.dy.masa.litematica.util.InventoryUtils;
-import fi.dy.masa.litematica.util.PositionUtils;
+import fi.dy.masa.litematica.util.*;
 import fi.dy.masa.litematica.util.PositionUtils.Corner;
-import fi.dy.masa.litematica.util.RayTraceUtils;
-import fi.dy.masa.litematica.util.SchematicUtils;
-import fi.dy.masa.litematica.util.SchematicWorldRefresher;
-import fi.dy.masa.litematica.util.ToolUtils;
-import fi.dy.masa.litematica.util.WorldUtils;
 import fi.dy.masa.malilib.config.IConfigBoolean;
 import fi.dy.masa.malilib.config.options.ConfigString;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.gui.Message.MessageType;
-import fi.dy.masa.malilib.hotkeys.IHotkeyCallback;
-import fi.dy.masa.malilib.hotkeys.IKeybind;
-import fi.dy.masa.malilib.hotkeys.KeyAction;
-import fi.dy.masa.malilib.hotkeys.KeyCallbackToggleBooleanConfigWithMessage;
-import fi.dy.masa.malilib.hotkeys.KeybindMulti;
+import fi.dy.masa.malilib.hotkeys.*;
 import fi.dy.masa.malilib.interfaces.IValueChangeCallback;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.LayerMode;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.BlockPos;
 
 public class KeyCallbacks
 {

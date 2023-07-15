@@ -1,12 +1,13 @@
 package fi.dy.masa.litematica.render.infohud;
 
-import java.util.ArrayList;
-import java.util.List;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.malilib.config.HudAlignment;
 import fi.dy.masa.malilib.util.GuiUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class InfoHud
 {

@@ -1,9 +1,8 @@
 package fi.dy.masa.litematica.render.schematic;
 
-import java.util.BitSet;
-import java.util.List;
-import java.util.Random;
-import javax.annotation.Nullable;
+import fi.dy.masa.litematica.config.Configs;
+import fi.dy.masa.litematica.data.DataManager;
+import fi.dy.masa.malilib.util.PositionUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
@@ -18,9 +17,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.BlockRenderView;
-import fi.dy.masa.litematica.config.Configs;
-import fi.dy.masa.litematica.data.DataManager;
-import fi.dy.masa.malilib.util.PositionUtils;
+
+import javax.annotation.Nullable;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Random;
 
 public class BlockModelRendererSchematic
 {

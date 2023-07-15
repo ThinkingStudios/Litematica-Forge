@@ -1,11 +1,12 @@
 package fi.dy.masa.litematica.selection;
 
-import javax.annotation.Nullable;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import fi.dy.masa.malilib.util.JsonUtils;
 import net.minecraft.util.math.BlockPos;
+
+import javax.annotation.Nullable;
 
 public class AreaSelectionSimple extends AreaSelection
 {

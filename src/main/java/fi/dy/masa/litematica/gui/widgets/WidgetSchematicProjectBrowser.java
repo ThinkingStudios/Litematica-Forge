@@ -1,8 +1,5 @@
 package fi.dy.masa.litematica.gui.widgets;
 
-import java.io.File;
-import java.io.FileFilter;
-import javax.annotation.Nullable;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.gui.Icons;
 import fi.dy.masa.litematica.schematic.projects.SchematicProject;
@@ -15,6 +12,10 @@ import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.FileFilter;
 
 public class WidgetSchematicProjectBrowser extends WidgetFileBrowserBase implements ISelectionListener<DirectoryEntry>
 {

@@ -1,7 +1,8 @@
 package fi.dy.masa.litematica.materials;
 
-import java.util.Comparator;
 import fi.dy.masa.litematica.materials.MaterialListBase.SortCriteria;
+
+import java.util.Comparator;
 
 public class MaterialListSorter implements Comparator<MaterialListEntry>
 {

@@ -1,10 +1,6 @@
 package fi.dy.masa.litematica.schematic.conversion;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.FenceGateBlock;
-import net.minecraft.block.PaneBlock;
-import net.minecraft.block.WallBlock;
+import net.minecraft.block.*;
 import net.minecraft.block.enums.WallShape;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;

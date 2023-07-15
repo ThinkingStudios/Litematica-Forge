@@ -1,7 +1,5 @@
 package fi.dy.masa.litematica.gui.widgets;
 
-import java.util.Collection;
-import java.util.List;
 import com.google.common.collect.ImmutableList;
 import fi.dy.masa.litematica.gui.GuiSchematicProjectManager;
 import fi.dy.masa.litematica.gui.Icons;
@@ -16,6 +14,9 @@ import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.Collection;
+import java.util.List;
 
 public class WidgetListSchematicVersions extends WidgetListBase<SchematicVersion, WidgetSchematicVersion>
 {

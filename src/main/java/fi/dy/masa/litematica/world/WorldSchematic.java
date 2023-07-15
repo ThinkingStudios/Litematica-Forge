@@ -1,12 +1,10 @@
 package fi.dy.masa.litematica.world;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
+import fi.dy.masa.litematica.Reference;
+import fi.dy.masa.litematica.render.LitematicaRenderer;
+import fi.dy.masa.litematica.render.schematic.WorldRendererSchematic;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
@@ -26,11 +24,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.profiler.Profiler;
-import net.minecraft.util.registry.BuiltinRegistries;
-import net.minecraft.util.registry.DynamicRegistryManager;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryEntry;
-import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.util.registry.*;
 import net.minecraft.world.LightType;
 import net.minecraft.world.MutableWorldProperties;
 import net.minecraft.world.World;
@@ -44,9 +38,13 @@ import net.minecraft.world.entity.EntityLookup;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.tick.EmptyTickSchedulers;
 import net.minecraft.world.tick.QueryableTickScheduler;
-import fi.dy.masa.litematica.Reference;
-import fi.dy.masa.litematica.render.LitematicaRenderer;
-import fi.dy.masa.litematica.render.schematic.WorldRendererSchematic;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class WorldSchematic extends World
 {
@@ -58,6 +56,7 @@ public class WorldSchematic extends World
     private final RegistryEntry<Biome> biome;
     private int nextEntityId;
     private int entityCount;
+    public final boolean isClient;
 
     protected WorldSchematic(MutableWorldProperties mutableWorldProperties,
                              RegistryEntry<DimensionType> dimensionType,
@@ -69,11 +68,17 @@ public class WorldSchematic extends World
         this.worldRenderer = LitematicaRenderer.getInstance().getWorldRenderer();
         this.chunkManagerSchematic = new ChunkManagerSchematic(this);
         this.biome = RegistryEntry.of(BuiltinRegistries.BIOME.get(BiomeKeys.PLAINS));
+        this.isClient = false;
     }
 
     public ChunkManagerSchematic getChunkProvider()
     {
         return this.chunkManagerSchematic;
+    }
+
+    @Override
+    public boolean isClient() {
+        return this.isClient;
     }
 
     @Override

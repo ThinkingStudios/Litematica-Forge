@@ -1,7 +1,5 @@
 package fi.dy.masa.litematica.gui;
 
-import javax.annotation.Nullable;
-import net.minecraft.client.util.math.MatrixStack;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic;
 import fi.dy.masa.malilib.gui.GuiTextFieldGeneric;
 import fi.dy.masa.malilib.gui.Message.MessageType;
@@ -14,6 +12,9 @@ import fi.dy.masa.malilib.gui.widgets.WidgetFileBrowserBase.DirectoryEntryType;
 import fi.dy.masa.malilib.util.FileUtils;
 import fi.dy.masa.malilib.util.KeyCodes;
 import fi.dy.masa.malilib.util.StringUtils;
+import net.minecraft.client.util.math.MatrixStack;
+
+import javax.annotation.Nullable;
 
 public abstract class GuiSchematicSaveBase extends GuiSchematicBrowserBase implements ISelectionListener<DirectoryEntry>
 {

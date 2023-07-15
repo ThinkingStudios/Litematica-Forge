@@ -1,6 +1,5 @@
 package fi.dy.masa.litematica.gui;
 
-import javax.annotation.Nullable;
 import fi.dy.masa.litematica.gui.GuiMainMenu.ButtonListenerChangeMenu;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import fi.dy.masa.litematica.schematic.placement.SubRegionPlacement;
@@ -21,6 +20,8 @@ import fi.dy.masa.malilib.util.StringUtils;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
+
+import javax.annotation.Nullable;
 
 public class GuiSubRegionConfiguration extends GuiBase
 {

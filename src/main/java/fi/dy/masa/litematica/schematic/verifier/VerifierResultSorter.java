@@ -1,10 +1,11 @@
 package fi.dy.masa.litematica.schematic.verifier;
 
-import java.util.Comparator;
-import net.minecraft.block.BlockState;
 import fi.dy.masa.litematica.schematic.verifier.SchematicVerifier.BlockMismatch;
 import fi.dy.masa.litematica.schematic.verifier.SchematicVerifier.SortCriteria;
 import fi.dy.masa.litematica.util.ItemUtils;
+import net.minecraft.block.BlockState;
+
+import java.util.Comparator;
 
 public class VerifierResultSorter implements Comparator<BlockMismatch>
 {

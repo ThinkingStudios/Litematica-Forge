@@ -1,12 +1,13 @@
 package fi.dy.masa.litematica.event;
 
-import javax.annotation.Nullable;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.schematic.conversion.SchematicConversionMaps;
 import fi.dy.masa.litematica.world.SchematicWorldHandler;
 import fi.dy.masa.malilib.interfaces.IWorldLoadListener;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.world.ClientWorld;
+
+import javax.annotation.Nullable;
 
 public class WorldLoadListener implements IWorldLoadListener
 {

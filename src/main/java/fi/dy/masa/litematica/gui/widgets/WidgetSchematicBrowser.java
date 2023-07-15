@@ -1,19 +1,5 @@
 package fi.dy.masa.litematica.gui.widgets;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import javax.annotation.Nullable;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.NativeImageBackedTexture;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3i;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.gui.GuiSchematicBrowserBase;
@@ -24,6 +10,21 @@ import fi.dy.masa.malilib.gui.interfaces.ISelectionListener;
 import fi.dy.masa.malilib.gui.widgets.WidgetFileBrowserBase;
 import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.StringUtils;
+import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.texture.NativeImage;
+import net.minecraft.client.texture.NativeImageBackedTexture;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3i;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.tuple.Pair;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.FileFilter;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class WidgetSchematicBrowser extends WidgetFileBrowserBase
 {

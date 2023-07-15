@@ -1,9 +1,9 @@
 package fi.dy.masa.litematica.scheduler.tasks;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
 import fi.dy.masa.litematica.materials.IMaterialList;
 import fi.dy.masa.litematica.selection.AreaSelection;
+import net.minecraft.block.BlockState;
+import net.minecraft.util.math.BlockPos;
 
 public class TaskCountBlocksArea extends TaskCountBlocksBase
 {

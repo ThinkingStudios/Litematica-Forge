@@ -1,9 +1,10 @@
 package fi.dy.masa.litematica.schematic.container;
 
-import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtList;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 public interface ILitematicaBlockStatePalette
 {

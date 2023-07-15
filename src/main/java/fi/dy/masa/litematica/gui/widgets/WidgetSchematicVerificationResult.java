@@ -1,35 +1,6 @@
 package fi.dy.masa.litematica.gui.widgets;
 
-import java.util.List;
-import java.util.Random;
-import javax.annotation.Nullable;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.DiffuseLighting;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.LightmapTextureManager;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.BlockRenderManager;
-import net.minecraft.client.render.model.BakedModel;
-import net.minecraft.client.render.model.BakedQuad;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.PlayerScreenHandler;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Quaternion;
-import net.minecraft.util.math.Vec3f;
-import net.minecraft.util.registry.Registry;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.gui.GuiSchematicVerifier;
 import fi.dy.masa.litematica.gui.GuiSchematicVerifier.BlockMismatchEntry;
@@ -49,6 +20,28 @@ import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.GuiUtils;
 import fi.dy.masa.malilib.util.PositionUtils;
 import fi.dy.masa.malilib.util.StringUtils;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.render.*;
+import net.minecraft.client.render.block.BlockRenderManager;
+import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.model.BakedQuad;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.item.ItemStack;
+import net.minecraft.screen.PlayerScreenHandler;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Quaternion;
+import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.registry.Registry;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Random;
 
 public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<BlockMismatchEntry>
 {

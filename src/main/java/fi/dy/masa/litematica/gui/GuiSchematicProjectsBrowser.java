@@ -1,7 +1,5 @@
 package fi.dy.masa.litematica.gui;
 
-import java.io.File;
-import javax.annotation.Nullable;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.gui.GuiMainMenu.ButtonListenerChangeMenu;
 import fi.dy.masa.litematica.gui.widgets.WidgetSchematicProjectBrowser;
@@ -22,6 +20,9 @@ import fi.dy.masa.malilib.interfaces.IStringConsumerFeedback;
 import fi.dy.masa.malilib.util.GuiUtils;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.StringUtils;
+
+import javax.annotation.Nullable;
+import java.io.File;
 
 public class GuiSchematicProjectsBrowser extends GuiListBase<DirectoryEntry, WidgetDirectoryEntry, WidgetSchematicProjectBrowser>
                                         implements ISelectionListener<DirectoryEntry>

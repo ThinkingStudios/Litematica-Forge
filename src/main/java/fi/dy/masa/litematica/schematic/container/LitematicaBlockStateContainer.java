@@ -1,13 +1,14 @@
 package fi.dy.masa.litematica.schematic.container;
 
-import javax.annotation.Nullable;
+import io.netty.buffer.Unpooled;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
-import io.netty.buffer.Unpooled;
+
+import javax.annotation.Nullable;
 
 public class LitematicaBlockStateContainer implements ILitematicaBlockStatePaletteResizer
 {

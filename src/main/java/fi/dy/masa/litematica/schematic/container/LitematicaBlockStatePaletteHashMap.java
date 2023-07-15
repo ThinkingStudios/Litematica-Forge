@@ -1,12 +1,13 @@
 package fi.dy.masa.litematica.schematic.container;
 
-import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.util.collection.Int2ObjectBiMap;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 public class LitematicaBlockStatePaletteHashMap implements ILitematicaBlockStatePalette
 {

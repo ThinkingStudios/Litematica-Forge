@@ -1,8 +1,5 @@
 package fi.dy.masa.litematica.util;
 
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Set;
 import net.minecraft.block.AbstractSkullBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -19,6 +16,10 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Set;
 
 public class ItemUtils
 {

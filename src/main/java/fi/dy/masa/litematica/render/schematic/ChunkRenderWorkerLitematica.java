@@ -1,22 +1,23 @@
 package fi.dy.masa.litematica.render.schematic;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CancellationException;
-import javax.annotation.Nullable;
-import com.google.common.util.concurrent.MoreExecutors;
-import org.apache.logging.log4j.Logger;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
+import fi.dy.masa.litematica.Litematica;
+import fi.dy.masa.litematica.render.schematic.ChunkRendererSchematicVbo.OverlayRenderType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.crash.CrashReport;
-import fi.dy.masa.litematica.Litematica;
-import fi.dy.masa.litematica.render.schematic.ChunkRendererSchematicVbo.OverlayRenderType;
+import org.apache.logging.log4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CancellationException;
 
 public class ChunkRenderWorkerLitematica implements Runnable
 {

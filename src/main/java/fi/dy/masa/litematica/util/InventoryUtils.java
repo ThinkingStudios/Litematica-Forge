@@ -1,7 +1,9 @@
 package fi.dy.masa.litematica.util;
 
-import java.util.ArrayList;
-import java.util.List;
+import fi.dy.masa.litematica.config.Configs;
+import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.gui.Message.MessageType;
+import fi.dy.masa.malilib.util.InfoUtils;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
@@ -15,10 +17,9 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.gui.Message.MessageType;
-import fi.dy.masa.malilib.util.InfoUtils;
-import fi.dy.masa.litematica.config.Configs;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class InventoryUtils
 {

@@ -1,8 +1,5 @@
 package fi.dy.masa.litematica.gui.widgets;
 
-import java.util.Collection;
-import java.util.List;
-import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import fi.dy.masa.litematica.data.SchematicHolder;
 import fi.dy.masa.litematica.gui.Icons;
@@ -12,6 +9,10 @@ import fi.dy.masa.malilib.gui.interfaces.ISelectionListener;
 import fi.dy.masa.malilib.gui.widgets.WidgetListBase;
 import fi.dy.masa.malilib.gui.widgets.WidgetSearchBar;
 import fi.dy.masa.malilib.util.FileUtils;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
 
 public class WidgetListLoadedSchematics extends WidgetListBase<LitematicaSchematic, WidgetSchematicEntry>
 {

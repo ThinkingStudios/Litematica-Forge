@@ -1,8 +1,9 @@
 package fi.dy.masa.litematica.render.infohud;
 
-import java.util.List;
 import fi.dy.masa.malilib.config.HudAlignment;
 import net.minecraft.client.util.math.MatrixStack;
+
+import java.util.List;
 
 public interface IInfoHudRenderer
 {

@@ -1,16 +1,17 @@
 package fi.dy.masa.litematica.world;
 
-import java.util.OptionalLong;
-import javax.annotation.Nullable;
+import fi.dy.masa.litematica.Litematica;
+import fi.dy.masa.litematica.config.Configs;
+import fi.dy.masa.litematica.render.LitematicaRenderer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.dimension.DimensionType;
-import fi.dy.masa.litematica.Litematica;
-import fi.dy.masa.litematica.config.Configs;
-import fi.dy.masa.litematica.render.LitematicaRenderer;
+
+import javax.annotation.Nullable;
+import java.util.OptionalLong;
 
 public class SchematicWorldHandler
 {

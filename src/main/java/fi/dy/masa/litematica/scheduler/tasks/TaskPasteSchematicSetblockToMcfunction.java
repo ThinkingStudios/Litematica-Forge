@@ -1,5 +1,11 @@
 package fi.dy.masa.litematica.scheduler.tasks;
 
+import fi.dy.masa.litematica.Litematica;
+import fi.dy.masa.litematica.data.DataManager;
+import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
+import fi.dy.masa.malilib.util.LayerRange;
+import net.minecraft.client.network.ClientPlayerEntity;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -7,11 +13,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import net.minecraft.client.network.ClientPlayerEntity;
-import fi.dy.masa.litematica.Litematica;
-import fi.dy.masa.litematica.data.DataManager;
-import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
-import fi.dy.masa.malilib.util.LayerRange;
 
 public class TaskPasteSchematicSetblockToMcfunction extends TaskPasteSchematicPerChunkCommand
 {

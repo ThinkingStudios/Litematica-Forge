@@ -1,14 +1,15 @@
 package fi.dy.masa.litematica.scheduler.tasks;
 
-import java.util.Collection;
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.materials.IMaterialList;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import fi.dy.masa.litematica.schematic.placement.SubRegionPlacement.RequiredEnabled;
 import fi.dy.masa.litematica.selection.Box;
 import fi.dy.masa.litematica.util.BlockInfoListType;
+import net.minecraft.block.BlockState;
+import net.minecraft.util.math.BlockPos;
+
+import java.util.Collection;
 
 public class TaskCountBlocksPlacement extends TaskCountBlocksBase
 {

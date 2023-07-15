@@ -1,6 +1,6 @@
 package fi.dy.masa.litematica.render.schematic;
 
-import javax.annotation.Nullable;
+import fi.dy.masa.litematica.world.FakeLightingProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -17,7 +17,8 @@ import net.minecraft.world.chunk.ChunkProvider;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
 import net.minecraft.world.level.ColorResolver;
-import fi.dy.masa.litematica.world.FakeLightingProvider;
+
+import javax.annotation.Nullable;
 
 public class ChunkCacheSchematic implements BlockRenderView, ChunkProvider
 {

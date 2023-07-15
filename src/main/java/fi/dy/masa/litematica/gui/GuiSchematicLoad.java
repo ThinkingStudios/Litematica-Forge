@@ -1,8 +1,5 @@
 package fi.dy.masa.litematica.gui;
 
-import java.io.File;
-import java.util.Collection;
-import net.minecraft.util.math.BlockPos;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.data.SchematicHolder;
 import fi.dy.masa.litematica.gui.GuiMainMenu.ButtonListenerChangeMenu;
@@ -25,6 +22,10 @@ import fi.dy.masa.malilib.gui.widgets.WidgetFileBrowserBase.DirectoryEntry;
 import fi.dy.masa.malilib.util.GuiUtils;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.StringUtils;
+import net.minecraft.util.math.BlockPos;
+
+import java.io.File;
+import java.util.Collection;
 
 public class GuiSchematicLoad extends GuiSchematicBrowserBase
 {

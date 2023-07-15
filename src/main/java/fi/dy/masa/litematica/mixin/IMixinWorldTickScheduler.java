@@ -1,10 +1,10 @@
 package fi.dy.masa.litematica.mixin;
 
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.minecraft.world.tick.ChunkTickScheduler;
 import net.minecraft.world.tick.WorldTickScheduler;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(WorldTickScheduler.class)
 public interface IMixinWorldTickScheduler<T>

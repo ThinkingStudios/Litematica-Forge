@@ -1,12 +1,12 @@
 package fi.dy.masa.litematica.mixin;
 
+import fi.dy.masa.litematica.util.WorldUtils;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.WorldChunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.Slice;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.WorldChunk;
-import fi.dy.masa.litematica.util.WorldUtils;
 
 @Mixin(WorldChunk.class)
 public abstract class MixinWorldChunk

@@ -1,13 +1,14 @@
 package fi.dy.masa.litematica.gui;
 
-import java.io.File;
-import javax.annotation.Nullable;
-import net.minecraft.util.Identifier;
 import fi.dy.masa.litematica.Reference;
 import fi.dy.masa.litematica.util.FileType;
 import fi.dy.masa.malilib.gui.interfaces.IFileBrowserIconProvider;
 import fi.dy.masa.malilib.gui.interfaces.IGuiIcon;
 import fi.dy.masa.malilib.render.RenderUtils;
+import net.minecraft.util.Identifier;
+
+import javax.annotation.Nullable;
+import java.io.File;
 
 public enum Icons implements IGuiIcon, IFileBrowserIconProvider
 {

@@ -1,9 +1,10 @@
 package fi.dy.masa.litematica.materials;
 
-import java.util.Collection;
 import com.google.common.collect.ImmutableList;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic;
 import fi.dy.masa.malilib.util.StringUtils;
+
+import java.util.Collection;
 
 public class MaterialListSchematic extends MaterialListBase
 {

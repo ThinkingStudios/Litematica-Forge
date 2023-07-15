@@ -1,10 +1,11 @@
 package fi.dy.masa.litematica.render.schematic;
 
-import java.util.HashMap;
-import java.util.Map;
+import fi.dy.masa.litematica.render.schematic.ChunkRendererSchematicVbo.OverlayRenderType;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.RenderLayer;
-import fi.dy.masa.litematica.render.schematic.ChunkRendererSchematicVbo.OverlayRenderType;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class BufferBuilderCache
 {

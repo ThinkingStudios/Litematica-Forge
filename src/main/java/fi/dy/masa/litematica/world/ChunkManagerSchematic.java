@@ -1,14 +1,15 @@
 package fi.dy.masa.litematica.world;
 
-import java.util.function.BooleanSupplier;
-import javax.annotation.Nullable;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.ChunkManager;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+
+import javax.annotation.Nullable;
+import java.util.function.BooleanSupplier;
 
 public class ChunkManagerSchematic extends ChunkManager
 {

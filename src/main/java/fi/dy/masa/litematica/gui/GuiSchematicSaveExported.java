@@ -1,6 +1,5 @@
 package fi.dy.masa.litematica.gui;
 
-import java.io.File;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.gui.GuiSchematicManager.ExportType;
 import fi.dy.masa.litematica.util.FileType;
@@ -12,6 +11,8 @@ import fi.dy.masa.malilib.gui.button.IButtonActionListener;
 import fi.dy.masa.malilib.gui.widgets.WidgetFileBrowserBase.DirectoryEntryType;
 import fi.dy.masa.malilib.util.FileUtils;
 import fi.dy.masa.malilib.util.StringUtils;
+
+import java.io.File;
 
 public class GuiSchematicSaveExported extends GuiSchematicSaveBase
 {

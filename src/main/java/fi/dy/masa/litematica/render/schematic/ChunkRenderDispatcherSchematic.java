@@ -1,9 +1,10 @@
 package fi.dy.masa.litematica.render.schematic;
 
-import javax.annotation.Nullable;
+import fi.dy.masa.litematica.world.WorldSchematic;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import fi.dy.masa.litematica.world.WorldSchematic;
+
+import javax.annotation.Nullable;
 
 public class ChunkRenderDispatcherSchematic
 {

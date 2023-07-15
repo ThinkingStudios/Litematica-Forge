@@ -1,8 +1,5 @@
 package fi.dy.masa.litematica.util;
 
-import java.util.Iterator;
-import java.util.Optional;
-import javax.annotation.Nullable;
 import com.google.common.base.Splitter;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -14,6 +11,10 @@ import net.minecraft.util.BlockMirror;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.registry.Registry;
+
+import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.Optional;
 
 public class BlockUtils
 {

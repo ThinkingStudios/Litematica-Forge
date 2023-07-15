@@ -1,7 +1,8 @@
 package fi.dy.masa.litematica.scheduler.tasks;
 
-import java.util.function.BooleanSupplier;
 import fi.dy.masa.litematica.scheduler.TaskScheduler;
+
+import java.util.function.BooleanSupplier;
 
 public class TaskDelay extends TaskBase
 {

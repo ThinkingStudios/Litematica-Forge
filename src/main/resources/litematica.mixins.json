@@ -23,7 +23,8 @@
     "MixinRailBlocks",
     "MixinWorld",
     "MixinWorldChunk",
-    "MixinWorldRenderer"
+    "MixinWorldRenderer",
+    "compat.MixinIForgeBlockEntity"
   ],
   "injectors": {
     "defaultRequire": 1

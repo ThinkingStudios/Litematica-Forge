@@ -23,12 +23,10 @@
     "MixinRailBlocks",
     "MixinWorld",
     "MixinWorldChunk",
-    "MixinWorldRenderer"
+    "MixinWorldRenderer",
+    "compat.MixinIForgeTileEntity"
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "mixins": [
-    "compat.MixinIForgeTileEntity"
-  ]
+  }
 }

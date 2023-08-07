@@ -17,7 +17,6 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.item.map.MapState;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.recipe.RecipeManager;
-import net.minecraft.registry.BuiltinRegistries;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -61,11 +60,9 @@ public class WorldSchematic extends World
     @Nullable protected final WorldRendererSchematic worldRenderer;
     protected int nextEntityId;
     protected int entityCount;
+    public final boolean isClient;
 
-    public WorldSchematic(MutableWorldProperties properties,
-                          RegistryEntry<DimensionType> dimension,
-                          Supplier<Profiler> supplier,
-                          @Nullable WorldRendererSchematic worldRenderer)
+    public WorldSchematic(MutableWorldProperties properties, RegistryEntry<DimensionType> dimension, Supplier<Profiler> supplier, @Nullable WorldRendererSchematic worldRenderer)
     {
         super(properties, REGISTRY_KEY, MinecraftClient.getInstance().getNetworkHandler().getRegistryManager(), dimension, supplier, true, false, 0L, 0);
 
@@ -73,11 +70,17 @@ public class WorldSchematic extends World
         this.worldRenderer = worldRenderer;
         this.chunkManagerSchematic = new ChunkManagerSchematic(this);
         this.biome = this.mc.world.getRegistryManager().get(RegistryKeys.BIOME).entryOf(BiomeKeys.PLAINS);
+        this.isClient = false;
     }
 
     public ChunkManagerSchematic getChunkProvider()
     {
         return this.chunkManagerSchematic;
+    }
+
+    @Override
+    public boolean isClient() {
+        return this.isClient;
     }
 
     @Override

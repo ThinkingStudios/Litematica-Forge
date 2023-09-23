@@ -1,7 +1,6 @@
 package fi.dy.masa.litematica.world;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -247,8 +246,19 @@ public class WorldSchematic extends World
     @Override
     public <T extends Entity> List<T> getEntitiesByType(TypeFilter<Entity, T> arg, Box box, Predicate<? super T> predicate)
     {
-        // This is not used in the mod, so just return an empty list...
-        return Collections.emptyList();
+        ArrayList<T> list = new ArrayList<>();
+
+        for (Entity e : this.getOtherEntities(null, box, e -> true))
+        {
+            T t = arg.downcast(e);
+
+            if (t != null && predicate.test(t))
+            {
+                list.add(t);
+            }
+        }
+
+        return list;
     }
 
     public List<ChunkSchematic> getChunksWithinBox(Box box)

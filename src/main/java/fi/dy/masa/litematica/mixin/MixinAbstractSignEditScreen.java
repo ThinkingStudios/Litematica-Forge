@@ -8,7 +8,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.block.entity.SignText;
 import net.minecraft.client.gui.screen.ingame.AbstractSignEditScreen;
 
 import fi.dy.masa.litematica.config.Configs;
@@ -19,14 +18,15 @@ public class MixinAbstractSignEditScreen
 {
     @Shadow @Final private SignBlockEntity blockEntity;
 
-    @Shadow private SignText text;
+    @Shadow @Final private String[] messages;
+    @Shadow @Final private boolean front;
 
     @Inject(method = "init", at = @At("HEAD"))
     private void insertSignText(CallbackInfo ci)
     {
         if (Configs.Generic.SIGN_TEXT_PASTE.getBooleanValue())
         {
-            WorldUtils.insertSignTextFromSchematic(this.blockEntity, this.text);
+            WorldUtils.insertSignTextFromSchematic(this.blockEntity, this.messages, this.front);
         }
     }
 }

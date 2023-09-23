@@ -1,6 +1,8 @@
 plugins {
-    id "dev.architectury.loom" version "1.1-SNAPSHOT"
+    id "dev.architectury.loom" version "1.2-SNAPSHOT"
     id "maven-publish"
+    id 'com.modrinth.minotaur' version '2.+'
+    id 'net.darkhax.curseforgegradle' version '1.+'
 }
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17
@@ -61,6 +63,38 @@ jar {
         ])
     }
 }
+
+modrinth {
+    token = System.getenv("MODRINTH_TOKEN")
+
+    projectId = "${project.modrinth_id}"
+    versionNumber = "${project.version}"
+    versionType = "beta"
+    changelog = file("CHANGELOG.md").getText('UTF-8')
+    uploadFile = remapJar
+    additionalFiles = [sourcesJar]
+    gameVersions = ["1.18", "1.18.1", "1.18.2"]
+    loaders = ["forge", "neoforge"]
+}
+
+task publishCurseForge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge) {
+    apiToken = System.getenv("CURSEFORGE_TOKEN")
+    disableVersionDetection()
+
+    def mainFile = upload(project.curseforge_id, remapJar)
+    mainFile.displayName = "${project.version}"
+    mainFile.releaseType = "beta"
+    mainFile.changelog = file("CHANGELOG.md")
+    mainFile.changelogType = "markdown"
+    mainFile.addModLoader("Forge")
+    mainFile.addJavaVersion("Java 17", "Java 18")
+    mainFile.addGameVersion("1.18", "1.18.1", "1.18.2")
+
+    def sourcesFile = mainFile.withAdditionalFile(sourcesJar)
+    sourcesFile.changelog = file("CHANGELOG.md")
+    sourcesFile.changelogType = "markdown"
+}
+
 
 // configure the maven publication
 publishing {

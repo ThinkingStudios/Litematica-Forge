@@ -2,7 +2,7 @@
 
 <img height="100" src="icon/400x400.png" width="100"/>
 
-# Forgematica (Litematica-Forge)
+# Forgematica
 
 Litematica unofficial forge port.
 

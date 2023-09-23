@@ -74,7 +74,10 @@ modrinth {
     uploadFile = remapJar
     additionalFiles = [sourcesJar]
     gameVersions = ["1.18", "1.18.1", "1.18.2"]
-    loaders = ["forge", "neoforge"]
+    loaders = ["forge"]
+    dependencies {
+        required.project("mafglib")
+    }
 }
 
 task publishCurseForge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge) {
@@ -89,6 +92,7 @@ task publishCurseForge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge)
     mainFile.addModLoader("Forge")
     mainFile.addJavaVersion("Java 17", "Java 18")
     mainFile.addGameVersion("1.18", "1.18.1", "1.18.2")
+    mainFile.addRequirement("mafglib")
 
     def sourcesFile = mainFile.withAdditionalFile(sourcesJar)
     sourcesFile.changelog = file("CHANGELOG.md")

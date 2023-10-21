@@ -24,7 +24,7 @@ public class InitHandler implements IInitializationHandler
     @Override
     public void registerModHandlers()
     {
-        ConfigManager.getInstance().registerConfigHandler(Reference.MOD_ID, new Configs());
+        ConfigManager.getInstance().registerConfigHandler(Reference.NAMESPACE, new Configs());
 
         InputEventHandler.getKeybindManager().registerKeybindProvider(InputHandler.getInstance());
         InputEventHandler.getInputManager().registerKeyboardInputHandler(InputHandler.getInstance());

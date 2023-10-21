@@ -1,6 +1,9 @@
 name: Publish Release
 
-on: [workflow_dispatch] # Manual trigger
+on:
+  release:
+    types:
+      - published
 
 permissions:
   contents: write

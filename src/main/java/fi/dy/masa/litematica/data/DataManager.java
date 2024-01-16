@@ -449,7 +449,7 @@ public class DataManager implements IDirectoryCache
 
     public static File getCurrentConfigDirectory()
     {
-        return new File(FileUtils.getConfigDirectory(), Reference.NAMESPACE);
+        return new File(FileUtils.getConfigDirectory(), Reference.MOD_ID);
     }
 
     public static File getSchematicsBaseDirectory()
@@ -506,7 +506,7 @@ public class DataManager implements IDirectoryCache
             Litematica.logger.warn("Failed to create the config directory '{}'", dir.getAbsolutePath());
         }
 
-        return new File(dir, StringUtils.getStorageFileName(globalData, Reference.NAMESPACE + "_", ".json", "default"));
+        return new File(dir, StringUtils.getStorageFileName(globalData, Reference.MOD_ID + "_", ".json", "default"));
     }
 
     public static void setToolItem(String itemNameIn)

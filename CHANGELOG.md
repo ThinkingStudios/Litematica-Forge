@@ -1,2 +1,3 @@
 ## Change
-- fix button icon missing
+- fix icon missing
+- update mafglib to `0.1.10`

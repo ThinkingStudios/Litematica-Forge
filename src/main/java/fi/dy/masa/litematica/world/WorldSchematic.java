@@ -52,7 +52,7 @@ import fi.dy.masa.litematica.render.schematic.WorldRendererSchematic;
 
 public class WorldSchematic extends World
 {
-    protected static final RegistryKey<World> REGISTRY_KEY = RegistryKey.of(RegistryKeys.WORLD, new Identifier(Reference.NAMESPACE, "schematic_world"));
+    protected static final RegistryKey<World> REGISTRY_KEY = RegistryKey.of(RegistryKeys.WORLD, new Identifier(Reference.MOD_ID, "schematic_world"));
 
     protected final MinecraftClient mc;
     protected final ChunkManagerSchematic chunkManagerSchematic;

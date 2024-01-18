@@ -1,7 +1,7 @@
 package fi.dy.masa.litematica;
 
 import fi.dy.masa.litematica.gui.GuiConfigs;
-import fi.dy.masa.malilib.compat.forge.ForgePlatformCompat;
+import fi.dy.masa.malilib.compat.forge.ForgePlatformUtils;
 import fi.dy.masa.malilib.event.InitializationHandler;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -21,9 +21,9 @@ public class Litematica {
     }
 
     public void onInitializeClient(FMLClientSetupEvent event) {
-        ForgePlatformCompat.getInstance().getModClientExtensionPoint();
+        ForgePlatformUtils.getInstance().getClientModIgnoredServerOnly();
         InitializationHandler.getInstance().registerInitializationHandler(new InitHandler());
-        ForgePlatformCompat.getInstance().getMod(Reference.MOD_ID).registerModConfigScreen((screen) -> {
+        ForgePlatformUtils.getInstance().getMod(Reference.MOD_ID).registerModConfigScreen((screen) -> {
             GuiConfigs gui = new GuiConfigs();
             gui.setParent(screen);
             return gui;

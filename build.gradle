@@ -1,8 +1,7 @@
 plugins {
     id "dev.architectury.loom" version "1.4-SNAPSHOT"
     id "maven-publish"
-    id 'com.modrinth.minotaur' version '2.+'
-    id 'net.darkhax.curseforgegradle' version '1.+'
+    id "me.shedaniel.unified-publishing" version "0.1.+"
 }
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17
@@ -64,41 +63,6 @@ jar {
     }
 }
 
-modrinth {
-    token = System.getenv("MODRINTH_TOKEN")
-
-    projectId = "${project.modrinth_id}"
-    versionNumber = "${project.version}"
-    versionType = "beta"
-    changelog = file("CHANGELOG.md").getText('UTF-8')
-    uploadFile = remapJar
-    additionalFiles = [sourcesJar]
-    gameVersions = ["1.20", "1.20.1"]
-    loaders = ["forge", "neoforge"]
-    dependencies {
-        required.project("mafglib")
-    }
-}
-
-task publishCurseForge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge) {
-    apiToken = System.getenv("CURSEFORGE_TOKEN")
-    disableVersionDetection()
-
-    def mainFile = upload(project.curseforge_id, remapJar)
-    mainFile.displayName = "${project.version}"
-    mainFile.releaseType = "beta"
-    mainFile.changelog = file("CHANGELOG.md")
-    mainFile.changelogType = "markdown"
-    mainFile.addModLoader("Forge", "NeoForge")
-    mainFile.addJavaVersion("Java 17", "Java 18")
-    mainFile.addGameVersion("1.20", "1.20.1")
-    mainFile.addRequirement("mafglib")
-
-    def sourcesFile = mainFile.withAdditionalFile(sourcesJar)
-    sourcesFile.changelog = file("CHANGELOG.md")
-    sourcesFile.changelogType = "markdown"
-}
-
 // configure the maven publication
 publishing {
     publications {
@@ -113,5 +77,41 @@ publishing {
         // Notice: This block does NOT have the same function as the block in the top level.
         // The repositories here will be used for publishing your artifact, not for
         // retrieving dependencies.
+    }
+}
+
+unifiedPublishing {
+    project {
+        displayName = "$project.version"
+        releaseType = "beta"
+        changelog = file("CHANGELOG.md").getText('UTF-8')
+        gameVersions = ["1.20", "1.20.1"]
+        gameLoaders = ["forge", "neoforge"]
+
+        mainPublication remapJar
+        secondaryPublications.builtBy(sourcesJar)
+
+        relations {
+            depends {
+                curseforge = "mafglib"
+                modrinth = "mafglib"
+            }
+        }
+        var CURSEFORGE_TOKEN = project.findProperty("CURSEFORGE_TOKEN") ?: System.getenv("CURSEFORGE_TOKEN")
+        if (CURSEFORGE_TOKEN != null) {
+            curseforge {
+                token = CURSEFORGE_TOKEN
+                id = project.curseforge_id
+            }
+        }
+
+        var MODRINTH_TOKEN = project.findProperty("MODRINTH_TOKEN") ?: System.getenv("MODRINTH_TOKEN")
+        if (MODRINTH_TOKEN != null) {
+            modrinth {
+                token = MODRINTH_TOKEN
+                id = project.modrinth_id
+                version = "$project.version"
+            }
+        }
     }
 }

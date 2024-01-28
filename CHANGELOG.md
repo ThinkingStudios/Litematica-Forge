@@ -1,3 +1,3 @@
 ## Change
 - fix icon missing
-- update mafglib to `0.1.5`
+- update mafglib to `0.1.6`

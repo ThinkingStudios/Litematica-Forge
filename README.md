@@ -6,7 +6,7 @@
 
 Litematica unofficial forge port.
 
-**Require [MaLiLib-Forge](https://github.com/ThinkingStudios/MaLiLib-Forge).**
+**Require [MaFgLib](https://github.com/ThinkingStudios/MaLiLib-Forge).**
 
 <img alt="forge" height="56" src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/forge_vector.svg">
 

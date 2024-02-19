@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[46,)"
+loaderVersion = "[1,)"
 license = "LGPLv3"
 
 [[mods]]
@@ -16,23 +16,26 @@ Litematica unofficial forge port.
 A modern schematic mod for Forge.
 '''
 
+[[mixins]]
+config = "forgematica.mixins.json"
+
 [[dependencies.forgematica]]
-modId = "forge"
-mandatory = true
-versionRange = "[46,)"
+modId = "neoforge"
+type = "required"
+versionRange = "[20,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.forgematica]]
 modId = "minecraft"
-mandatory = true
-versionRange = "[1.20,)"
+type = "required"
+versionRange = "[1.20.3,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.forgematica]]
 modId = "mafglib"
-mandatory = true
+type = "required"
 versionRange = "*"
 ordering = "NONE"
 side = "BOTH"

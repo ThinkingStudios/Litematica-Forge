@@ -158,7 +158,6 @@ public class MaterialListHudRenderer implements IInfoHudRenderer
         {
             matrixStack.push();
             matrixStack.scale((float) scale, (float) scale, (float) scale);
-
             //RenderSystem.applyModelViewMatrix();
         }
 

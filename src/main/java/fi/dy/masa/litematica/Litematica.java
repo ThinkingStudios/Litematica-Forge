@@ -1,11 +1,10 @@
 package fi.dy.masa.litematica;
 
-import fi.dy.masa.malilib.compat.forge.ForgePlatformUtils;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import fi.dy.masa.litematica.item.LitematicaItem;
+import fi.dy.masa.malilib.compat.neoforge.ForgePlatformUtils;
 
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.loading.FMLLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,12 +17,12 @@ public class Litematica {
     public static final Logger logger = LogManager.getLogger(Reference.MOD_ID);
 
     public Litematica() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-
-        modEventBus.addListener(this::onInitializeClient);
+        if (FMLLoader.getDist().isClient()) {
+            this.onInitializeClient();
+        }
     }
 
-    public void onInitializeClient(FMLClientSetupEvent event) {
+    public void onInitializeClient() {
         ForgePlatformUtils.getInstance().getClientModIgnoredServerOnly();
         InitializationHandler.getInstance().registerInitializationHandler(new InitHandler());
         ForgePlatformUtils.getInstance().getMod(Reference.MOD_ID).registerModConfigScreen((screen) -> {
@@ -31,6 +30,8 @@ public class Litematica {
             gui.setParent(screen);
             return gui;
         });
+
+        LitematicaItem.registerItem();
     }
 
     public static void debugLog(String msg, Object... args) {

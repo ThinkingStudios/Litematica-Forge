@@ -698,7 +698,6 @@ public class RayTraceUtils
         return null;
     }
 
-    @Nullable
     private static boolean traceLoopSteps(RayTraceCalcsData data,
             World world, BlockState blockState, FluidState fluidState,
             boolean ignoreBlockWithoutBoundingBox,
@@ -706,7 +705,7 @@ public class RayTraceUtils
     {
         if ((respectLayerRange == false || data.range.isPositionWithinRange(data.x, data.y, data.z)) &&
                 (ignoreBlockWithoutBoundingBox == false || blockState.getBlock() == Blocks.NETHER_PORTAL ||
-                 blockState.getBlock() == Blocks.END_PORTAL || blockState.getBlock() == Blocks.END_GATEWAY ||
+                blockState.getBlock() == Blocks.END_PORTAL || blockState.getBlock() == Blocks.END_GATEWAY ||
              blockState.getCollisionShape(world, data.blockPos).isEmpty() == false))
         {
             VoxelShape blockShape = blockState.getOutlineShape(world, data.blockPos, ShapeContext.of(MinecraftClient.getInstance().player));

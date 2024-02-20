@@ -1,3 +1,2 @@
 ## Change
-- fix icon missing
-- update mafglib to `0.1.6`
+- port to 1.20.4 NeoForge

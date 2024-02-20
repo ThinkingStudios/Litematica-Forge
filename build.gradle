@@ -78,7 +78,7 @@ publishing {
 unifiedPublishing {
     project {
         displayName = "$project.version"
-        releaseType = "beta"
+        releaseType = "alpha"
         changelog = file("CHANGELOG.md").getText('UTF-8')
         gameVersions = ["1.20.3", "1.20.4"]
         gameLoaders = ["neoforge"]

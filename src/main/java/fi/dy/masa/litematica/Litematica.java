@@ -1,9 +1,7 @@
 package fi.dy.masa.litematica;
 
-import fi.dy.masa.litematica.item.LitematicaItem;
 import fi.dy.masa.malilib.compat.neoforge.ForgePlatformUtils;
 
-import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLLoader;
 import org.apache.logging.log4j.LogManager;
@@ -17,10 +15,9 @@ import fi.dy.masa.litematica.config.Configs;
 public class Litematica {
     public static final Logger logger = LogManager.getLogger(Reference.MOD_ID);
 
-    public Litematica(IEventBus modEventBus) {
+    public Litematica() {
         if (FMLLoader.getDist().isClient()) {
             this.onInitializeClient();
-            LitematicaItem.registerItem(modEventBus);
         }
     }
 

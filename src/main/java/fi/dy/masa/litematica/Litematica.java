@@ -20,7 +20,7 @@ public class Litematica {
     public Litematica(IEventBus modEventBus) {
         if (FMLLoader.getDist().isClient()) {
             this.onInitializeClient();
-            //LitematicaItem.registerItem(modEventBus);
+            LitematicaItem.registerItem(modEventBus);
         }
     }
 

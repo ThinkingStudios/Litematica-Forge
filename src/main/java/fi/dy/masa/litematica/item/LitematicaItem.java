@@ -11,12 +11,14 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public class LitematicaItem {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Reference.MOD_ID);
 
-    public static final DeferredItem<Item> TOOL_ITEM = ITEMS.registerSimpleItem("matica_tool", new Item.Settings().maxCount(1).fireproof());
+    public static final DeferredItem<Item> TOOL_ITEM = ITEMS.registerSimpleItem("matica_tool", new Item.Settings().maxCount(1).fireproof().setNoRepair());
 
     public static void registerItem(IEventBus eventBus) {
+        ITEMS.register(eventBus);
+
         eventBus.addListener(BuildCreativeModeTabContentsEvent.class, event -> {
             if (event.getTabKey() == ItemGroups.TOOLS) {
-                event.add(TOOL_ITEM);
+                event.add(TOOL_ITEM.asItem());
             }
         });
     }

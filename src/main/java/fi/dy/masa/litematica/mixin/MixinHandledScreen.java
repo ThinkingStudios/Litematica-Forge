@@ -21,7 +21,7 @@ public abstract class MixinHandledScreen extends Screen
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/screen/Screen;render(Lnet/minecraft/client/gui/DrawContext;IIF)V"))
+            target = "Lnet/minecraft/client/gui/Drawable;render(Lnet/minecraft/client/gui/DrawContext;IIF)V"))
     private void renderSlotHighlights(DrawContext drawContext, int mouseX, int mouseY, float delta, CallbackInfo ci)
     {
         MaterialListHudRenderer.renderLookedAtBlockInInventory((HandledScreen<?>) (Object) this, this.client);

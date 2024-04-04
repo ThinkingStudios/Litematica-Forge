@@ -6,6 +6,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
+import net.minecraftforge.fml.loading.FMLLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,7 +21,9 @@ public class Litematica {
     public Litematica() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        modEventBus.addListener(this::onInitializeClient);
+        if (FMLLoader.getDist().isClient()) {
+            modEventBus.addListener(this::onInitializeClient);
+        }
     }
 
     public void onInitializeClient(FMLClientSetupEvent event) {

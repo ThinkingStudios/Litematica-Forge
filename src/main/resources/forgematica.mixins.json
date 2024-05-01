@@ -29,7 +29,7 @@
     "MixinWorld",
     "MixinWorldChunk",
     "MixinWorldRenderer",
-    "compat.MixinIForgeBlockEntity"
+    "compat.MixinModelDataManager"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -4,7 +4,7 @@
 
 # Forgematica
 
-Litematica unofficial forge port.
+Litematica unofficial (Neo)Forge port.
 
 **Require [MaLiLib-Forge](https://github.com/ThinkingStudios/MaLiLib-Forge).**
 

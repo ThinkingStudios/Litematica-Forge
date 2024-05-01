@@ -1,4 +1,7 @@
 {
+  "fml.menu.mods.info.displayname.modid": "全息蓝图（Forgematica）",
+  "fml.menu.mods.info.description.forgematica": "Litematica的非官方（Neo）Forge移植版。\n用于（Neo）Forge的现代蓝图模组。",
+
   "litematica.error.area_selection.copy_failed": "无法复制选区",
   "litematica.error.area_selection.create_failed": "无法创建一个名为“%s”的新选区文件，因为文件已存在",
   "litematica.error.area_selection.failed_to_load": "无法加载选区",

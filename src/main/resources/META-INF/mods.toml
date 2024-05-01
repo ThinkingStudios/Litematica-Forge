@@ -11,9 +11,9 @@ logoFile="icon.png" #optional
 credits="masa" #optional
 authors="TexTrue, ThinkingStudio" #optional
 description = '''
-Litematica unofficial forge port.
+Litematica unofficial (Neo)Forge port.
 
-A modern schematic mod for Forge.
+A modern schematic mod for (Neo)Forge.
 '''
 
 [[mixins]]

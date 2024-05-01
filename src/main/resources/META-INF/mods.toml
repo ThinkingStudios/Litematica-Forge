@@ -36,6 +36,6 @@ side = "BOTH"
 [[dependencies.forgematica]]
 modId = "mafglib"
 type = "required"
-versionRange = "[0.1.4,)"
+versionRange = "*"
 ordering = "NONE"
 side = "BOTH"

@@ -24,7 +24,7 @@
     "MixinWorld",
     "MixinWorldChunk",
     "MixinWorldRenderer",
-    "compat.MixinIForgeTileEntity"
+    "compat.MixinModelDataManager"
   ],
   "injectors": {
     "defaultRequire": 1

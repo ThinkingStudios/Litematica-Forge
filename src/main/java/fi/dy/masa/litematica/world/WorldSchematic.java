@@ -61,7 +61,7 @@ public class WorldSchematic extends World
     protected int nextEntityId;
     protected int entityCount;
     private final TickManager tickManager;
-//    public final boolean isClient;
+    public final boolean isClient;
 
     public WorldSchematic(MutableWorldProperties properties,
                           RegistryEntry<DimensionType> dimension,
@@ -75,7 +75,7 @@ public class WorldSchematic extends World
         this.chunkManagerSchematic = new ChunkManagerSchematic(this);
         this.biome = this.mc.world.getRegistryManager().get(RegistryKeys.BIOME).entryOf(BiomeKeys.PLAINS);
         this.tickManager = new TickManager();
-//        this.isClient = false;
+        this.isClient = false;
     }
 
     public ChunkManagerSchematic getChunkProvider()
@@ -83,10 +83,10 @@ public class WorldSchematic extends World
         return this.chunkManagerSchematic;
     }
 
-//    @Override
-//    public boolean isClient() {
-//        return this.isClient;
-//    }
+    @Override
+    public boolean isClient() {
+        return this.isClient;
+    }
 
     @Override
     public ChunkManagerSchematic getChunkManager()

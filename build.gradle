@@ -76,38 +76,23 @@ publishing {
     }
 }
 
-unifiedPublishing {
-    project {
-        displayName = "$project.version"
-        releaseType = "alpha"
-        changelog = file("CHANGELOG.md").getText('UTF-8')
-        gameVersions = ["1.20.3", "1.20.4"]
-        gameLoaders = ["neoforge"]
-
-        mainPublication remapJar
-        secondaryPublications.builtBy(sourcesJar)
-
-        relations {
-            depends {
-                curseforge = "mafglib"
-                modrinth = "mafglib"
-            }
-        }
-        var CURSEFORGE_TOKEN = project.findProperty("CURSEFORGE_TOKEN") ?: System.getenv("CURSEFORGE_TOKEN")
-        if (CURSEFORGE_TOKEN != null) {
-            curseforge {
-                token = CURSEFORGE_TOKEN
-                id = project.curseforge_id
-            }
-        }
-
-        var MODRINTH_TOKEN = project.findProperty("MODRINTH_TOKEN") ?: System.getenv("MODRINTH_TOKEN")
-        if (MODRINTH_TOKEN != null) {
-            modrinth {
-                token = MODRINTH_TOKEN
-                id = project.modrinth_id
-                version = "$project.version"
-            }
-        }
+publisher {
+    apiKeys {
+        modrinth System.getenv("MODRINTH_TOKEN")
+        curseforge System.getenv("CURSE_TOKEN")
     }
+
+    setCurseID("${project.curseforge_id}")
+    setModrinthID("${project.modrinth_id}")
+    setVersionType("release")
+    setChangelog(file("CHANGELOG.md").getText("UTF-8"))
+    setVersion("${project.version}")
+    setDisplayName("${project.version}")
+    setGameVersions("1.20.3", "1.20.4")
+    setLoaders("neoforge")
+    setCurseEnvironment("client")
+    setArtifact(remapJar)
+    addAdditionalFile(sourcesJar)
+    curseDepends { required("mafglib") }
+    modrinthDepends { required("mafglib") }
 }

@@ -1,3 +1,3 @@
 ## Change
-- fix icon missing
-- update mafglib to `0.1.6`
+- fixed [#48](https://github.com/ThinkingStudios/Litematica-Forge/issues/48)
+- update mafglib version

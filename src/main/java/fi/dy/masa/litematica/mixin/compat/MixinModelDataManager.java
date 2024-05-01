@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import fi.dy.masa.litematica.world.WorldSchematic;
 
 @Mixin(ModelDataManager.class)
-public class MixinModelDataManager {
+public abstract class MixinModelDataManager {
 
     /**
      * if we don't catch this Forge does stupid things

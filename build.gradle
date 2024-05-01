@@ -1,12 +1,10 @@
 plugins {
     id "dev.architectury.loom" version "1.5-SNAPSHOT"
     id "maven-publish"
-    id "me.shedaniel.unified-publishing" version "0.1.+"
+    id "com.hypherionmc.modutils.modpublisher" version "2.+"
 }
 
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17
-
-archivesBaseName = project.archives_base_name
+base.archivesName = project.archives_base_name
 version = "${project.mod_version}-mc${project.minecraft_version}"
 group = project.maven_group
 
@@ -41,6 +39,9 @@ tasks.withType(JavaCompile) {
 }
 
 java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+
     withSourcesJar()
 }
 

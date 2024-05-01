@@ -1,12 +1,10 @@
 package fi.dy.masa.litematica;
 
 import fi.dy.masa.malilib.compat.neoforge.ForgePlatformUtils;
-
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import fi.dy.masa.litematica.gui.GuiConfigs;
 import fi.dy.masa.malilib.event.InitializationHandler;
 import fi.dy.masa.litematica.config.Configs;

@@ -70,7 +70,7 @@ publishing {
 publisher {
     apiKeys {
         modrinth System.getenv("MODRINTH_TOKEN")
-        curseforge System.getenv("CURSE_TOKEN")
+        curseforge System.getenv("CURSEFORGE_TOKEN")
     }
 
     setCurseID("${project.curseforge_id}")

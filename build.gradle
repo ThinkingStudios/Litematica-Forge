@@ -11,7 +11,7 @@ group = project.maven_group
 loom {
     forge {
         mixinConfigs = [
-                "forgematica.mixins.json"
+                "forgematica.mixins.json", "forgematica.forge.mixins.json"
         ]
     }
 }

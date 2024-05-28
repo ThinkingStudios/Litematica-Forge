@@ -1,4 +1,4 @@
-package fi.dy.masa.litematica.mixin.compat;
+package org.thinkingstudio.forgematica.mixin;
 
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraftforge.client.model.data.ModelDataManager;

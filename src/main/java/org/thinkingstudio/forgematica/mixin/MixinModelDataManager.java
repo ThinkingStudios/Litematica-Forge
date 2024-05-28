@@ -1,20 +1,20 @@
-package fi.dy.masa.litematica.mixin.compat;
+package org.thinkingstudio.forgematica.mixin;
 
+import fi.dy.masa.litematica.world.WorldSchematic;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraftforge.client.model.data.ModelDataManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import fi.dy.masa.litematica.world.WorldSchematic;
 
 @Mixin(ModelDataManager.class)
 public abstract class MixinModelDataManager {
 
     /**
      * if we don't catch this Forge does stupid things
-     * it calls requestModelData on any client world when adding a BlockEntity
-     * but if it's not mc.world it crashes because model data may only
+     * it calls {@code requestModelData} on any client world when adding a BlockEntity
+     * but if it's not {@code mc.world} it crashes because model data may only
      * be used on the current client world
      *
      * @author ZacSharp
@@ -23,10 +23,6 @@ public abstract class MixinModelDataManager {
      */
     @Inject(method = "requestRefresh", at = @At("HEAD"), cancellable = true, remap = false)
     public void requestRefresh(BlockEntity blockEntity, CallbackInfo cir) {
-        // if we don't catch this Forge does stupid things
-        // it calls requestModelData on any client world when adding a te
-        // but if it's not mc.world it crashes because model data may only
-        // be used on the current client world
         if (blockEntity.getWorld() instanceof WorldSchematic) {
             cir.cancel();
         }

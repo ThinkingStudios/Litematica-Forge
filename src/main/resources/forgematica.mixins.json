@@ -29,8 +29,7 @@
     "MixinServerPlayNetworkHandler",
     "MixinWorld",
     "MixinWorldChunk",
-    "MixinWorldRenderer",
-    "compat.MixinModelDataManager"
+    "MixinWorldRenderer"
   ],
   "injectors": {
     "defaultRequire": 1

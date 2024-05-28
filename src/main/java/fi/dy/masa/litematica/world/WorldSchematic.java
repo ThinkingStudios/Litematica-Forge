@@ -60,7 +60,6 @@ public class WorldSchematic extends World
     @Nullable protected final WorldRendererSchematic worldRenderer;
     protected int nextEntityId;
     protected int entityCount;
-    //public final boolean isClient;
 
     public WorldSchematic(MutableWorldProperties properties, RegistryEntry<DimensionType> dimension, Supplier<Profiler> supplier, @Nullable WorldRendererSchematic worldRenderer)
     {
@@ -70,18 +69,12 @@ public class WorldSchematic extends World
         this.worldRenderer = worldRenderer;
         this.chunkManagerSchematic = new ChunkManagerSchematic(this);
         this.biome = RegistryEntry.of(BuiltinRegistries.BIOME.get(BiomeKeys.PLAINS));
-//        this.isClient = false;
     }
 
     public ChunkManagerSchematic getChunkProvider()
     {
         return this.chunkManagerSchematic;
     }
-
-//    @Override
-//    public boolean isClient() {
-//        return this.isClient;
-//    }
 
     @Override
     public ChunkManagerSchematic getChunkManager()

@@ -55,7 +55,6 @@ public class WorldSchematic extends World
     private final RegistryEntry<Biome> biome;
     private int nextEntityId;
     private int entityCount;
-    private final boolean isClient;
 
     protected WorldSchematic(MutableWorldProperties mutableWorldProperties,
                              RegistryEntry<DimensionType> dimensionType,
@@ -67,12 +66,6 @@ public class WorldSchematic extends World
         this.worldRenderer = LitematicaRenderer.getInstance().getWorldRenderer();
         this.chunkManagerSchematic = new ChunkManagerSchematic(this);
         this.biome = RegistryEntry.of(BuiltinRegistries.BIOME.get(BiomeKeys.PLAINS));
-        this.isClient = false;
-    }
-
-    @Override
-    public boolean isClient() {
-        return this.isClient;
     }
 
     public ChunkManagerSchematic getChunkProvider()

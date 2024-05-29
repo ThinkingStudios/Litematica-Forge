@@ -55,7 +55,6 @@ public class WorldSchematic extends World
     private final ChunkManagerSchematic chunkManagerSchematic;
     private final Int2ObjectOpenHashMap<Entity> regularEntities = new Int2ObjectOpenHashMap<>();
     private int nextEntityId;
-    public final boolean isClient;
 
     protected WorldSchematic(MutableWorldProperties mutableWorldProperties, DimensionType dimensionType, Supplier<Profiler> supplier)
     {
@@ -64,17 +63,11 @@ public class WorldSchematic extends World
         this.mc = MinecraftClient.getInstance();
         this.worldRenderer = LitematicaRenderer.getInstance().getWorldRenderer();
         this.chunkManagerSchematic = new ChunkManagerSchematic(this);
-        this.isClient = false;
     }
 
     public ChunkManagerSchematic getChunkProvider()
     {
         return this.chunkManagerSchematic;
-    }
-
-    @Override
-    public boolean isClient() {
-        return this.isClient;
     }
 
     @Override

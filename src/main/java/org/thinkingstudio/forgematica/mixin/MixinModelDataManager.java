@@ -1,4 +1,4 @@
-package fi.dy.masa.litematica.mixin.compat;
+package org.thinkingstudio.forgematica.mixin;
 
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraftforge.client.model.ModelDataManager;
@@ -13,8 +13,8 @@ public abstract class MixinModelDataManager {
 
     /**
      * if we don't catch this Forge does stupid things
-     * it calls requestModelData on any client world when adding a BlockEntity
-     * but if it's not mc.world it crashes because model data may only
+     * it calls {@code requestModelData} on any client world when adding a BlockEntity
+     * but if it's not {@code mc.world} it crashes because model data may only
      * be used on the current client world
      *
      * @author ZacSharp

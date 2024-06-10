@@ -120,7 +120,8 @@ public class InventoryUtils
                 // Otherwise it would try to write whatever that TE is into the picked ItemStack.
                 if (GuiBase.isCtrlDown() && te != null && mc.world.isAir(pos))
                 {
-                    ItemUtils.storeTEInStack(stack, te);
+                    te.setStackNbt(stack, schematicWorld.getRegistryManager());
+                    //stack.set(DataComponentTypes.LORE, new LoreComponent(ImmutableList.of(Text.of("(+NBT)"))));
                 }
 
                 setPickedItemToHand(stack, mc);
@@ -168,7 +169,7 @@ public class InventoryUtils
         }
 
         return (Configs.Generic.PICK_BLOCK_AVOID_DAMAGEABLE.getBooleanValue() == false ||
-                stack.getItem().isDamageable() == false) &&
+                stack.isDamageable() == false) &&
                (Configs.Generic.PICK_BLOCK_AVOID_TOOLS.getBooleanValue() == false ||
                 (stack.getItem() instanceof ToolItem) == false);
     }
@@ -234,11 +235,23 @@ public class InventoryUtils
     {
         DefaultedList<ItemStack> items = fi.dy.masa.malilib.util.InventoryUtils.getStoredItems(stack);
 
+        return doesListContainItem(items, referenceItem);
+    }
+
+    public static boolean doesBundleContainItem(ItemStack stack, ItemStack referenceItem)
+    {
+        DefaultedList<ItemStack> items = fi.dy.masa.malilib.util.InventoryUtils.getBundleItems(stack);
+
+        return doesListContainItem(items, referenceItem);
+    }
+
+    private static boolean doesListContainItem(DefaultedList<ItemStack> items, ItemStack referenceItem)
+    {
         if (items.size() > 0)
         {
             for (ItemStack item : items)
             {
-                if (fi.dy.masa.malilib.util.InventoryUtils.areStacksEqual(item, referenceItem))
+                if (fi.dy.masa.malilib.util.InventoryUtils.areStacksEqualIgnoreNbt(item, referenceItem))
                 {
                     return true;
                 }

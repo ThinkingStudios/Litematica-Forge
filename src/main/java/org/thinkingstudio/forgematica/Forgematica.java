@@ -1,19 +1,18 @@
 package org.thinkingstudio.forgematica;
 
-import fi.dy.masa.litematica.InitHandler;
+import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.Reference;
 import fi.dy.masa.litematica.gui.GuiConfigs;
-import fi.dy.masa.malilib.event.InitializationHandler;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLLoader;
 import org.thinkingstudio.mafglib.util.ForgePlatformUtils;
 
-@Mod(Reference.MOD_ID)
+@Mod(value = Reference.MOD_ID, dist = Dist.CLIENT)
 public class Forgematica {
     public Forgematica() {
         if (FMLLoader.getDist().isClient()) {
-            ForgePlatformUtils.getInstance().getClientModIgnoredServerOnly();
-            InitializationHandler.getInstance().registerInitializationHandler(new InitHandler());
+            Litematica.onInitialize();
             ForgePlatformUtils.getInstance().registerModConfigScreen(Reference.MOD_ID, (screen) -> {
                 GuiConfigs gui = new GuiConfigs();
                 gui.setParent(screen);

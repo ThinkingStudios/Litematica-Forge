@@ -1,20 +1,12 @@
 package fi.dy.masa.litematica.util;
 
-import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Set;
-import net.minecraft.block.AbstractSkullBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SlabBlock;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.SlabType;
-import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -26,30 +18,19 @@ public class ItemUtils
 
     public static boolean areTagsEqualIgnoreDamage(ItemStack stackReference, ItemStack stackToCheck)
     {
-        NbtCompound tagReference = stackReference.getNbt();
-        NbtCompound tagToCheck = stackToCheck.getNbt();
+        ItemStack ref = stackReference.copy();
+        ItemStack check = stackToCheck.copy();
 
-        if (tagReference != null && tagToCheck != null)
+        if (ref.isDamageable() && ref.isDamaged())
         {
-            Set<String> keysReference = new HashSet<>(tagReference.getKeys());
-
-            for (String key : keysReference)
-            {
-                if (key.equals("Damage"))
-                {
-                    continue;
-                }
-
-                if (tagReference.get(key).equals(tagToCheck.get(key)) == false)
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            ref.setDamage(0);
+        }
+        if (check.isDamageable() && check.isDamaged())
+        {
+            check.setDamage(0);
         }
 
-        return (tagReference == null) && (tagToCheck == null);
+        return ItemStack.areItemsAndComponentsEqual(ref, check);
     }
 
     public static ItemStack getItemForState(BlockState state)
@@ -126,35 +107,6 @@ public class ItemUtils
         }
     }
 
-    public static ItemStack storeTEInStack(ItemStack stack, BlockEntity te)
-    {
-        NbtCompound nbt = te.createNbtWithId();
-
-        if (nbt.contains("Owner") && stack.getItem() instanceof BlockItem &&
-            ((BlockItem) stack.getItem()).getBlock() instanceof AbstractSkullBlock)
-        {
-            NbtCompound tagOwner = nbt.getCompound("Owner");
-            NbtCompound tagSkull = new NbtCompound();
-
-            tagSkull.put("SkullOwner", tagOwner);
-            stack.setNbt(tagSkull);
-
-            return stack;
-        }
-        else
-        {
-            NbtCompound tagLore = new NbtCompound();
-            NbtList tagList = new NbtList();
-
-            tagList.add(NbtString.of("(+NBT)"));
-            tagLore.put("Lore", tagList);
-            stack.setSubNbt("display", tagLore);
-            stack.setSubNbt("BlockEntityTag", nbt);
-
-            return stack;
-        }
-    }
-
     public static String getStackString(ItemStack stack)
     {
         if (stack.isEmpty() == false)
@@ -163,7 +115,7 @@ public class ItemUtils
 
             return String.format("[%s - display: %s - NBT: %s] (%s)",
                                  rl != null ? rl.toString() : "null", stack.getName().getString(),
-                                 stack.getNbt() != null ? stack.getNbt().toString() : "<no NBT>", stack);
+                                 stack.getComponents() != null ? stack.getComponents().toString() : "<no NBT>", stack);
         }
 
         return "<empty>";

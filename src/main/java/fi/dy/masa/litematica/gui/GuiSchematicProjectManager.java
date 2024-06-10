@@ -89,7 +89,7 @@ public class GuiSchematicProjectManager extends GuiListBase<SchematicVersion, Wi
     private void reCreateGuiElements()
     {
         this.clearButtons();
-        this.clearGuiWidgets();
+        this.clearChildren();
 
         this.createElements();
     }

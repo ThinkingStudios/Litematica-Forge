@@ -11,6 +11,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.BundleItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Vec3i;
@@ -147,18 +149,35 @@ public class MaterialListUtils
 
             if (stack.isEmpty() == false)
             {
-                map.addTo(new ItemType(stack, true, false), stack.getCount());
+                Item item = stack.getItem();
 
-                if (stack.getItem() instanceof BlockItem &&
+                if (item instanceof BlockItem &&
                     ((BlockItem) stack.getItem()).getBlock() instanceof ShulkerBoxBlock &&
                     InventoryUtils.shulkerBoxHasItems(stack))
                 {
                     Object2IntOpenHashMap<ItemType> boxCounts = getStoredItemCounts(stack);
 
-                    for (ItemType type : boxCounts.keySet())
+                    for (ItemType boxType : boxCounts.keySet())
                     {
-                        map.addTo(type, boxCounts.getInt(type));
+                        map.addTo(boxType, boxCounts.getInt(boxType));
                     }
+
+                    boxCounts.clear();
+                }
+                else if (item instanceof BundleItem && InventoryUtils.bundleHasItems(stack))
+                {
+                    Object2IntOpenHashMap<ItemType> bundleCounts = getBundleItemCounts(stack);
+
+                    for (ItemType bundleType : bundleCounts.keySet())
+                    {
+                        map.addTo(bundleType, bundleCounts.getInt(bundleType));
+                    }
+
+                    bundleCounts.clear();
+                }
+                else
+                {
+                    map.addTo(new ItemType(stack, true, false), stack.getCount());
                 }
             }
         }
@@ -171,11 +190,27 @@ public class MaterialListUtils
         Object2IntOpenHashMap<ItemType> map = new Object2IntOpenHashMap<>();
         DefaultedList<ItemStack> items = InventoryUtils.getStoredItems(stackShulkerBox);
 
-        for (ItemStack stack : items)
+        for (ItemStack boxStack : items)
         {
-            if (stack.isEmpty() == false)
+            if (boxStack.isEmpty() == false)
             {
-                map.addTo(new ItemType(stack, true, false), stack.getCount());
+                map.addTo(new ItemType(boxStack, false, false), boxStack.getCount());
+            }
+        }
+
+        return map;
+    }
+
+    public static Object2IntOpenHashMap<ItemType> getBundleItemCounts(ItemStack stackBundle)
+    {
+        Object2IntOpenHashMap<ItemType> map = new Object2IntOpenHashMap<>();
+        DefaultedList<ItemStack> items = InventoryUtils.getBundleItems(stackBundle);
+
+        for (ItemStack bundleStack : items)
+        {
+            if (bundleStack.isEmpty() == false)
+            {
+                map.addTo(new ItemType(bundleStack, false, false), bundleStack.getCount());
             }
         }
 

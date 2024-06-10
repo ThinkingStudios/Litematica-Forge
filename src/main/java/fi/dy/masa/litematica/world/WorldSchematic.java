@@ -1,5 +1,6 @@
 package fi.dy.masa.litematica.world;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -10,11 +11,13 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.map.MapState;
 import net.minecraft.particle.ParticleEffect;
+import net.minecraft.recipe.BrewingRecipeRegistry;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryKey;
@@ -26,11 +29,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypeFilter;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.LightType;
 import net.minecraft.world.MutableWorldProperties;
@@ -64,16 +63,28 @@ public class WorldSchematic extends World
     public final boolean isClient;
 
     public WorldSchematic(MutableWorldProperties properties,
+                          @Nonnull DynamicRegistryManager registryManager,
                           RegistryEntry<DimensionType> dimension,
                           Supplier<Profiler> supplier,
                           @Nullable WorldRendererSchematic worldRenderer)
     {
-        super(properties, REGISTRY_KEY, MinecraftClient.getInstance().getNetworkHandler().getRegistryManager(), dimension, supplier, true, false, 0L, 0);
+        super(properties, REGISTRY_KEY, registryManager.equals(DynamicRegistryManager.EMPTY) == false ? registryManager : MinecraftClient.getInstance().world.getRegistryManager(), dimension, supplier, true, false, 0L, 0);
 
         this.mc = MinecraftClient.getInstance();
+        if (this.mc == null || this.mc.world == null)
+        {
+            throw new RuntimeException("WorldSchematic invoked when MinecraftClient.getInstance() or mc.world is null");
+       }
         this.worldRenderer = worldRenderer;
         this.chunkManagerSchematic = new ChunkManagerSchematic(this);
-        this.biome = this.mc.world.getRegistryManager().get(RegistryKeys.BIOME).entryOf(BiomeKeys.PLAINS);
+        if (registryManager.equals(DynamicRegistryManager.EMPTY) == false)
+        {
+            this.biome = registryManager.get(RegistryKeys.BIOME).entryOf(BiomeKeys.PLAINS);
+        }
+        else
+        {
+            this.biome = this.mc.world.getRegistryManager().get(RegistryKeys.BIOME).entryOf(BiomeKeys.PLAINS);
+        }
         this.tickManager = new TickManager();
         this.isClient = false;
     }
@@ -81,11 +92,6 @@ public class WorldSchematic extends World
     public ChunkManagerSchematic getChunkProvider()
     {
         return this.chunkManagerSchematic;
-    }
-
-    @Override
-    public boolean isClient() {
-        return this.isClient;
     }
 
     @Override
@@ -99,6 +105,21 @@ public class WorldSchematic extends World
     {
         return this.tickManager;
     }
+
+    @Override
+    public boolean isClient() {
+        return this.isClient;
+    }
+
+    @Nullable
+    @Override
+    public MapState getMapState(MapIdComponent id) { return null; }
+
+    @Override
+    public void putMapState(MapIdComponent id, MapState state) { }
+
+    @Override
+    public MapIdComponent getNextMapId() { return null; }
 
     @Override
     public QueryableTickScheduler<Block> getBlockTickScheduler()
@@ -197,25 +218,6 @@ public class WorldSchematic extends World
     public long getTime()
     {
         return this.mc.world != null ? this.mc.world.getTime() : 0;
-    }
-
-    @Override
-    @Nullable
-    public MapState getMapState(String id)
-    {
-        return null;
-    }
-
-    @Override
-    public void putMapState(String name, MapState mapState)
-    {
-        // NO-OP
-    }
-
-    @Override
-    public int getNextMapId()
-    {
-        return 0;
     }
 
     @Override
@@ -422,10 +424,11 @@ public class WorldSchematic extends World
     @Override
     public void syncWorldEvent(@Nullable PlayerEntity entity, int id, BlockPos pos, int data)
     {
+        // NO-OP
     }
 
     @Override
-    public void emitGameEvent(GameEvent event, Vec3d pos, @Nullable GameEvent.Emitter emitter)
+    public void emitGameEvent(RegistryEntry<GameEvent> event, Vec3d emitterPos, GameEvent.Emitter emitter)
     {
         // NO-OP
     }
@@ -438,12 +441,6 @@ public class WorldSchematic extends World
 
     @Override
     public void playSoundFromEntity(@javax.annotation.Nullable PlayerEntity except, Entity entity, RegistryEntry<SoundEvent> sound, SoundCategory category, float volume, float pitch, long seed)
-    {
-        // NO-OP
-    }
-
-    @Override
-    public void emitGameEvent(@Nullable Entity entity, GameEvent event, BlockPos pos)
     {
         // NO-OP
     }
@@ -505,18 +502,63 @@ public class WorldSchematic extends World
     @Override
     public DynamicRegistryManager getRegistryManager()
     {
-        return this.mc.world.getRegistryManager();
+        if (this.mc != null && this.mc.world != null)
+        {
+            return this.mc.world.getRegistryManager();
+        }
+        else
+        {
+            return DynamicRegistryManager.EMPTY;
+        }
+    }
+
+    @Override
+    public BrewingRecipeRegistry getBrewingRecipeRegistry()
+    {
+        if (this.mc != null && this.mc.world != null)
+        {
+            return this.mc.world.getBrewingRecipeRegistry();
+        }
+        else
+        {
+            return BrewingRecipeRegistry.EMPTY;
+        }
     }
 
     @Override
     public FeatureSet getEnabledFeatures()
     {
-        return this.mc.world.getEnabledFeatures();
+        if (this.mc != null && this.mc.world != null)
+        {
+            return this.mc.world.getEnabledFeatures();
+        }
+        else
+        {
+            return FeatureSet.empty();
+        }
     }
 
     @Override
     public String asString()
     {
         return "Chunks[SCH] W: " + this.getChunkManager().getDebugString() + " E: " + this.getRegularEntityCount();
+    }
+
+    @Override
+    public void emitGameEvent(@Nullable Entity entity, RegistryEntry<GameEvent> event, Vec3d pos)
+    {
+        // NO-OP
+    }
+
+    @Override
+    public void emitGameEvent(@Nullable Entity entity, RegistryEntry<GameEvent> event, BlockPos pos)
+    {
+        // NO-OP
+    }
+
+    @Override
+    public void emitGameEvent(RegistryKey<GameEvent> event, BlockPos pos, @Nullable GameEvent.Emitter emitter)
+    {
+        // NO-OP
     }
 }

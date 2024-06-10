@@ -1,14 +1,8 @@
 package fi.dy.masa.litematica.schematic;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import javax.annotation.Nullable;
+import java.io.File;
+import java.util.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -32,9 +26,11 @@ import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.NBTUtils;
 import fi.dy.masa.litematica.Litematica;
+import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic.EntityInfo;
 import fi.dy.masa.litematica.schematic.container.LitematicaBlockStateContainer;
 import fi.dy.masa.litematica.schematic.conversion.SchematicConversionFixers.IStateFixer;
+import fi.dy.masa.litematica.schematic.conversion.SchematicConversionMaps;
 import fi.dy.masa.litematica.schematic.conversion.SchematicConverter;
 import fi.dy.masa.litematica.util.EntityUtils;
 import fi.dy.masa.litematica.util.NbtUtils;
@@ -143,7 +139,7 @@ public class SchematicaSchematic
 
                                 try
                                 {
-                                    te.readNbt(teNBT);
+                                    te.read(teNBT, world.getRegistryManager());
                                 }
                                 catch (Exception e)
                                 {
@@ -276,7 +272,7 @@ public class SchematicaSchematic
 
                                         try
                                         {
-                                            te.readNbt(teNBT);
+                                            te.read(teNBT, world.getRegistryManager());
                                         }
                                         catch (Exception e)
                                         {
@@ -373,7 +369,7 @@ public class SchematicaSchematic
                     {
                         try
                         {
-                            NbtCompound nbt = te.createNbtWithId();
+                            NbtCompound nbt = te.createNbtWithId(world.getRegistryManager());
                             BlockPos pos = new BlockPos(relX, relY, relZ);
                             NBTUtils.writeBlockPosToTag(pos, nbt);
 
@@ -686,9 +682,11 @@ public class SchematicaSchematic
         this.entities.clear();
         NbtList tagList = nbt.getList("Entities", Constants.NBT.TAG_COMPOUND);
 
+        Litematica.logger.info("SchematicaSchematic: executing Vanilla DataFixer for Entities DataVersion {} -> {}", Configs.Generic.DATAFIXER_DEFAULT_SCHEMA.getIntegerValue(), LitematicaSchematic.MINECRAFT_DATA_VERSION);
+
         for (int i = 0; i < tagList.size(); ++i)
         {
-            this.entities.add(tagList.getCompound(i));
+            this.entities.add(SchematicConversionMaps.updateEntity(tagList.getCompound(i), Configs.Generic.DATAFIXER_DEFAULT_SCHEMA.getIntegerValue()));
         }
     }
 
@@ -696,6 +694,8 @@ public class SchematicaSchematic
     {
         this.tiles.clear();
         NbtList tagList = nbt.getList("TileEntities", Constants.NBT.TAG_COMPOUND);
+
+        Litematica.logger.info("SchematicaSchematic: executing Vanilla DataFixer for Tile Entities DataVersion {} -> {}", Configs.Generic.DATAFIXER_DEFAULT_SCHEMA.getIntegerValue(), LitematicaSchematic.MINECRAFT_DATA_VERSION);
 
         for (int i = 0; i < tagList.size(); ++i)
         {
@@ -707,8 +707,7 @@ public class SchematicaSchematic
                 pos.getY() >= 0 && pos.getY() < size.getY() &&
                 pos.getZ() >= 0 && pos.getZ() < size.getZ())
             {
-                tag = this.converter.fixTileEntityNBT(tag, this.blocks.get(pos.getX(), pos.getY(), pos.getZ()));
-                this.tiles.put(pos, tag);
+                this.tiles.put(pos, SchematicConversionMaps.updateBlockEntity(tag, Configs.Generic.DATAFIXER_DEFAULT_SCHEMA.getIntegerValue()));
             }
         }
     }

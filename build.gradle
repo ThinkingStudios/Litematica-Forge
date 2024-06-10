@@ -1,5 +1,5 @@
 plugins {
-    id "dev.architectury.loom" version "1.5-SNAPSHOT"
+    id "dev.architectury.loom" version "1.6-SNAPSHOT"
     id "maven-publish"
     id "com.hypherionmc.modutils.modpublisher" version "2.+"
 }
@@ -16,11 +16,14 @@ repositories {
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    mappings loom.layered {
+        mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+        mappings "dev.architectury:yarn-mappings-patch-${loom.platform.get().id()}:${project.yarn_patch}"
+    }
     neoForge "net.neoforged:neoforge:${project.neoforge_version}"
 
     modImplementation("maven.modrinth:mafglib:${project.malilib_version}")
-    modLocalRuntime("com.github.ThinkingStudios:ForgedNetworkingAPI:0.1.0-mc1.20.4")
+    modLocalRuntime("maven.modrinth:forged-networking-api:0.1.1+mc1.20.6")
 
     implementation "com.google.code.findbugs:jsr305:3.0.2"
 }
@@ -28,19 +31,19 @@ dependencies {
 processResources {
     inputs.property "version", project.version
 
-    filesMatching("META-INF/mods.toml") {
+    filesMatching("META-INF/neoforge.mods.toml") {
         expand "version": project.version
     }
 }
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
-    options.release = 17
+    options.release = 21
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 
     withSourcesJar()
 }
@@ -84,11 +87,11 @@ publisher {
 
     setCurseID("${project.curseforge_id}")
     setModrinthID("${project.modrinth_id}")
-    setVersionType("release")
+    setVersionType("alpha")
     setChangelog(file("CHANGELOG.md").getText("UTF-8"))
     setVersion("${project.version}")
     setDisplayName("${project.version}")
-    setGameVersions("1.20.3", "1.20.4")
+    setGameVersions("1.20.5", "1.20.6")
     setLoaders("neoforge")
     setCurseEnvironment("client")
     setArtifact(remapJar)

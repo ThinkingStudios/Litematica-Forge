@@ -1,13 +1,9 @@
 package fi.dy.masa.litematica.scheduler.tasks;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Queue;
-import java.util.Set;
-import java.util.function.Consumer;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.*;
+import java.util.function.Consumer;
 import com.google.common.collect.Queues;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -17,21 +13,19 @@ import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.command.argument.BlockArgumentParser;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.PlayerHeadItem;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.WorldChunk;
@@ -330,11 +324,11 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
             Identifier itemId = Registries.ITEM.getId(stack.getItem());
             int facingId = itemFrame.getHorizontalFacing().getId();
             String nbtStr = String.format(" {Facing:%db,Item:{id:\"%s\",Count:1b}}", facingId, itemId);
-            NbtCompound tag = stack.getNbt();
+            NbtComponent entityComp = stack.get(DataComponentTypes.ENTITY_DATA);
 
-            if (tag != null)
+            if (entityComp != null && entityComp.isEmpty() == false)
             {
-                String itemNbt = tag.toString();
+                String itemNbt = entityComp.toString();
                 String tmp = String.format(" {Facing:%db,Item:{id:\"%s\",Count:1b,tag:%s}}",
                                            facingId, itemId, itemNbt);
 
@@ -447,7 +441,7 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
 
             try
             {
-                Set<String> keys = new HashSet<>(be.createNbt().getKeys());
+                Set<String> keys = new HashSet<>(be.createNbt(clientWorld.getRegistryManager()).getKeys());
                 keys.remove("id");
                 keys.remove("x");
                 keys.remove("y");
@@ -486,7 +480,7 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
 
         if (be instanceof SignBlockEntity signBe)
         {
-            NbtCompound tag = be.createNbt();
+            NbtCompound tag = be.createNbt(schematicWorld.getRegistryManager());
 
             if (tag != null)
             {
@@ -547,12 +541,12 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
 
     @Nullable
     protected BlockPos placeNbtPickedBlock(BlockPos pos, BlockState state, BlockEntity be,
-                                           World schematicWorld, ClientWorld clientWorld)
+                                           @Nonnull World schematicWorld, @Nonnull ClientWorld clientWorld)
     {
-        double reach = this.mc.interactionManager.getReachDistance();
+        double reach = this.mc.player.getBlockInteractionRange();
         BlockPos placementPos = this.findEmptyNearbyPosition(clientWorld, this.mc.player.getPos(), 4, reach);
 
-        if (placementPos != null && preparePickedStack(pos, state, be, schematicWorld, this.mc))
+        if (placementPos != null && preparePickedStack(pos, state, be, schematicWorld, this.mc, clientWorld.getRegistryManager()))
         {
             Vec3d posVec = new Vec3d(placementPos.getX() + 0.5, placementPos.getY() + 0.5, placementPos.getZ() + 0.5);
             BlockHitResult hitResult = new BlockHitResult(posVec, Direction.UP, placementPos, true);
@@ -986,33 +980,19 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
     }
 
     protected static boolean preparePickedStack(BlockPos pos, BlockState state, BlockEntity be,
-                                                World world, MinecraftClient mc)
+                                                World world, MinecraftClient mc,
+                                                @Nonnull DynamicRegistryManager registryManager)
     {
         ItemStack stack = state.getBlock().getPickStack(world, pos, state);
 
         if (stack.isEmpty() == false)
         {
-            addBlockEntityNbt(stack, be);
+            be.setStackNbt(stack, registryManager);
             mc.player.getInventory().offHand.set(0, stack);
             mc.interactionManager.clickCreativeStack(stack, 45);
             return true;
         }
 
         return false;
-    }
-
-    public static void addBlockEntityNbt(ItemStack stack, BlockEntity be)
-    {
-        NbtCompound tag = be.createNbt();
-
-        if (stack.getItem() instanceof PlayerHeadItem && tag.contains("SkullOwner"))
-        {
-            NbtCompound ownerTag = tag.getCompound("SkullOwner");
-            stack.getOrCreateNbt().put("SkullOwner", ownerTag);
-        }
-        else
-        {
-            stack.setSubNbt("BlockEntityTag", tag);
-        }
     }
 }

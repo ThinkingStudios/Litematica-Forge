@@ -1,29 +1,20 @@
 package fi.dy.masa.litematica.data;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.annotation.Nullable;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.mojang.brigadier.StringReader;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import fi.dy.masa.malilib.gui.interfaces.IDirectoryCache;
-import fi.dy.masa.malilib.util.FileUtils;
-import fi.dy.masa.malilib.util.JsonUtils;
-import fi.dy.masa.malilib.util.LayerRange;
-import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.Reference;
 import fi.dy.masa.litematica.config.Configs;
@@ -46,8 +37,6 @@ public class DataManager implements IDirectoryCache
 {
     private static final DataManager INSTANCE = new DataManager();
 
-    private static final Pattern PATTERN_ITEM_NBT = Pattern.compile("^(?<name>[a-z0-9\\._-]+:[a-z0-9\\._-]+)(?<nbt>\\{.*\\})$");
-    private static final Pattern PATTERN_ITEM_BASE = Pattern.compile("^(?<name>(?:[a-z0-9\\._-]+:)[a-z0-9\\._-]+)$");
     private static final Map<String, File> LAST_DIRECTORIES = new HashMap<>();
     private static final ArrayList<ToBooleanFunction<Text>> CHAT_LISTENERS = new ArrayList<>();
 
@@ -58,6 +47,7 @@ public class DataManager implements IDirectoryCache
     private static boolean isCarpetServer;
     private static long clientTickStart;
 
+    public static Identifier CARPET_HELLO = Identifier.of("carpet", "hello");
     private final SelectionManager selectionManager = new SelectionManager();
     private final SchematicPlacementManager schematicPlacementManager = new SchematicPlacementManager();
     private final SchematicProjectsManager schematicProjectsManager = new SchematicProjectsManager();
@@ -71,7 +61,7 @@ public class DataManager implements IDirectoryCache
     {
     }
 
-    private static DataManager getInstance()
+    public static DataManager getInstance()
     {
         return INSTANCE;
     }
@@ -509,50 +499,19 @@ public class DataManager implements IDirectoryCache
         return new File(dir, StringUtils.getStorageFileName(globalData, Reference.MOD_ID + "_", ".json", "default"));
     }
 
+    /**
+     * Sets the current toolItem, if itemNameIn is invalid, sets toolItem to the default minecraft:stick
+     * @param itemNameIn (String representation of the item Identifier)
+     */
     public static void setToolItem(String itemNameIn)
     {
-        if (itemNameIn.isEmpty() || itemNameIn.equals("empty"))
+        toolItem = InventoryUtils.getItemStackFromString(itemNameIn);
+
+        if (toolItem == null)
         {
-            toolItem = ItemStack.EMPTY;
-            return;
+            // Fall back to a stick
+            toolItem = new ItemStack(Items.STICK);
+            Configs.Generic.TOOL_ITEM.setValueFromString(Registries.ITEM.getId(Items.STICK).toString());
         }
-
-        try
-        {
-            Matcher matcherNbt = PATTERN_ITEM_NBT.matcher(itemNameIn);
-            Matcher matcherBase = PATTERN_ITEM_BASE.matcher(itemNameIn);
-
-            String itemName = null;
-            NbtCompound nbt = null;
-
-            if (matcherNbt.matches())
-            {
-                itemName = matcherNbt.group("name");
-                nbt = (new StringNbtReader(new StringReader(matcherNbt.group("nbt")))).parseCompound();
-            }
-            else if (matcherBase.matches())
-            {
-                itemName = matcherBase.group("name");
-            }
-
-            if (itemName != null)
-            {
-                Item item = Registries.ITEM.get(new Identifier(itemName));
-
-                if (item != null && item != Items.AIR)
-                {
-                    toolItem = new ItemStack(item);
-                    toolItem.setNbt(nbt);
-                    return;
-                }
-            }
-        }
-        catch (Exception ignore)
-        {
-        }
-
-        // Fall back to a stick
-        toolItem = new ItemStack(Items.STICK);
-        Configs.Generic.TOOL_ITEM.setValueFromString(Registries.ITEM.getId(Items.STICK).toString());
     }
 }

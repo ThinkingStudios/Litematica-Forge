@@ -1,15 +1,10 @@
 package fi.dy.masa.litematica.render.schematic;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 import javax.annotation.Nullable;
-import com.mojang.blaze3d.systems.RenderSystem;
+import java.util.*;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -18,14 +13,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.GlUniform;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.gl.VertexBuffer;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BufferBuilderStorage;
-import net.minecraft.client.render.BufferRenderer;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.Frustum;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.BlockRenderManager;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
@@ -402,7 +390,7 @@ public class WorldRendererSchematic
         this.mc.getProfiler().pop();
     }
 
-    public int renderBlockLayer(RenderLayer renderLayer, MatrixStack matrices, Camera camera, Matrix4f projMatrix)
+    public int renderBlockLayer(RenderLayer renderLayer, Matrix4f matrices, Camera camera, Matrix4f projMatrix)
     {
         this.world.getProfiler().push("render_block_layer_" + renderLayer.toString());
 
@@ -518,17 +506,17 @@ public class WorldRendererSchematic
         return count;
     }
 
-    public void renderBlockOverlays(MatrixStack matrices, Camera camera, Matrix4f projMatrix)
+    public void renderBlockOverlays(Matrix4f matrix4f, Camera camera, Matrix4f projMatrix)
     {
-        this.renderBlockOverlay(OverlayRenderType.OUTLINE, matrices, camera, projMatrix);
-        this.renderBlockOverlay(OverlayRenderType.QUAD, matrices, camera, projMatrix);
+        this.renderBlockOverlay(OverlayRenderType.OUTLINE, matrix4f, camera, projMatrix);
+        this.renderBlockOverlay(OverlayRenderType.QUAD, matrix4f, camera, projMatrix);
     }
 
-    protected static void initShader(ShaderProgram shader, MatrixStack matrices, Matrix4f projMatrix)
+    protected static void initShader(ShaderProgram shader, Matrix4f matrix4f, Matrix4f projMatrix)
     {
         for (int i = 0; i < 12; ++i) shader.addSampler("Sampler" + i, RenderSystem.getShaderTexture(i));
 
-        if (shader.modelViewMat != null) shader.modelViewMat.set(matrices.peek().getPositionMatrix());
+        if (shader.modelViewMat != null) shader.modelViewMat.set(matrix4f);
         if (shader.projectionMat != null) shader.projectionMat.set(projMatrix);
         if (shader.colorModulator != null) shader.colorModulator.set(RenderSystem.getShaderColor());
         if (shader.fogStart != null) shader.fogStart.set(RenderSystem.getShaderFogStart());
@@ -538,7 +526,7 @@ public class WorldRendererSchematic
         if (shader.gameTime != null) shader.gameTime.set(RenderSystem.getShaderGameTime());
     }
 
-    protected void renderBlockOverlay(OverlayRenderType type, MatrixStack matrixStack, Camera camera, Matrix4f projMatrix)
+    protected void renderBlockOverlay(OverlayRenderType type, Matrix4f matrix4f, Camera camera, Matrix4f projMatrix)
     {
         RenderLayer renderLayer = RenderLayer.getTranslucent();
         renderLayer.startDrawing();
@@ -571,6 +559,9 @@ public class WorldRendererSchematic
         ShaderProgram shader = RenderSystem.getShader();
         BufferRenderer.reset();
 
+        // I tried using the matrix4f value here, only to have things break
+        Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
+
         for (int i = this.renderInfos.size() - 1; i >= 0; --i)
         {
             ChunkRendererSchematicVbo renderer = this.renderInfos.get(i);
@@ -584,12 +575,13 @@ public class WorldRendererSchematic
                     VertexBuffer buffer = renderer.getOverlayVertexBuffer(type);
                     BlockPos chunkOrigin = renderer.getOrigin();
 
-                    matrixStack.push();
-                    matrixStack.translate(chunkOrigin.getX() - x, chunkOrigin.getY() - y, chunkOrigin.getZ() - z);
+                    matrix4fStack.pushMatrix();
+                    matrix4fStack.translate((float) (chunkOrigin.getX() - x), (float) (chunkOrigin.getY() - y), (float) (chunkOrigin.getZ() - z));
                     buffer.bind();
-                    buffer.draw(matrixStack.peek().getPositionMatrix(), projMatrix, shader);
+                    buffer.draw(matrix4fStack, projMatrix, shader);
+
                     VertexBuffer.unbind();
-                    matrixStack.pop();
+                    matrix4fStack.popMatrix();
                 }
             }
         }
@@ -602,7 +594,7 @@ public class WorldRendererSchematic
         this.world.getProfiler().pop();
     }
 
-    public boolean renderBlock(BlockRenderView world, BlockState state, BlockPos pos, MatrixStack matrices, BufferBuilder bufferBuilderIn)
+    public boolean renderBlock(BlockRenderView world, BlockState state, BlockPos pos, Matrix4f matrix4f, BufferBuilder bufferBuilderIn)
     {
         try
         {
@@ -615,7 +607,7 @@ public class WorldRendererSchematic
             else
             {
                 return renderType == BlockRenderType.MODEL &&
-                       this.blockModelRenderer.renderModel(world, this.getModelForState(state), state, pos, matrices, bufferBuilderIn, state.getRenderingSeed(pos));
+                       this.blockModelRenderer.renderModel(world, this.getModelForState(state), state, pos, matrix4f, bufferBuilderIn, state.getRenderingSeed(pos));
             }
         }
         catch (Throwable throwable)
@@ -642,7 +634,7 @@ public class WorldRendererSchematic
         return this.blockRenderManager.getModel(state);
     }
 
-    public void renderEntities(Camera camera, Frustum frustum, MatrixStack matrices, float partialTicks)
+    public void renderEntities(Camera camera, Frustum frustum, Matrix4f matrix4f, float partialTicks)
     {
         if (this.renderEntitiesStartupCounter > 0)
         {
@@ -667,6 +659,16 @@ public class WorldRendererSchematic
 
             this.world.getProfiler().swap("regular_entities");
             //List<Entity> entitiesMultipass = Lists.<Entity>newArrayList();
+
+            // TODO --> Convert Matrix4f back to to MatrixStack?
+            //  Causes strange entity behavior (translations not applied)
+            //  if this is missing ( Including the push() and pop() ... ?)
+            //  Doing this restores the expected behavior of Entity Rendering in the Schematic World
+
+            MatrixStack matrixStack = new MatrixStack();
+            matrixStack.push();
+            matrixStack.multiplyPositionMatrix(matrix4f);
+            matrixStack.pop();
 
             VertexConsumerProvider.Immediate entityVertexConsumers = this.bufferBuilders.getEntityVertexConsumers();
             LayerRange layerRange = DataManager.getRenderLayerRange();
@@ -694,8 +696,14 @@ public class WorldRendererSchematic
                             double y = entityTmp.getY() - cameraY;
                             double z = entityTmp.getZ() - cameraZ;
 
-                            this.entityRenderDispatcher.render(entityTmp, x, y, z, entityTmp.getYaw(), 1.0f, matrices, entityVertexConsumers, this.entityRenderDispatcher.getLight(entityTmp, partialTicks));
+                            matrixStack.push();
+
+                            // TODO --> this render() call does not seem to have a push() and pop(),
+                            //  and does not accept Matrix4f/Matrix4fStack as a parameter
+                            this.entityRenderDispatcher.render(entityTmp, x, y, z, entityTmp.getYaw(), 1.0f, matrixStack, entityVertexConsumers, this.entityRenderDispatcher.getLight(entityTmp, partialTicks));
                             ++this.countEntitiesRendered;
+
+                            matrixStack.pop();
                         }
                     }
                 }
@@ -709,7 +717,7 @@ public class WorldRendererSchematic
                 ChunkRenderDataSchematic data = chunkRenderer.getChunkRenderData();
                 List<BlockEntity> tiles = data.getBlockEntities();
 
-                if (tiles.isEmpty() == false) 
+                if (tiles.isEmpty() == false)
                 {
                     BlockPos chunkOrigin = chunkRenderer.getOrigin();
                     ChunkSchematic chunk = this.world.getChunkProvider().getChunk(chunkOrigin.getX() >> 4, chunkOrigin.getZ() >> 4);
@@ -721,12 +729,14 @@ public class WorldRendererSchematic
                             try
                             {
                                 BlockPos pos = te.getPos();
-                                matrices.push();
-                                matrices.translate(pos.getX() - cameraX, pos.getY() - cameraY, pos.getZ() - cameraZ);
+                                matrixStack.push();
+                                matrixStack.translate(pos.getX() - cameraX, pos.getY() - cameraY, pos.getZ() - cameraZ);
 
-                                renderer.render(te, partialTicks, matrices, entityVertexConsumers);
+                                // TODO --> this render() call does not seem to have a push() and pop(),
+                                //  and does not accept Matrix4f/Matrix4fStack as a parameter
+                                renderer.render(te, partialTicks, matrixStack, entityVertexConsumers);
 
-                                matrices.pop();
+                                matrixStack.pop();
                             }
                             catch (Exception ignore)
                             {
@@ -743,12 +753,14 @@ public class WorldRendererSchematic
                     try
                     {
                         BlockPos pos = te.getPos();
-                        matrices.push();
-                        matrices.translate(pos.getX() - cameraX, pos.getY() - cameraY, pos.getZ() - cameraZ);
+                        matrixStack.push();
+                        matrixStack.translate(pos.getX() - cameraX, pos.getY() - cameraY, pos.getZ() - cameraZ);
 
-                        renderer.render(te, partialTicks, matrices, entityVertexConsumers);
+                        // TODO --> this render() call does not seem to have a push() and pop(),
+                        //  and does not accept Matrix4f/Matrix4fStack as a parameter
+                        renderer.render(te, partialTicks, matrixStack, entityVertexConsumers);
 
-                        matrices.pop();
+                        matrixStack.pop();
                     }
                     catch (Exception ignore)
                     {

@@ -22,14 +22,14 @@ config = "forgematica.mixins.json"
 [[dependencies.forgematica]]
 modId = "neoforge"
 type = "required"
-versionRange = "[20,)"
+versionRange = "[21,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.forgematica]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.20.3,)"
+versionRange = "[1.21,)"
 ordering = "NONE"
 side = "BOTH"
 

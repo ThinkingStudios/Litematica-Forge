@@ -1,17 +1,17 @@
 package fi.dy.masa.litematica.render.schematic;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
-import javax.annotation.Nullable;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.crash.CrashReport;
@@ -23,7 +23,7 @@ public class ChunkRenderWorkerLitematica implements Runnable
     private static final Logger LOGGER = Litematica.logger;
 
     private final ChunkRenderDispatcherLitematica chunkRenderDispatcher;
-    private final BufferBuilderCache bufferCache;
+    final private BufferAllocatorCache allocatorCache;
     private boolean shouldRun;
 
     public ChunkRenderWorkerLitematica(ChunkRenderDispatcherLitematica chunkRenderDispatcherIn)
@@ -31,11 +31,11 @@ public class ChunkRenderWorkerLitematica implements Runnable
         this(chunkRenderDispatcherIn, null);
     }
 
-    public ChunkRenderWorkerLitematica(ChunkRenderDispatcherLitematica chunkRenderDispatcherIn, @Nullable BufferBuilderCache bufferCache)
+    public ChunkRenderWorkerLitematica(ChunkRenderDispatcherLitematica chunkRenderDispatcherIn, @Nullable BufferAllocatorCache allocatorCache)
     {
         this.shouldRun = true;
         this.chunkRenderDispatcher = chunkRenderDispatcherIn;
-        this.bufferCache = bufferCache;
+        this.allocatorCache = allocatorCache;
     }
 
     @Override
@@ -63,191 +63,105 @@ public class ChunkRenderWorkerLitematica implements Runnable
 
     protected void processTask(final ChunkRenderTaskSchematic task) throws InterruptedException
     {
-        task.getLock().lock();
-
-        try
-        {
-            if (task.getStatus() != ChunkRenderTaskSchematic.Status.PENDING)
-            {
-                if (task.isFinished() == false)
-                {
-                    LOGGER.warn("Chunk render task was {} when I expected it to be pending; ignoring task", (Object) task.getStatus());
-                }
-
-                return;
-            }
-
-            task.setStatus(ChunkRenderTaskSchematic.Status.COMPILING);
-        }
-        finally
-        {
-            task.getLock().unlock();
-        }
-
+        ChunkRenderTaskSchematic.Status oldStatus;
+        oldStatus = task.casStatus(ChunkRenderTaskSchematic.Status.PENDING, ChunkRenderTaskSchematic.Status.COMPILING);
+        if(oldStatus != ChunkRenderTaskSchematic.Status.PENDING)
+            return;
         Entity entity = MinecraftClient.getInstance().getCameraEntity();
-
-        if (entity == null)
-        {
+        if (entity == null) {
             task.finish();
+            return;
         }
-        else
+
+        if (!task.setRegionRenderCacheBuilder(this.getRegionRenderAllocatorCache()))
         {
-            task.setRegionRenderCacheBuilder(this.getRegionRenderCacheBuilder());
+            throw new InterruptedException("No free Allocator Cache found");
+        }
 
-            ChunkRenderTaskSchematic.Type taskType = task.getType();
+        ChunkRenderTaskSchematic.Type taskType = task.getType();
+        switch (task.getType()) {
+            case REBUILD_CHUNK -> task.getRenderChunk().rebuildChunk(task);
+            case RESORT_TRANSPARENCY -> task.getRenderChunk().resortTransparency(task);
+        }
 
-            if (taskType == ChunkRenderTaskSchematic.Type.REBUILD_CHUNK)
-            {
-                task.getRenderChunk().rebuildChunk(task);
+        oldStatus = task.casStatus(ChunkRenderTaskSchematic.Status.COMPILING, ChunkRenderTaskSchematic.Status.UPLOADING);
+        if(oldStatus != ChunkRenderTaskSchematic.Status.COMPILING)
+        {
+            resetRenderAllocators(task);
+            return;
+        }
+
+        final ChunkRenderDataSchematic chunkRenderData = task.getChunkRenderData();
+        ArrayList<ListenableFuture<Object>> futuresList = Lists.newArrayList();
+        ChunkRendererSchematicVbo renderChunk = task.getRenderChunk();
+        BufferAllocatorCache allocators = task.getAllocatorCache();
+
+        switch (taskType) {
+            case REBUILD_CHUNK -> {
+                for(RenderLayer layer: ChunkRenderLayers.LAYERS)
+                    if (!chunkRenderData.isBlockLayerEmpty(layer))
+                        futuresList.add(this.chunkRenderDispatcher.uploadChunkBlocks(layer, allocators, renderChunk, chunkRenderData, task.getDistanceSq(), false));
+                for (OverlayRenderType type : ChunkRenderLayers.TYPES)
+                    if (!chunkRenderData.isOverlayTypeEmpty(type))
+                        futuresList.add(this.chunkRenderDispatcher.uploadChunkOverlay(type, allocators, renderChunk, chunkRenderData, task.getDistanceSq(), false));
             }
-            else if (taskType == ChunkRenderTaskSchematic.Type.RESORT_TRANSPARENCY)
-            {
-                task.getRenderChunk().resortTransparency(task);
-            }
-
-            task.getLock().lock();
-
-            try
-            {
-                if (task.getStatus() != ChunkRenderTaskSchematic.Status.COMPILING)
-                {
-                    if (task.isFinished() == false)
-                    {
-                        LOGGER.warn("Chunk render task was {} when I expected it to be compiling; aborting task", (Object) task.getStatus());
-                    }
-
-                    this.freeRenderBuilder(task);
-                    return;
-                }
-
-                task.setStatus(ChunkRenderTaskSchematic.Status.UPLOADING);
-            }
-            finally
-            {
-                task.getLock().unlock();
-            }
-
-            final ChunkRenderDataSchematic chunkRenderData = (ChunkRenderDataSchematic) task.getChunkRenderData();
-            ArrayList<ListenableFuture<Object>> futuresList = Lists.newArrayList();
-            BufferBuilderCache buffers = task.getBufferCache();
-            ChunkRendererSchematicVbo renderChunk = (ChunkRendererSchematicVbo) task.getRenderChunk();
-
-            if (taskType == ChunkRenderTaskSchematic.Type.REBUILD_CHUNK)
-            {
-                //if (GuiBase.isCtrlDown()) System.out.printf("pre uploadChunk()\n");
-                for (RenderLayer layer : RenderLayer.getBlockLayers())
-                {
-                    if (chunkRenderData.isBlockLayerEmpty(layer) == false)
-                    {
-                        //if (GuiBase.isCtrlDown()) System.out.printf("REBUILD_CHUNK pre uploadChunkBlocks()\n");
-                        //System.out.printf("REBUILD_CHUNK pre uploadChunkBlocks(%s)\n", layer.toString());
-                        BufferBuilder buffer = buffers.getBlockBufferByLayer(layer);
-                        futuresList.add(this.chunkRenderDispatcher.uploadChunkBlocks(layer, buffer, renderChunk, chunkRenderData, task.getDistanceSq()));
-                    }
-                }
-
-                for (OverlayRenderType type : OverlayRenderType.values())
-                {
-                    if (chunkRenderData.isOverlayTypeEmpty(type) == false)
-                    {
-                        //if (GuiBase.isCtrlDown()) System.out.printf("REBUILD_CHUNK pre uploadChunkOverlay()\n");
-                        BufferBuilder buffer = buffers.getOverlayBuffer(type);
-                        futuresList.add(this.chunkRenderDispatcher.uploadChunkOverlay(type, buffer, renderChunk, chunkRenderData, task.getDistanceSq()));
-                    }
-                }
-            }
-            else if (taskType == ChunkRenderTaskSchematic.Type.RESORT_TRANSPARENCY)
-            {
+            case RESORT_TRANSPARENCY -> {
                 RenderLayer layer = RenderLayer.getTranslucent();
+                if (!chunkRenderData.isBlockLayerEmpty(layer))
+                    futuresList.add(this.chunkRenderDispatcher.uploadChunkBlocks(RenderLayer.getTranslucent(), allocators, renderChunk, chunkRenderData, task.getDistanceSq(), true));
+                if (!chunkRenderData.isOverlayTypeEmpty(OverlayRenderType.QUAD))
+                    futuresList.add(this.chunkRenderDispatcher.uploadChunkOverlay(OverlayRenderType.QUAD, allocators, renderChunk, chunkRenderData, task.getDistanceSq(), true));
+            }
+        }
 
-                if (chunkRenderData.isBlockLayerEmpty(layer) == false)
-                {
-                    //System.out.printf("RESORT_TRANSPARENCY pre uploadChunkBlocks(%s)\n", layer.toString());
-                    BufferBuilder buffer = buffers.getBlockBufferByLayer(layer);
-                    futuresList.add(this.chunkRenderDispatcher.uploadChunkBlocks(RenderLayer.getTranslucent(), buffer, renderChunk, chunkRenderData, task.getDistanceSq()));
-                }
+        final ListenableFuture<List<Object>> listenablefuture = Futures.allAsList(futuresList);
 
-                if (chunkRenderData.isOverlayTypeEmpty(OverlayRenderType.QUAD) == false)
-                {
-                    //if (GuiBase.isCtrlDown()) System.out.printf("RESORT_TRANSPARENCY pre uploadChunkOverlay()\n");
-                    BufferBuilder buffer = buffers.getOverlayBuffer(OverlayRenderType.QUAD);
-                    futuresList.add(this.chunkRenderDispatcher.uploadChunkOverlay(OverlayRenderType.QUAD, buffer, renderChunk, chunkRenderData, task.getDistanceSq()));
-                }
+        task.addFinishRunnable(() -> listenablefuture.cancel(false));
+        Futures.addCallback(listenablefuture, new FutureCallback<List<Object>>()
+        {
+            @Override
+            public void onSuccess(@Nullable List<Object> list)
+            {
+                ChunkRenderWorkerLitematica.this.clearRenderAllocators(task);
+                task.casStatus(ChunkRenderTaskSchematic.Status.UPLOADING,ChunkRenderTaskSchematic.Status.DONE);
+                task.getRenderChunk().setChunkRenderData(chunkRenderData);
             }
 
-            final ListenableFuture<List<Object>> listenablefuture = Futures.allAsList(futuresList);
-
-            task.addFinishRunnable(new Runnable()
+            @Override
+            public void onFailure(@NotNull Throwable throwable)
             {
-                @Override
-                public void run()
-                {
-                    listenablefuture.cancel(false);
-                }
-            });
+                ChunkRenderWorkerLitematica.this.resetRenderAllocators(task);
+                if (!(throwable instanceof CancellationException) && !(throwable instanceof InterruptedException))
+                    MinecraftClient.getInstance().setCrashReportSupplier(CrashReport.create(throwable, "Rendering Litematica chunk"));
+            }
+        }, MoreExecutors.directExecutor());
+    }
 
-            Futures.addCallback(listenablefuture, new FutureCallback<List<Object>>()
-            {
-                @Override
-                public void onSuccess(@Nullable List<Object> list)
-                {
-                    ChunkRenderWorkerLitematica.this.freeRenderBuilder(task);
+    @Nullable
+    private BufferAllocatorCache getRegionRenderAllocatorCache() throws InterruptedException
+    {
+        return this.allocatorCache != null ? this.allocatorCache : this.chunkRenderDispatcher.allocateRenderAllocators();
+    }
 
-                    task.getLock().lock();
+    private void clearRenderAllocators(ChunkRenderTaskSchematic generator)
+    {
+        BufferAllocatorCache bufferAllocatorCache = generator.getAllocatorCache();
+        bufferAllocatorCache.clearAll();
 
-                    label49:
-                    {
-                        try
-                        {
-                            if (task.getStatus() == ChunkRenderTaskSchematic.Status.UPLOADING)
-                            {
-                                task.setStatus(ChunkRenderTaskSchematic.Status.DONE);
-                                break label49;
-                            }
-
-                            if (task.isFinished() == false)
-                            {
-                                ChunkRenderWorkerLitematica.LOGGER.warn("Chunk render task was {} when I expected it to be uploading; aborting task", (Object)task.getStatus());
-                            }
-                        }
-                        finally
-                        {
-                            task.getLock().unlock();
-                        }
-
-                        return;
-                    }
-
-                    task.getRenderChunk().setChunkRenderData(chunkRenderData);
-                }
-
-                @Override
-                public void onFailure(Throwable throwable)
-                {
-                    ChunkRenderWorkerLitematica.this.freeRenderBuilder(task);
-
-                    if ((throwable instanceof CancellationException) == false && (throwable instanceof InterruptedException) == false)
-                    {
-                        MinecraftClient.getInstance().setCrashReportSupplier(CrashReport.create(throwable, "Rendering Litematica chunk"));
-                    }
-                }
-            }, MoreExecutors.directExecutor());
+        if (this.allocatorCache == null)
+        {
+            this.chunkRenderDispatcher.freeRenderAllocators(bufferAllocatorCache);
         }
     }
 
-    private BufferBuilderCache getRegionRenderCacheBuilder() throws InterruptedException
+    private void resetRenderAllocators(ChunkRenderTaskSchematic generator)
     {
-        return this.bufferCache != null ? this.bufferCache : this.chunkRenderDispatcher.allocateRenderBuilder();
-    }
+        BufferAllocatorCache bufferAllocatorCache = generator.getAllocatorCache();
+        bufferAllocatorCache.resetAll();
 
-    private void freeRenderBuilder(ChunkRenderTaskSchematic generator)
-    {
-        BufferBuilderCache builderCache = generator.getBufferCache();
-        builderCache.clear();
-
-        if (this.bufferCache == null)
+        if (this.allocatorCache == null)
         {
-            this.chunkRenderDispatcher.freeRenderBuilder(builderCache);
+            this.chunkRenderDispatcher.freeRenderAllocators(bufferAllocatorCache);
         }
     }
 

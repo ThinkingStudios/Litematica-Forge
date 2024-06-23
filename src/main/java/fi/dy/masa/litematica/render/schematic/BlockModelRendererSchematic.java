@@ -19,9 +19,9 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.BaseRandom;
 import net.minecraft.util.math.random.LocalRandom;
 import net.minecraft.world.BlockRenderView;
+import fi.dy.masa.malilib.util.PositionUtils;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.data.DataManager;
-import fi.dy.masa.malilib.util.PositionUtils;
 
 public class BlockModelRendererSchematic
 {
@@ -209,9 +209,6 @@ public class BlockModelRendererSchematic
             g = 1.0F;
             b = 1.0F;
         }
-        // TODO -- Make sure this works --> the VertexCustomer.quad() call uses MartrixStack.Entry,
-        //  maybe Matrix4f directly in the future since matrixStack.peek() = matrix4f basically
-
         vertexConsumer.quad(matrixStack.peek(), quad, new float[]{ brightness0, brightness1, brightness2, brightness3 },
                             r, g, b, 1.0f, new int[]{ light0, light1, light2, light3 }, overlay, true);
     }

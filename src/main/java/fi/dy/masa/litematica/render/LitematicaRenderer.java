@@ -1,8 +1,8 @@
 package fi.dy.masa.litematica.render;
 
 import javax.annotation.Nullable;
-import com.mojang.blaze3d.systems.RenderSystem;
 import org.joml.Matrix4f;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.Camera;
@@ -47,6 +47,17 @@ public class LitematicaRenderer
         return this.worldRenderer;
     }
 
+    public WorldRendererSchematic resetWorldRenderer()
+    {
+        if (this.worldRenderer != null)
+        {
+            this.worldRenderer.setWorldAndLoadRenderers(null);
+            this.worldRenderer = null;
+        }
+
+        return this.getWorldRenderer();
+    }
+
     public void loadRenderers()
     {
         this.getWorldRenderer().loadRenderers();
@@ -68,7 +79,7 @@ public class LitematicaRenderer
         }
         else
         {
-            this.finishTimeNano = System.nanoTime() + Math.max(1000000000L / fpsTarget / 2L, 0L);
+            this.finishTimeNano = System.nanoTime() + 1000000000L / fpsTarget / 2L;
         }
     }
 
@@ -216,6 +227,7 @@ public class LitematicaRenderer
             boolean renderThrough = Configs.Visuals.SCHEMATIC_OVERLAY_RENDER_THROUGH.getBooleanValue() || Hotkeys.RENDER_OVERLAY_THROUGH_BLOCKS.getKeybind().isKeybindHeld();
             float lineWidth = (float) (renderThrough ? Configs.Visuals.SCHEMATIC_OVERLAY_OUTLINE_WIDTH_THROUGH.getDoubleValue() : Configs.Visuals.SCHEMATIC_OVERLAY_OUTLINE_WIDTH.getDoubleValue());
 
+            this.mc.getProfiler().push("litematica_schematic_overlay");
             RenderSystem.disableCull();
             //TODO: RenderSystem.alphaFunc(GL11.GL_GREATER, 0.001F);
             RenderSystem.enablePolygonOffset();
@@ -231,6 +243,7 @@ public class LitematicaRenderer
             RenderSystem.polygonOffset(0f, 0f);
             RenderSystem.disablePolygonOffset();
             RenderSystem.enableCull();
+            this.mc.getProfiler().pop();
         }
     }
 

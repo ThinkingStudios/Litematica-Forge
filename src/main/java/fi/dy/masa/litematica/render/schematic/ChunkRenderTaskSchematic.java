@@ -1,24 +1,23 @@
 package fi.dy.masa.litematica.render.schematic;
 
-import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
-import com.google.common.collect.Lists;
+
 import com.google.common.primitives.Doubles;
 import net.minecraft.util.math.Vec3d;
+import fi.dy.masa.litematica.Litematica;
 
 public class ChunkRenderTaskSchematic implements Comparable<ChunkRenderTaskSchematic>
 {
     private final ChunkRendererSchematicVbo chunkRenderer;
     private final ChunkRenderTaskSchematic.Type type;
-    private final List<Runnable> listFinishRunnables = Lists.<Runnable>newArrayList();
-    private final ReentrantLock lock = new ReentrantLock();
+    private final ConcurrentLinkedQueue<Runnable> finishRunnables = new ConcurrentLinkedQueue<>();
     private final Supplier<Vec3d> cameraPosSupplier;
     private final double distanceSq;
-    private BufferBuilderCache bufferBuilderCache;
+    private BufferAllocatorCache allocatorCache;
     private ChunkRenderDataSchematic chunkRenderData;
-    private ChunkRenderTaskSchematic.Status status = ChunkRenderTaskSchematic.Status.PENDING;
-    private boolean finished;
+    private final AtomicReference<ChunkRenderTaskSchematic.Status> status = new AtomicReference<>(Status.PENDING);
 
     public ChunkRenderTaskSchematic(ChunkRendererSchematicVbo renderChunkIn, ChunkRenderTaskSchematic.Type typeIn, Supplier<Vec3d> cameraPosSupplier, double distanceSqIn)
     {
@@ -35,105 +34,80 @@ public class ChunkRenderTaskSchematic implements Comparable<ChunkRenderTaskSchem
 
     public ChunkRenderTaskSchematic.Status getStatus()
     {
-        return this.status;
+        return this.status.get();
     }
 
-    public ChunkRendererSchematicVbo getRenderChunk()
+    protected ChunkRendererSchematicVbo getRenderChunk()
     {
         return this.chunkRenderer;
     }
 
-    public ChunkRenderDataSchematic getChunkRenderData()
+    protected ChunkRenderDataSchematic getChunkRenderData()
     {
         return this.chunkRenderData;
     }
 
-    public void setChunkRenderData(ChunkRenderDataSchematic chunkRenderData)
+    protected void setChunkRenderData(ChunkRenderDataSchematic chunkRenderData)
     {
+        if (this.chunkRenderData != null)
+        {
+            this.chunkRenderData.clearAll();
+        }
+
         this.chunkRenderData = chunkRenderData;
     }
 
-    public BufferBuilderCache getBufferCache()
+    public BufferAllocatorCache getAllocatorCache()
     {
-        return this.bufferBuilderCache;
+        return this.allocatorCache;
     }
 
-    public void setRegionRenderCacheBuilder(BufferBuilderCache cache)
+    public boolean setRegionRenderCacheBuilder(BufferAllocatorCache allocatorCache)
     {
-        this.bufferBuilderCache = cache;
-    }
-
-    public void setStatus(ChunkRenderTaskSchematic.Status statusIn)
-    {
-        this.lock.lock();
-
-        try
+        if (allocatorCache == null)
         {
-            this.status = statusIn;
+            Litematica.logger.error("setRegionRenderCacheBuilder() [Task] allocatorCache is null");
+            return false;
         }
-        finally
-        {
-            this.lock.unlock();
-        }
+
+        this.allocatorCache = allocatorCache;
+        return true;
+    }
+    
+    protected Status casStatus(Status expected, Status nStatus) {
+        return status.compareAndExchange(expected, nStatus);
     }
 
-    public void finish()
+    protected void finish()
     {
-        this.lock.lock();
-
-        try
-        {
-            if (this.type == ChunkRenderTaskSchematic.Type.REBUILD_CHUNK && this.status != ChunkRenderTaskSchematic.Status.DONE)
-            {
-                this.chunkRenderer.setNeedsUpdate(false);
-            }
-
-            this.finished = true;
-            this.status = ChunkRenderTaskSchematic.Status.DONE;
-
-            for (Runnable runnable : this.listFinishRunnables)
-            {
+        Status current = status.get();
+        if(current==Status.DONE)
+            return;
+        if(status.compareAndSet(current,Status.DONE)) {
+            Runnable runnable;
+            while((runnable = finishRunnables.poll())!= null) {
                 runnable.run();
             }
         }
-        finally
-        {
-            this.lock.unlock();
-        }
     }
 
-    public void addFinishRunnable(Runnable runnable)
+    protected void addFinishRunnable(Runnable runnable)
     {
-        this.lock.lock();
-
-        try
-        {
-            this.listFinishRunnables.add(runnable);
-
-            if (this.finished)
-            {
+        if(status.get() == Status.DONE) {
+            runnable.run();
+            return;
+        }
+        finishRunnables.add(runnable);
+        if(status.get() == Status.DONE) {
+            runnable = finishRunnables.poll();
+            if(runnable!=null)
                 runnable.run();
-            }
-        }
-        finally
-        {
-            this.lock.unlock();
         }
     }
 
-    public ReentrantLock getLock()
-    {
-        return this.lock;
-    }
-
-    public ChunkRenderTaskSchematic.Type getType()
+    protected ChunkRenderTaskSchematic.Type getType()
     {
         return this.type;
-    }
-
-    public boolean isFinished()
-    {
-        return this.finished;
     }
 
     public int compareTo(ChunkRenderTaskSchematic other)
@@ -146,17 +120,17 @@ public class ChunkRenderTaskSchematic implements Comparable<ChunkRenderTaskSchem
         return this.distanceSq;
     }
 
-    public static enum Status
+    public enum Status
     {
         PENDING,
         COMPILING,
         UPLOADING,
-        DONE;
+        DONE
     }
 
-    public static enum Type
+    public enum Type
     {
         REBUILD_CHUNK,
-        RESORT_TRANSPARENCY;
+        RESORT_TRANSPARENCY
     }
 }

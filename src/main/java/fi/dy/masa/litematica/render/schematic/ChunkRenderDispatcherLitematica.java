@@ -1,24 +1,30 @@
 package fi.dy.masa.litematica.render.schematic;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadFactory;
+
 import com.google.common.collect.Queues;
 import com.google.common.primitives.Doubles;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import net.minecraft.util.math.MathHelper;
 import org.apache.logging.log4j.Logger;
+import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.VertexBuffer;
-import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BuiltBuffer;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.util.BufferAllocator;
 import net.minecraft.util.math.Vec3d;
 import fi.dy.masa.litematica.Litematica;
+import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.render.schematic.ChunkRendererSchematicVbo.OverlayRenderType;
 
 public class ChunkRenderDispatcherLitematica
@@ -29,27 +35,26 @@ public class ChunkRenderDispatcherLitematica
     private final List<Thread> listWorkerThreads = new ArrayList<>();
     private final List<ChunkRenderWorkerLitematica> listThreadedWorkers = new ArrayList<>();
     private final PriorityBlockingQueue<ChunkRenderTaskSchematic> queueChunkUpdates = Queues.newPriorityBlockingQueue();
-    private final BlockingQueue<BufferBuilderCache> queueFreeRenderBuilders;
+    private final BlockingQueue<BufferAllocatorCache> queueFreeRenderAllocators;
     private final Queue<ChunkRenderDispatcherLitematica.PendingUpload> queueChunkUploads = Queues.newPriorityQueue();
     private final ChunkRenderWorkerLitematica renderWorker;
-    private final int countRenderBuilders;
+    private final int countRenderAllocators;
+    private final int countRenderThreads;
     private Vec3d cameraPos;
 
     public ChunkRenderDispatcherLitematica()
     {
-        // TODO/FIXME 1.17
-        //int threadLimitMemory = Math.max(1, (int)((double)Runtime.getRuntime().maxMemory() * 0.3D) / 10485760);
-        //int threadLimitCPU = Math.max(1, MathHelper.clamp(Runtime.getRuntime().availableProcessors(), 1, threadLimitMemory / 5));
-        //this.countRenderBuilders = MathHelper.clamp(threadLimitCPU * 10, 1, threadLimitMemory);
-        this.countRenderBuilders = 2;
+        int threadLimitMemory = Math.max(1, (int) ((double) Runtime.getRuntime().maxMemory() * 0.3D) / BufferAllocatorCache.EXPECTED_TOTAL_SIZE);
+        int threadLimitCPU = Math.max(1, MathHelper.clamp(Runtime.getRuntime().availableProcessors(), 1, threadLimitMemory / 5));
+        int maxThreads = Math.max(1, Math.min((Configs.Visuals.RENDER_SCHEMATIC_MAX_THREADS.getIntegerValue()), threadLimitCPU));
+        int maxCache = Math.max(1, Math.min((Configs.Visuals.RENDER_SCHEMATIC_MAX_THREADS.getIntegerValue() - 1), threadLimitMemory));
         this.cameraPos = Vec3d.ZERO;
 
-        /*
-        if (threadLimitCPU > 1)
+        if (maxThreads > 1)
         {
-            Litematica.logger.info("Creating {} render threads", threadLimitCPU);
+            LOGGER.info("Creating {} rendering threads", maxThreads);
 
-            for (int i = 0; i < threadLimitCPU; ++i)
+            for (int i = 0; i < maxThreads; ++i)
             {
                 ChunkRenderWorkerLitematica worker = new ChunkRenderWorkerLitematica(this);
                 Thread thread = THREAD_FACTORY.newThread(worker);
@@ -58,21 +63,42 @@ public class ChunkRenderDispatcherLitematica
                 this.listWorkerThreads.add(thread);
             }
         }
-        */
 
-        Litematica.logger.info("Using {} total BufferBuilder caches", this.countRenderBuilders + 1);
+        this.countRenderThreads = maxThreads;
+        this.queueFreeRenderAllocators = Queues.newArrayBlockingQueue(maxCache);
 
-        this.queueFreeRenderBuilders = Queues.newArrayBlockingQueue(this.countRenderBuilders);
-
-        for (int i = 0; i < this.countRenderBuilders; ++i)
+        for (int i = 0; i < maxCache; ++i)
         {
-            this.queueFreeRenderBuilders.add(new BufferBuilderCache());
+            try
+            {
+                this.queueFreeRenderAllocators.add(new BufferAllocatorCache());
+            }
+            catch (OutOfMemoryError e)
+            {
+                LOGGER.warn("Only able to allocate {}/{} BufferAllocator caches", this.queueFreeRenderAllocators.size(), i);
+                int adjusted = Math.min(this.queueFreeRenderAllocators.size() * 2 / 3, this.queueFreeRenderAllocators.size() - 1);
+
+                for (int j = 0; j < adjusted; ++j)
+                {
+                    try
+                    {
+                        BufferAllocatorCache r = this.queueFreeRenderAllocators.take();
+                        r.close();
+                    }
+                    catch (Exception ignored) { }
+
+                    maxCache = adjusted;
+                }
+            }
         }
 
-        this.renderWorker = new ChunkRenderWorkerLitematica(this, new BufferBuilderCache());
+        this.countRenderAllocators = maxCache;
+        LOGGER.info("Using {} max total BufferAllocator caches", this.countRenderAllocators + 1);
+
+        this.renderWorker = new ChunkRenderWorkerLitematica(this, new BufferAllocatorCache());
     }
 
-    public void setCameraPosition(Vec3d cameraPos)
+    protected void setCameraPosition(Vec3d cameraPos)
     {
         this.cameraPos = cameraPos;
     }
@@ -82,12 +108,13 @@ public class ChunkRenderDispatcherLitematica
         return this.cameraPos;
     }
 
-    public String getDebugInfo()
+    protected String getDebugInfo()
     {
-        return this.listWorkerThreads.isEmpty() ? String.format("pC: %03d, single-threaded", this.queueChunkUpdates.size()) : String.format("pC: %03d, pU: %1d, aB: %1d", this.queueChunkUpdates.size(), this.queueChunkUploads.size(), this.queueFreeRenderBuilders.size());
+        //return this.listWorkerThreads.isEmpty() ? String.format("pC: %03d, single-threaded", this.queueChunkUpdates.size()) : String.format("pC: %03d, pU: %1d, aB: %1d", this.queueChunkUpdates.size(), this.queueChunkUploads.size(), this.queueFreeRenderAllocators.size());
+        return String.format("T: %02d, pC: %03d, pU: %03d, aB: %02d", this.listThreadedWorkers.size(), this.queueChunkUpdates.size(), this.queueChunkUploads.size(), this.queueFreeRenderAllocators.size());
     }
 
-    public boolean runChunkUploads(long finishTimeNano)
+    protected boolean runChunkUploads(long finishTimeNano)
     {
         boolean ranTasks = false;
 
@@ -106,9 +133,9 @@ public class ChunkRenderDispatcherLitematica
                         this.renderWorker.processTask(generator);
                         processedTask = true;
                     }
-                    catch (InterruptedException var8)
+                    catch (InterruptedException e)
                     {
-                        LOGGER.warn("Skipped task due to interrupt");
+                        LOGGER.warn("runChunkUploads(): Process Interrupted; error message: [{}]", e.getLocalizedMessage());
                     }
                 }
             }
@@ -132,148 +159,117 @@ public class ChunkRenderDispatcherLitematica
         return ranTasks;
     }
 
-    public boolean updateChunkLater(ChunkRendererSchematicVbo renderChunk)
+    protected boolean updateChunkLater(ChunkRendererSchematicVbo renderChunk)
     {
-        //if (GuiBase.isCtrlDown()) System.out.printf("updateChunkLater()\n");
-        renderChunk.getLockCompileTask().lock();
-        boolean flag1;
-
-        try
-        {
-            final ChunkRenderTaskSchematic generator = renderChunk.makeCompileTaskChunkSchematic(this::getCameraPos);
-
-            generator.addFinishRunnable(new Runnable()
-            {
-                public void run()
-                {
-                    ChunkRenderDispatcherLitematica.this.queueChunkUpdates.remove(generator);
-                }
-            });
-
-            boolean flag = this.queueChunkUpdates.offer(generator);
-
-            if (!flag)
-            {
-                generator.finish();
-            }
-
-            flag1 = flag;
-        }
-        finally
-        {
-            renderChunk.getLockCompileTask().unlock();
-        }
-
-        return flag1;
-    }
-
-    public boolean updateChunkNow(ChunkRendererSchematicVbo chunkRenderer)
-    {
-        //if (GuiBase.isCtrlDown()) System.out.printf("updateChunkNow()\n");
-        chunkRenderer.getLockCompileTask().lock();
-        boolean flag;
-
-        try
-        {
-            ChunkRenderTaskSchematic generator = chunkRenderer.makeCompileTaskChunkSchematic(this::getCameraPos);
-
-            try
-            {
-                this.renderWorker.processTask(generator);
-            }
-            catch (InterruptedException e)
-            {
-            }
-
-            flag = true;
-        }
-        finally
-        {
-            chunkRenderer.getLockCompileTask().unlock();
-        }
-
+        final ChunkRenderTaskSchematic generator = renderChunk.makeCompileTaskChunkSchematic(this::getCameraPos);
+        generator.addFinishRunnable(() -> queueChunkUpdates.remove(generator));
+        boolean flag = queueChunkUpdates.offer(generator);
+        if(!flag)
+            generator.finish();
         return flag;
     }
 
-    public void stopChunkUpdates()
+    protected boolean updateChunkNow(ChunkRendererSchematicVbo chunkRenderer)
+    {
+        try {
+            renderWorker.processTask(chunkRenderer.makeCompileTaskChunkSchematic(this::getCameraPos));
+            return true;
+        } catch (InterruptedException e) {
+            LOGGER.warn("updateChunkNow(): Process Interrupted; error message: [{}]", e.getLocalizedMessage());
+            return false;
+        }
+    }
+
+    protected void stopChunkUpdates()
     {
         this.clearChunkUpdates();
-        List<BufferBuilderCache> list = new ArrayList<>();
+        List<BufferAllocatorCache> list = new ArrayList<>();
 
-        while (list.size() != this.countRenderBuilders)
+        while (list.size() != this.countRenderAllocators)
         {
             this.runChunkUploads(Long.MAX_VALUE);
 
             try
             {
-                list.add(this.allocateRenderBuilder());
+                list.add(this.allocateRenderAllocators());
             }
             catch (InterruptedException e)
             {
+                LOGGER.warn("stopChunkUpdates(): Process Interrupted; error message: [{}]", e.getLocalizedMessage());
             }
         }
 
-        this.queueFreeRenderBuilders.addAll(list);
+        this.queueFreeRenderAllocators.addAll(list);
     }
 
-    public void freeRenderBuilder(BufferBuilderCache builderCache)
+    public void freeRenderAllocators(BufferAllocatorCache allocatorCache)
     {
-        this.queueFreeRenderBuilders.add(builderCache);
+        this.queueFreeRenderAllocators.add(allocatorCache);
     }
 
-    public BufferBuilderCache allocateRenderBuilder() throws InterruptedException
+    public BufferAllocatorCache allocateRenderAllocators() throws InterruptedException
     {
-        return this.queueFreeRenderBuilders.take();
+        return this.queueFreeRenderAllocators.take();
     }
 
-    public ChunkRenderTaskSchematic getNextChunkUpdate() throws InterruptedException
+    protected ChunkRenderTaskSchematic getNextChunkUpdate() throws InterruptedException
     {
         return this.queueChunkUpdates.take();
     }
 
-    public boolean updateTransparencyLater(ChunkRendererSchematicVbo renderChunk)
+    protected boolean updateTransparencyLater(ChunkRendererSchematicVbo renderChunk)
     {
-        //if (GuiBase.isCtrlDown()) System.out.printf("updateTransparencyLater()\n");
-        renderChunk.getLockCompileTask().lock();
-        boolean flag;
-
-        try
-        {
-            final ChunkRenderTaskSchematic generator = renderChunk.makeCompileTaskTransparencySchematic(this::getCameraPos);
-
-            if (generator == null)
-            {
-                flag = true;
-                return flag;
-            }
-
-            generator.addFinishRunnable(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    ChunkRenderDispatcherLitematica.this.queueChunkUpdates.remove(generator);
-                }
-            });
-
-            flag = this.queueChunkUpdates.offer(generator);
-        }
-        finally
-        {
-            renderChunk.getLockCompileTask().unlock();
-        }
-
-        return flag;
+        final ChunkRenderTaskSchematic generator = renderChunk.makeCompileTaskTransparencySchematic(this::getCameraPos);
+        if(generator==null)
+            return true;
+        generator.addFinishRunnable(() -> ChunkRenderDispatcherLitematica.this.queueChunkUpdates.remove(generator));
+        return queueChunkUpdates.offer(generator);
     }
 
-    public ListenableFuture<Object> uploadChunkBlocks(final RenderLayer layer, final BufferBuilder buffer,
-            final ChunkRendererSchematicVbo renderChunk, final ChunkRenderDataSchematic chunkRenderData, final double distanceSq)
+    protected ListenableFuture<Object> uploadChunkBlocks(final RenderLayer layer, final BufferAllocatorCache allocators, final ChunkRendererSchematicVbo renderChunk, final ChunkRenderDataSchematic chunkRenderData, final double distanceSq, boolean resortOnly)
     {
         if (MinecraftClient.getInstance().isOnThread())
         {
-            //if (GuiBase.isCtrlDown()) System.out.printf("uploadChunkBlocks()\n");
-            this.uploadVertexBuffer(buffer, renderChunk.getBlocksVertexBufferByLayer(layer));
-            return Futures.<Object>immediateFuture(null);
+            try
+            {
+                this.uploadVertexBufferByLayer(layer, allocators, renderChunk, chunkRenderData, renderChunk.createVertexSorter(this.getCameraPos(), renderChunk.getOrigin()), resortOnly);
+            }
+            catch (Exception e)
+            {
+                LOGGER.warn("uploadChunkBlocks(): [Dispatch] Error uploading Vertex Buffer for layer [{}], Caught error: [{}]", ChunkRenderLayers.getFriendlyName(layer), e.toString());
+            }
+
+            return Futures.immediateFuture(null);
+        }
+        else
+        {
+            ListenableFutureTask<Object> futureTask = ListenableFutureTask.create(
+                    () -> uploadChunkBlocks(layer, allocators, renderChunk, chunkRenderData, distanceSq, resortOnly),
+                    null);
+
+            synchronized (this.queueChunkUploads)
+            {
+                this.queueChunkUploads.add(new ChunkRenderDispatcherLitematica.PendingUpload(futureTask, distanceSq));
+                return futureTask;
+            }
+        }
+    }
+
+    protected ListenableFuture<Object> uploadChunkOverlay(final OverlayRenderType type, final BufferAllocatorCache allocators, final ChunkRendererSchematicVbo renderChunk, final ChunkRenderDataSchematic compiledChunk, final double distanceSq, boolean resortOnly)
+    {
+        if (MinecraftClient.getInstance().isOnThread())
+        {
+            try
+            {
+                this.uploadVertexBufferByType(type, allocators, renderChunk, compiledChunk, renderChunk.createVertexSorter(this.getCameraPos(), renderChunk.getOrigin()), resortOnly);
+            }
+            catch (Exception e)
+            {
+                // TODO --> This one will throw if it's not sorted as Translucent,
+                //  but it will cause a crash during draw() --> Ignored
+                LOGGER.warn("uploadChunkOverlay(): [Dispatch] Error uploading Vertex Buffer for overlay type [{}], Caught error: [{}]", type.getDrawMode().name(), e.toString());
+            }
+            return Futures.immediateFuture(null);
         }
         else
         {
@@ -282,7 +278,7 @@ public class ChunkRenderDispatcherLitematica
                 @Override
                 public void run()
                 {
-                    ChunkRenderDispatcherLitematica.this.uploadChunkBlocks(layer, buffer, renderChunk, chunkRenderData, distanceSq);
+                    ChunkRenderDispatcherLitematica.this.uploadChunkOverlay(type, allocators, renderChunk, compiledChunk, distanceSq, resortOnly);
                 }
             }, null);
 
@@ -294,60 +290,107 @@ public class ChunkRenderDispatcherLitematica
         }
     }
 
-    public ListenableFuture<Object> uploadChunkOverlay(final OverlayRenderType type, final BufferBuilder buffer,
-            final ChunkRendererSchematicVbo renderChunk, final ChunkRenderDataSchematic compiledChunk, final double distanceSq)
+    private void uploadVertexBufferByLayer(RenderLayer layer, @Nonnull BufferAllocatorCache allocators, @Nonnull ChunkRendererSchematicVbo renderChunk, @Nonnull ChunkRenderDataSchematic compiledChunk, @Nonnull VertexSorter sorter, boolean resortOnly)
+            throws InterruptedException
     {
-        if (MinecraftClient.getInstance().isOnThread())
+        BufferAllocator allocator = allocators.getBufferByLayer(layer);
+        BuiltBuffer renderBuffer = compiledChunk.getBuiltBufferCache().getBuiltBufferByLayer(layer);
+
+        if (allocator == null)
         {
-            //if (GuiBase.isCtrlDown()) System.out.printf("uploadChunkOverlay()\n");
-            this.uploadVertexBuffer(buffer, renderChunk.getOverlayVertexBuffer(type));
-            return Futures.<Object>immediateFuture(null);
+            allocators.closeByLayer(layer);
+            throw new InterruptedException("BufferAllocators are invalid");
         }
-        else
+
+        if (renderBuffer == null)
         {
-            ListenableFutureTask<Object> futureTask = ListenableFutureTask.<Object>create(new Runnable()
+            throw new InterruptedException("BuiltBuffer was not built");
+        }
+
+        VertexBuffer vertexBuffer = renderChunk.getBlocksVertexBufferByLayer(layer);
+
+        if (layer == RenderLayer.getTranslucent())
+        {
+            BuiltBuffer.SortState sorting = compiledChunk.getTransparentSortingData();
+
+            if (sorting == null)
             {
-                @Override
-                public void run()
+                sorting = renderBuffer.sortQuads(allocator, sorter);
+
+                if (sorting == null)
                 {
-                    ChunkRenderDispatcherLitematica.this.uploadChunkOverlay(type, buffer, renderChunk, compiledChunk, distanceSq);
+                    throw new InterruptedException("Sort State failed to sortQuads()");
                 }
-            }, null);
 
-            synchronized (this.queueChunkUploads)
-            {
-                this.queueChunkUploads.add(new ChunkRenderDispatcherLitematica.PendingUpload(futureTask, distanceSq));
-                return futureTask;
+                compiledChunk.setTransparentSortingData(sorting);
             }
+
+            BufferAllocator.CloseableBuffer result = sorting.sortAndStore(allocator, sorter);
+
+            if (result != null)
+            {
+                renderChunk.uploadSortingState(result, vertexBuffer);
+                result.close();
+            }
+        }
+
+        if (resortOnly == false)
+        {
+            renderChunk.uploadBuiltBuffer(renderBuffer, vertexBuffer);
         }
     }
 
-    private void uploadVertexBuffer(BufferBuilder buffer, VertexBuffer vertexBuffer)
+    private void uploadVertexBufferByType(OverlayRenderType type, @Nonnull BufferAllocatorCache allocators, @Nonnull ChunkRendererSchematicVbo renderChunk, @Nonnull ChunkRenderDataSchematic compiledChunk, @Nonnull VertexSorter sorter, boolean resortOnly)
+            throws InterruptedException
     {
-        BufferBuilder.BuiltBuffer renderBuffer;
+        BufferAllocator allocator = allocators.getBufferByOverlay(type);
+        BuiltBuffer renderBuffer = compiledChunk.getBuiltBufferCache().getBuiltBufferByType(type);
 
-        if (buffer instanceof OmegaHackfixForCrashJustTemporarilyForNowISwearBecauseOfShittyBrokenCodeBufferBuilder compatBuffer)
+        if (allocator == null)
         {
-            if (compatBuffer.lastRenderBuildBuffer != null)
-            {
-                renderBuffer = compatBuffer.lastRenderBuildBuffer;
-            }
-            else
-            {
-                renderBuffer = compatBuffer.end();
-            }
-        }
-        else
-        {
-            renderBuffer = buffer.end();
+            allocators.closeByType(type);
+            throw new InterruptedException("BufferAllocators are invalid");
         }
 
-        vertexBuffer.bind();
-        vertexBuffer.upload(renderBuffer);
-        VertexBuffer.unbind();
+        if (renderBuffer == null)
+        {
+            throw new InterruptedException("BuiltBuffer was not built");
+        }
+
+        VertexBuffer vertexBuffer = renderChunk.getOverlayVertexBuffer(type);
+
+        if (type.isTranslucent() && Configs.Visuals.SCHEMATIC_OVERLAY_ENABLE_RESORTING.getBooleanValue())
+        {
+            BuiltBuffer.SortState sorting = compiledChunk.getTransparentSortingDataForOverlay(type);
+
+            if (sorting == null)
+            {
+                sorting = renderBuffer.sortQuads(allocator, sorter);
+
+                if (sorting == null)
+                {
+                    throw new InterruptedException("Sort State failed to sortQuads()");
+                }
+
+                compiledChunk.setTransparentSortingDataForOverlay(type, sorting);
+            }
+
+            BufferAllocator.CloseableBuffer result = sorting.sortAndStore(allocator, sorter);
+
+            if (result != null)
+            {
+                renderChunk.uploadSortingState(result, vertexBuffer);
+                result.close();
+            }
+        }
+
+        if (resortOnly == false)
+        {
+            renderChunk.uploadBuiltBuffer(renderBuffer, vertexBuffer);
+        }
     }
 
-    public void clearChunkUpdates()
+    protected void clearChunkUpdates()
     {
         while (this.queueChunkUpdates.isEmpty() == false)
         {
@@ -365,7 +408,7 @@ public class ChunkRenderDispatcherLitematica
         return this.queueChunkUpdates.isEmpty() && this.queueChunkUploads.isEmpty();
     }
 
-    public void stopWorkerThreads()
+    protected void stopWorkerThreads()
     {
         this.clearChunkUpdates();
 
@@ -387,15 +430,16 @@ public class ChunkRenderDispatcherLitematica
             }
         }
 
-        this.queueFreeRenderBuilders.clear();
+        this.queueFreeRenderAllocators.forEach(BufferAllocatorCache::close);
+        this.queueFreeRenderAllocators.clear();
     }
 
-    public boolean hasNoFreeRenderBuilders()
+    public boolean hasNoFreeRenderAllocators()
     {
-        return this.queueFreeRenderBuilders.isEmpty();
+        return this.queueFreeRenderAllocators.isEmpty();
     }
 
-    public static class PendingUpload implements Comparable<ChunkRenderDispatcherLitematica.PendingUpload>
+    protected static class PendingUpload implements Comparable<ChunkRenderDispatcherLitematica.PendingUpload>
     {
         private final ListenableFutureTask<Object> uploadTask;
         private final double distanceSq;

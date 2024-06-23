@@ -86,6 +86,8 @@ public class PlacementHandler
             return EasyPlaceProtocol.SLAB_ONLY;
         }
 
+        Litematica.debugLog("getEffectiveProtocolVersion(): {}", protocol.name());
+
         return protocol;
     }
 

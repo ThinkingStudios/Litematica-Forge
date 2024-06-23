@@ -1,48 +1,66 @@
 package fi.dy.masa.litematica.render.schematic;
 
-import java.util.HashMap;
-import java.util.Map;
-import net.minecraft.client.render.BufferBuilder;
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.client.render.BuiltBuffer;
 import net.minecraft.client.render.RenderLayer;
-import fi.dy.masa.litematica.render.schematic.ChunkRendererSchematicVbo.OverlayRenderType;
 
-public class BufferBuilderCache
+public class BufferBuilderCache implements AutoCloseable
 {
-    private final Map<RenderLayer, OmegaHackfixForCrashJustTemporarilyForNowISwearBecauseOfShittyBrokenCodeBufferBuilder> blockBufferBuilders = new HashMap<>();
-    private final OmegaHackfixForCrashJustTemporarilyForNowISwearBecauseOfShittyBrokenCodeBufferBuilder[] overlayBufferBuilders;
+    private final ConcurrentHashMap<RenderLayer, BufferBuilderPatch> blockBufferBuilders = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<ChunkRendererSchematicVbo.OverlayRenderType, BufferBuilderPatch> overlayBufferBuilders = new ConcurrentHashMap<>();
 
-    public BufferBuilderCache()
+    protected BufferBuilderCache() { }
+
+    protected boolean hasBufferByLayer(RenderLayer layer)
     {
-        for (RenderLayer layer : RenderLayer.getBlockLayers())
+        return blockBufferBuilders.containsKey(layer);
+    }
+
+    protected boolean hasBufferByOverlay(ChunkRendererSchematicVbo.OverlayRenderType type)
+    {
+        return overlayBufferBuilders.containsKey(type);
+    }
+
+    protected BufferBuilderPatch getBufferByLayer(RenderLayer layer, @Nonnull BufferAllocatorCache allocators)
+    {
+        return blockBufferBuilders.computeIfAbsent(layer, (key) -> new BufferBuilderPatch(allocators.getBufferByLayer(key), key.getDrawMode(), key.getVertexFormat()));
+    }
+
+    protected BufferBuilderPatch getBufferByOverlay(ChunkRendererSchematicVbo.OverlayRenderType type, @Nonnull BufferAllocatorCache allocators)
+    {
+        return overlayBufferBuilders.computeIfAbsent(type, (key) -> new BufferBuilderPatch(allocators.getBufferByOverlay(key), key.getDrawMode(), key.getVertexFormat()));
+    }
+
+    protected void clearAll()
+    {
+        ArrayList<BufferBuilderPatch> buffers;
+
+        synchronized (blockBufferBuilders)
         {
-            this.blockBufferBuilders.put(layer, new OmegaHackfixForCrashJustTemporarilyForNowISwearBecauseOfShittyBrokenCodeBufferBuilder(layer.getExpectedBufferSize()));
+            buffers = new ArrayList<>(blockBufferBuilders.values());
+            blockBufferBuilders.clear();
         }
-
-        this.overlayBufferBuilders = new OmegaHackfixForCrashJustTemporarilyForNowISwearBecauseOfShittyBrokenCodeBufferBuilder[OverlayRenderType.values().length];
-
-        for (int i = 0; i < this.overlayBufferBuilders.length; ++i)
+        synchronized (overlayBufferBuilders)
         {
-            this.overlayBufferBuilders[i] = new OmegaHackfixForCrashJustTemporarilyForNowISwearBecauseOfShittyBrokenCodeBufferBuilder(262144);
+            buffers.addAll(overlayBufferBuilders.values());
+            overlayBufferBuilders.clear();
+        }
+        for (BufferBuilderPatch buffer:buffers)
+        {
+            try {
+                BuiltBuffer built = buffer.endNullable();
+                if (built != null)
+                    built.close();
+            }
+            catch (Exception ignored) {}
         }
     }
 
-    public OmegaHackfixForCrashJustTemporarilyForNowISwearBecauseOfShittyBrokenCodeBufferBuilder getBlockBufferByLayer(RenderLayer layer)
+    @Override
+    public void close() throws Exception
     {
-        return this.blockBufferBuilders.get(layer);
-    }
-
-    public OmegaHackfixForCrashJustTemporarilyForNowISwearBecauseOfShittyBrokenCodeBufferBuilder getOverlayBuffer(OverlayRenderType type)
-    {
-        return this.overlayBufferBuilders[type.ordinal()];
-    }
-
-    public void clear()
-    {
-        this.blockBufferBuilders.values().forEach(BufferBuilder::reset);
-
-        for (BufferBuilder buffer : this.overlayBufferBuilders)
-        {
-            buffer.reset();
-        }
+        this.clearAll();
     }
 }

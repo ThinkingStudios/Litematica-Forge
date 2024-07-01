@@ -1,6 +1,8 @@
 package fi.dy.masa.litematica.render;
 
 import javax.annotation.Nullable;
+
+import fi.dy.masa.litematica.Reference;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
@@ -22,7 +24,7 @@ public class LitematicaRenderer
 {
     private static final LitematicaRenderer INSTANCE = new LitematicaRenderer();
 
-    private static final ShaderProgram SHADER_ALPHA = new ShaderProgram("litematica", null, "shaders/alpha.frag");
+    private static final ShaderProgram SHADER_ALPHA = new ShaderProgram(Reference.MOD_ID, null, "shaders/alpha.frag");
 
     private MinecraftClient mc;
     private WorldRendererSchematic worldRenderer;

@@ -28,6 +28,7 @@ import net.minecraft.world.World;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.data.DataManager;
+import fi.dy.masa.litematica.data.EntitiesDataStorage;
 
 public class PlacementHandler
 {
@@ -36,26 +37,40 @@ public class PlacementHandler
             // INVERTED - DaylightDetector
             // OPEN - Barrel, Door, FenceGate, Trapdoor
             // PERSISTENT - Leaves
+            // CAN_SUMMON - Shrieker
             Properties.INVERTED,
             Properties.OPEN,
             Properties.PERSISTENT,
+            Properties.CAN_SUMMON,
             // EnumProperty:
+            // ATTACHMENT - Bell
             // AXIS - Pillar
+            // BED_PART - Beds
             // BLOCK_HALF - Stairs, Trapdoor
+            // BLOCK_FACE - Button, Grindstone, Lever
             // CHEST_TYPE - Chest
             // COMPARATOR_MODE - Comparator
             // DOOR_HINGE - Door
+            // DOUBLE_BLOCK_HALF - Doors, Plants
+            // ORIENTATION - Crafter
+            // RAIL_SHAPE / STRAIGHT_RAIL_SHAPE - Rails
             // SLAB_TYPE - Slab - PARTIAL ONLY: TOP and BOTTOM, not DOUBLE
             // STAIR_SHAPE - Stairs (needed to get the correct state, otherwise the player facing would be a factor)
             // BLOCK_FACE - Button, Grindstone, Lever
+            Properties.ATTACHMENT,
             Properties.AXIS,
+            Properties.BED_PART,
             Properties.BLOCK_HALF,
+            Properties.BLOCK_FACE,
             Properties.CHEST_TYPE,
             Properties.COMPARATOR_MODE,
             Properties.DOOR_HINGE,
+            Properties.DOUBLE_BLOCK_HALF,
+            Properties.ORIENTATION,
+            Properties.RAIL_SHAPE,
+            Properties.STRAIGHT_RAIL_SHAPE,
             Properties.SLAB_TYPE,
             Properties.STAIR_SHAPE,
-            Properties.BLOCK_FACE,
             // IntProperty:
             // BITES - Cake
             // DELAY - Repeater
@@ -73,7 +88,7 @@ public class PlacementHandler
 
         if (protocol == EasyPlaceProtocol.AUTO)
         {
-            if (MinecraftClient.getInstance().isInSingleplayer())
+            if (MinecraftClient.getInstance().isInSingleplayer() || EntitiesDataStorage.getInstance().hasServuxServer())
             {
                 return EasyPlaceProtocol.V3;
             }

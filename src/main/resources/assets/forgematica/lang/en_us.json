@@ -1,6 +1,5 @@
 {
-    "fml.menu.mods.info.displayname.modid": "Forgematica",
-    "fml.menu.mods.info.description.forgematica": "LLitematica unofficial (Neo)Forge port. \nA modern schematic mod for (Neo)Forge.",
+    "fml.menu.mods.info.description.forgematica": "Litematica unofficial (Neo)Forge port. \nA modern schematic mod for (Neo)Forge.",
 
     "litematica.error.area_selection.copy_failed": "Failed to copy the selection",
     "litematica.error.area_selection.create_failed": "Failed to create a new selection by the name '%s', file already exists",
@@ -456,6 +455,7 @@
     "litematica.message.material_list_written_to_file": "Material list written to file '%s'",
     "litematica.message.moved_area_origin": "Moved the area origin point from %s => %s",
     "litematica.message.moved_selection": "Moved the current selection from %s => %s",
+    "litematica.message.paste_with_servux": "§6The placement is being uploaded to Servux for pasting",
     "litematica.message.placement.cant_modify_is_locked": "§cThe placement is locked and can't be modified§r",
     "litematica.message.placement.moved_placement_origin": "Moved placement origin from %s => %s",
     "litematica.message.placement.moved_subregion_to": "Moved sub-region to %s",

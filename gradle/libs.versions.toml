@@ -1,0 +1,43 @@
+[versions]
+
+minecraft-range="1.21"
+
+# Base properties
+minecraft_version="1.21"
+yarn_mappings="1.21+build.2"
+mappings_patch="1.21+build.4"
+neoforge="21.0.60-beta"
+
+# Mod properties
+version="0.1.6"
+maven-group="org.thinkingstudio.forgematica"
+archives-name="Forgematica"
+
+# Publish properties
+id-modrinth="dCKRaeBC"
+id-curseforge="912441"
+
+# Mod dependencies
+mafglib="0.1.11-mc1.21"
+
+# Libraries
+jsr305="3.0.2"
+
+# Gradle plugin
+architectury-loom = "1.6-SNAPSHOT"
+modpublisher = "2.1.+"
+
+[libraries]
+minecraft = { group = "com.mojang", name = "minecraft", version.ref = "minecraft_version" }
+yarn-mappings = { group = "net.fabricmc", name = "yarn", version.ref = "yarn_mappings"}
+yarn-mappings-patch = { group = "dev.architectury", name = "yarn-mappings-patch-neoforge", version.ref = "mappings_patch"}
+
+neoforge = { group = "net.neoforged", name = "neoforge", version.ref = "neoforge" }
+
+mafglib = { group = "maven.modrinth", name = "mafglib", version.ref = "mafglib"}
+
+jsr305 = { group = "com.google.code.findbugs", name = "jsr305", version.ref = "jsr305"}
+
+[plugins]
+architectury-loom = { id = "dev.architectury.loom", version.ref = "architectury-loom" }
+modpublisher = { id = "com.hypherionmc.modutils.modpublisher", version.ref = "modpublisher" }

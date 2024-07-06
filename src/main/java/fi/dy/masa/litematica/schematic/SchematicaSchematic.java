@@ -707,7 +707,7 @@ public class SchematicaSchematic
                 pos.getY() >= 0 && pos.getY() < size.getY() &&
                 pos.getZ() >= 0 && pos.getZ() < size.getZ())
             {
-                this.tiles.put(pos, SchematicConversionMaps.updateBlockEntity(tag, Configs.Generic.DATAFIXER_DEFAULT_SCHEMA.getIntegerValue()));
+                this.tiles.put(pos, SchematicConversionMaps.updateBlockEntity(SchematicConversionMaps.checkForIdTag(tag), Configs.Generic.DATAFIXER_DEFAULT_SCHEMA.getIntegerValue()));
             }
         }
     }

@@ -992,7 +992,7 @@ public class LitematicaSchematic
         return this.pendingFluidTicks.get(regionName);
     }
 
-    private NbtCompound writeToNBT()
+    public NbtCompound writeToNBT()
     {
         NbtCompound nbt = new NbtCompound();
 
@@ -1872,7 +1872,7 @@ public class LitematicaSchematic
 
             for (BlockPos key : oldTE.keySet())
             {
-                newTE.put(key, SchematicConversionMaps.updateBlockEntity(oldTE.get(key), minecraftDataVersion));
+                newTE.put(key, SchematicConversionMaps.updateBlockEntity(SchematicConversionMaps.checkForIdTag(oldTE.get(key)), minecraftDataVersion));
             }
 
             return newTE;

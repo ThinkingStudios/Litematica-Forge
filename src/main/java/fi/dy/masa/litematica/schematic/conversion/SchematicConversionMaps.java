@@ -338,6 +338,120 @@ public class SchematicConversionMaps
         }
     }
 
+    public static NbtCompound checkForIdTag(NbtCompound tags)
+    {
+        if (tags.contains("id"))
+        {
+            return tags;
+        }
+        if (tags.contains("Id"))
+        {
+            tags.putString("id", tags.getString("Id"));
+            return tags;
+        }
+
+        // We don't have an "id" tag, let's try to fix it
+        if (tags.contains("Bees") || tags.contains("bees"))
+        {
+            tags.putString("id", "minecraft:beehive");
+        }
+        else if (tags.contains("TransferCooldown") && tags.contains("Items"))
+        {
+            tags.putString("id", "minecraft:hopper");
+        }
+        else if (tags.contains("SkullOwner"))
+        {
+            tags.putString("id", "minecraft:skull");
+        }
+        else if (tags.contains("Patterns") || tags.contains("patterns"))
+        {
+            tags.putString("id", "minecraft:banner");
+        }
+        else if (tags.contains("Sherds") || tags.contains("sherds"))
+        {
+            tags.putString("id", "minecraft:decorated_pot");
+        }
+        else if (tags.contains("last_interacted_slot") && tags.contains("Items"))
+        {
+            tags.putString("id", "minecraft:chiseled_bookshelf");
+        }
+        else if (tags.contains("CookTime") && tags.contains("Items"))
+        {
+            tags.putString("id", "minecraft:furnace");
+        }
+        else if (tags.contains("RecordItem"))
+        {
+            tags.putString("id", "minecraft:jukebox");
+        }
+        else if (tags.contains("Book") || tags.contains("book"))
+        {
+            tags.putString("id", "minecraft:lectern");
+        }
+        else if (tags.contains("front_text"))
+        {
+            tags.putString("id", "minecraft:sign");
+        }
+        else if (tags.contains("BrewTime") || tags.contains("Fuel"))
+        {
+            tags.putString("id", "minecraft:brewing_stand");
+        }
+        else if ((tags.contains("LootTable") && tags.contains("LootTableSeed")) || (tags.contains("hit_direction") || tags.contains("item")))
+        {
+            tags.putString("id", "minecraft:suspicious_sand");
+        }
+        else if (tags.contains("SpawnData") || tags.contains("SpawnPotentials"))
+        {
+            tags.putString("id", "minecraft:spawner");
+        }
+        else if (tags.contains("normal_config"))
+        {
+            tags.putString("id", "minecraft:trial_spawner");
+        }
+        else if (tags.contains("shared_data"))
+        {
+            tags.putString("id", "minecraft:vault");
+        }
+        else if (tags.contains("pool") && tags.contains("final_state") && tags.contains("placement_priority"))
+        {
+            tags.putString("id", "minecraft:jigsaw");
+        }
+        else if (tags.contains("author") && tags.contains("metadata") && tags.contains("showboundingbox"))
+        {
+            tags.putString("id", "minecraft:structure_block");
+        }
+        else if (tags.contains("ExactTeleport") && tags.contains("Age"))
+        {
+            tags.putString("id", "minecraft:end_gateway");
+        }
+        else if (tags.contains("Items"))
+        {
+            tags.putString("id", "minecraft:chest");
+        }
+        else if (tags.contains("last_vibration_frequency") || tags.contains("listener"))
+        {
+            tags.putString("id", "minecraft:sculk_sensor");
+        }
+        else if (tags.contains("warning_level") || tags.contains("listener"))
+        {
+            tags.putString("id", "minecraft:sculk_shrieker");
+        }
+        else if (tags.contains("OutputSignal"))
+        {
+            tags.putString("id", "minecraft:comparator");
+        }
+        else if (tags.contains("facing") || tags.contains("extending"))
+        {
+            tags.putString("id", "minecraft:piston");
+        }
+        else if (tags.contains("x") && tags.contains("y") && tags.contains("z"))
+        {
+            // Might only have x y z pos
+            tags.putString("id", "minecraft:piston");
+        }
+
+        return tags;
+    }
+
     private static class ConversionData
     {
         private final int idMeta;

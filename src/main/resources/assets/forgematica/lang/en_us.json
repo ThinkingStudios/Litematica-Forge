@@ -1,6 +1,5 @@
 {
-    "fml.menu.mods.info.displayname.modid": "Forgematica",
-    "fml.menu.mods.info.description.forgematica": "LLitematica unofficial (Neo)Forge port. \nA modern schematic mod for (Neo)Forge.",
+    "fml.menu.mods.info.description.forgematica": "Litematica unofficial (Neo)Forge port. \nA modern schematic mod for (Neo)Forge.",
 
     "litematica.error.area_selection.copy_failed": "Failed to copy the selection",
     "litematica.error.area_selection.create_failed": "Failed to create a new selection by the name '%s', file already exists",

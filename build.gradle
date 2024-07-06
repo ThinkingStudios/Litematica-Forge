@@ -23,7 +23,6 @@ dependencies {
     neoForge "net.neoforged:neoforge:${project.neoforge_version}"
 
     modImplementation("maven.modrinth:mafglib:${project.malilib_version}")
-    modLocalRuntime("maven.modrinth:forged-networking-api:0.1.1+mc1.20.6")
 
     implementation "com.google.code.findbugs:jsr305:3.0.2"
 }

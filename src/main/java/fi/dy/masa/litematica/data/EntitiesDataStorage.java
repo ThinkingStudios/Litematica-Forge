@@ -190,7 +190,7 @@ public class EntitiesDataStorage implements IClientTickHandler
     {
         if (DataManager.getInstance().hasIntegratedServer() == false)
         {
-            HANDLER.registerPlayReceiver(ServuxLitematicaPacket.Payload.ID, ServuxLitematicaPacket.Payload.CODEC, HANDLER::receivePlayPayload);
+            HANDLER.registerPlayReceiver(ServuxLitematicaPacket.Payload.ID, HANDLER::receivePlayPayload);
         }
     }
 

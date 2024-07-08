@@ -23,6 +23,7 @@ dependencies {
     neoForge libs.neoforge
 
     modImplementation libs.mafglib
+    modImplementation libs.neonetwork
 
     implementation libs.jsr305
 }

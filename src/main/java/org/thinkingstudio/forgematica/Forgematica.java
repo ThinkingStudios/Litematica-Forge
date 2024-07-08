@@ -13,6 +13,7 @@ public class Forgematica {
     public Forgematica() {
         if (FMLLoader.getDist().isClient()) {
             Litematica.onInitialize();
+
             NeoUtils.getInstance().registerModConfigScreen(Reference.MOD_ID, (screen) -> {
                 GuiConfigs gui = new GuiConfigs();
                 gui.setParent(screen);

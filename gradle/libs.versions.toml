@@ -18,8 +18,8 @@ id-modrinth="dCKRaeBC"
 id-curseforge="912441"
 
 # Mod dependencies
-mafglib="0.1.13-mc1.21"
-neonetwork="0.1.4+mc1.21"
+mafglib="0.1.14-mc1.21"
+neonetwork="0.1.5+mc1.21"
 
 # Libraries
 jsr305="3.0.2"

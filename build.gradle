@@ -12,6 +12,12 @@ repositories {
     maven { url "https://www.jitpack.io" }
     maven { url "https://maven.neoforged.net/releases/" }
     maven { url 'https://api.modrinth.com/maven' }
+    maven {
+        url "https://maven2.bai.lol"
+        content {
+            includeGroup "lol.bai"
+        }
+    }
 }
 
 dependencies {
@@ -19,8 +25,8 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     neoForge "net.neoforged:neoforge:${project.neoforge_version}"
 
-    modImplementation("maven.modrinth:mafglib:${project.malilib_version}")
-    modLocalRuntime("com.github.ThinkingStudios:ForgedNetworkingAPI:0.1.0-mc1.20.4")
+    modImplementation "maven.modrinth:mafglib:${project.malilib_version}"
+    modImplementation "lol.bai:badpackets:neo-${project.badpackets_version}"
 
     implementation "com.google.code.findbugs:jsr305:3.0.2"
 }
@@ -93,6 +99,6 @@ publisher {
     setCurseEnvironment("client")
     setArtifact(remapJar)
     addAdditionalFile(sourcesJar)
-    curseDepends { required("mafglib") }
-    modrinthDepends { required("mafglib") }
+    curseDepends.required("mafglib", "badpackets")
+    modrinthDepends.required("mafglib", "badpackets")
 }

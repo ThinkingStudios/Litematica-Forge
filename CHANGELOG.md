@@ -1,2 +1,3 @@
 ## Change
-- update NeoForge & MaFgLib version
+- update mafglib version
+- `neonetwork` -> `badpackets`

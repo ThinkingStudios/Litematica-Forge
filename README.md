@@ -4,6 +4,8 @@
 
 # Forgematica
 
+**This mod requires [BadPackets](https://modrinth.com/mod/badpackets) in 1.20.4 and above.**
+
 Litematica unofficial (Neo)Forge port.
 
 **Require [MaLiLib-Forge](https://github.com/ThinkingStudios/MaLiLib-Forge).**

@@ -1,2 +1,3 @@
 ## Change
-- sync from `sakura-ryoko/litematica`
+- update mafglib version
+- `neonetwork` -> `badpackets`

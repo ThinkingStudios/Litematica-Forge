@@ -9,7 +9,7 @@ mappings_patch="1.21+build.4"
 neoforge="21.0.60-beta"
 
 # Mod properties
-version="0.1.6"
+version="0.1.7"
 maven-group="org.thinkingstudio.forgematica"
 archives-name="Forgematica"
 
@@ -18,8 +18,8 @@ id-modrinth="dCKRaeBC"
 id-curseforge="912441"
 
 # Mod dependencies
-mafglib="0.1.14-mc1.21"
-neonetwork="0.1.5+mc1.21"
+mafglib="0.1.16-mc1.21"
+badpackets="neo-0.8.1"
 
 # Libraries
 jsr305="3.0.2"
@@ -34,7 +34,7 @@ yarn-mappings = { group = "net.fabricmc", name = "yarn", version.ref = "yarn_map
 yarn-mappings-patch = { group = "dev.architectury", name = "yarn-mappings-patch-neoforge", version.ref = "mappings_patch"}
 
 neoforge = { group = "net.neoforged", name = "neoforge", version.ref = "neoforge" }
-neonetwork = { group = "maven.modrinth", name = "neonetwork", version.ref = "neonetwork" }
+badpackets = { group = "lol.bai", name = "badpackets", version.ref = "badpackets" }
 mafglib = { group = "maven.modrinth", name = "mafglib", version.ref = "mafglib"}
 
 

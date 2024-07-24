@@ -6,7 +6,7 @@ minecraft-range="1.21"
 minecraft_version="1.21"
 yarn_mappings="1.21+build.2"
 mappings_patch="1.21+build.4"
-neoforge="21.0.60-beta"
+neoforge="21.0.133-beta"
 
 # Mod properties
 version="0.1.8"
@@ -18,7 +18,7 @@ id-modrinth="dCKRaeBC"
 id-curseforge="912441"
 
 # Mod dependencies
-mafglib="0.1.17-mc1.21"
+mafglib="0.1.18-mc1.21"
 badpackets="neo-0.8.1"
 
 # Libraries

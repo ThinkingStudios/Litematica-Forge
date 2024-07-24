@@ -26,13 +26,15 @@ import net.minecraft.util.crash.CrashReportSection;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.BlockRenderView;
+import fi.dy.masa.malilib.util.Color4f;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.LayerRange;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.config.Hotkeys;
 import fi.dy.masa.litematica.data.DataManager;
-import fi.dy.masa.litematica.render.schematic.ChunkRendererSchematicVbo.OverlayRenderType;
+import fi.dy.masa.litematica.util.OverlayType;
 import fi.dy.masa.litematica.world.ChunkSchematic;
 import fi.dy.masa.litematica.world.WorldSchematic;
 
@@ -112,7 +114,9 @@ public class WorldRendererSchematic
 
         for (ChunkRendererSchematicVbo chunkRenderer : this.renderInfos)
         {
-            ChunkRenderDataSchematic data = chunkRenderer.chunkRenderData.get();
+            // Threaded Code
+            //ChunkRenderDataSchematic data = chunkRenderer.chunkRenderData.get();
+            ChunkRenderDataSchematic data = chunkRenderer.chunkRenderData;
 
             if (data != ChunkRenderDataSchematic.EMPTY && !data.isEmpty())
             {
@@ -160,8 +164,6 @@ public class WorldRendererSchematic
 
     public void loadRenderers()
     {
-        //Litematica.logger.warn("loadRenderers() [Renderer]");
-
         if (this.hasWorld())
         {
             this.world.getProfiler().push("litematica_load_renderers");
@@ -205,8 +207,6 @@ public class WorldRendererSchematic
 
     public void setupTerrain(Camera camera, Frustum frustum, int frameCount, boolean playerSpectator)
     {
-        //Litematica.logger.warn("setupTerrain() [Renderer]");
-
         this.world.getProfiler().push("setup_terrain");
 
         if (this.chunkRendererDispatcher == null ||
@@ -357,8 +357,6 @@ public class WorldRendererSchematic
 
     public void updateChunks(long finishTimeNano)
     {
-        //Litematica.logger.warn("updateChunks() [Renderer]");
-
         this.mc.getProfiler().push("litematica_run_chunk_uploads");
         this.displayListEntitiesDirty |= this.renderDispatcher.runChunkUploads(finishTimeNano);
 
@@ -409,7 +407,7 @@ public class WorldRendererSchematic
 
     public int renderBlockLayer(RenderLayer renderLayer, Matrix4f matrices, Camera camera, Matrix4f projMatrix)
     {
-        //RenderSystem.assertOnRenderThread();
+        RenderSystem.assertOnRenderThread();
         this.world.getProfiler().push("render_block_layer_" + renderLayer.toString());
 
         boolean isTranslucent = renderLayer == RenderLayer.getTranslucent();
@@ -491,13 +489,11 @@ public class WorldRendererSchematic
 
                 if (buffer == null || buffer.isClosed())
                 {
-                    //Litematica.logger.error("renderBlockLayer() [Renderer]: vertexBuffer for layer [{}] is null/closed, skipping draw", ChunkRenderLayers.getFriendlyName(renderLayer));
                     continue;
                 }
 
                 if (renderer.getChunkRenderData().getBuiltBufferCache().hasBuiltBufferByLayer(renderLayer) == false)
                 {
-                    //Litematica.logger.error("renderBlockLayer() [Renderer]: buffer for layer [{}] is not built, skipping draw", ChunkRenderLayers.getFriendlyName(renderLayer));
                     continue;
                 }
 
@@ -506,8 +502,6 @@ public class WorldRendererSchematic
                     chunkOffsetUniform.set((float)(chunkOrigin.getX() - x), (float)(chunkOrigin.getY() - y), (float)(chunkOrigin.getZ() - z));
                     chunkOffsetUniform.upload();
                 }
-
-                //Litematica.logger.warn("renderBlockLayer() [Renderer] --> bind / draw / unbind for layer [{}]", ChunkRenderLayers.getFriendlyName(renderLayer));
 
                 buffer.bind();
                 buffer.draw();
@@ -595,8 +589,6 @@ public class WorldRendererSchematic
 
         ShaderProgram shader = RenderSystem.getShader();
         BufferRenderer.reset();
-
-        // I tried using the matrix4f value here, only to have things break
         Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
 
         for (int i = this.renderInfos.size() - 1; i >= 0; --i)
@@ -663,7 +655,12 @@ public class WorldRendererSchematic
 
     public void renderFluid(BlockRenderView world, BlockState blockState, FluidState fluidState, BlockPos pos, BufferBuilder bufferBuilderIn)
     {
-        this.blockRenderManager.renderFluid(pos, world, bufferBuilderIn, blockState, fluidState);
+        // Sometimes this collides with FAPI
+        try
+        {
+            this.blockRenderManager.renderFluid(pos, world, bufferBuilderIn, blockState, fluidState);
+        }
+        catch (Exception ignored) { }
     }
 
     public BakedModel getModelForState(BlockState state)

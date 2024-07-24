@@ -37,9 +37,9 @@ import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
-import fi.dy.masa.malilib.gui.Message;
 import fi.dy.masa.malilib.gui.Message.MessageType;
 import fi.dy.masa.malilib.interfaces.IStringConsumer;
+import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.config.Configs;
@@ -76,11 +76,41 @@ public class WorldUtils
         ((IWorldUpdateSuppressor) world).litematica_setShouldPreventBlockUpdates(preventUpdates);
     }
 
+    public static boolean convertLitematicaSchematicToLitematicaSchematic(
+            File inputDir, String inputFileName, File outputDir, String outputFileName, boolean ignoreEntities, boolean override, IStringConsumer feedback)
+    {
+        LitematicaSchematic litematicaSchematic = convertLitematicaSchematicToLitematicaSchematic(inputDir, inputFileName, outputFileName, feedback);
+        return litematicaSchematic != null && litematicaSchematic.writeToFile(outputDir, outputFileName, override);
+    }
+
     public static boolean convertSchematicaSchematicToLitematicaSchematic(
             File inputDir, String inputFileName, File outputDir, String outputFileName, boolean ignoreEntities, boolean override, IStringConsumer feedback)
     {
         LitematicaSchematic litematicaSchematic = convertSchematicaSchematicToLitematicaSchematic(inputDir, inputFileName, ignoreEntities, feedback);
         return litematicaSchematic != null && litematicaSchematic.writeToFile(outputDir, outputFileName, override);
+    }
+
+    @Nullable
+    public static LitematicaSchematic convertLitematicaSchematicToLitematicaSchematic(File inputDir, String inputFileName,
+                                                                                      String outputFilename,
+                                                                                      IStringConsumer feedback)
+    {
+        DataFixerMode oldMode = (DataFixerMode) Configs.Generic.DATAFIXER_MODE.getOptionListValue();
+        Configs.Generic.DATAFIXER_MODE.setOptionListValue(DataFixerMode.ALWAYS);
+        LitematicaSchematic litematicaSchematic = LitematicaSchematic.createFromFile(inputDir, inputFileName, FileType.LITEMATICA_SCHEMATIC);
+
+        if (litematicaSchematic == null)
+        {
+            feedback.setString("litematica.error.schematic_conversion.litematic_to_litematica.failed_to_read_litematic");
+            Configs.Generic.DATAFIXER_MODE.setOptionListValue(oldMode);
+            return null;
+        }
+
+        litematicaSchematic.getMetadata().setName(outputFilename);
+        litematicaSchematic.getMetadata().setTimeModifiedToNow();
+
+        Configs.Generic.DATAFIXER_MODE.setOptionListValue(oldMode);
+        return litematicaSchematic;
     }
 
     @Nullable
@@ -403,7 +433,7 @@ public class WorldUtils
 
                 if (type == MessageOutputType.MESSAGE)
                 {
-                    InfoUtils.showGuiOrInGameMessage(Message.MessageType.WARNING, "litematica.message.easy_place_fail");
+                    InfoUtils.showGuiOrInGameMessage(MessageType.WARNING, "litematica.message.easy_place_fail");
                 }
                 else if (type == MessageOutputType.ACTIONBAR)
                 {
@@ -445,7 +475,7 @@ public class WorldUtils
             return ActionResult.PASS;
         }
 
-        if (traceWrapper.getHitType() == RayTraceWrapper.HitType.SCHEMATIC_BLOCK)
+        if (traceWrapper.getHitType() == HitType.SCHEMATIC_BLOCK)
         {
             BlockHitResult trace = traceWrapper.getBlockHitResult();
             HitResult traceVanilla = RayTraceUtils.getRayTraceFromEntity(mc.world, mc.player, false, traceMaxRange);
@@ -492,32 +522,49 @@ public class WorldUtils
 
                 Vec3d hitPos = trace.getPos();
                 Direction sideOrig = trace.getSide();
+                EasyPlaceProtocol protocol = PlacementHandler.getEffectiveProtocolVersion();
 
-                // If there is a block in the world right behind the targeted schematic block, then use
-                // that block as the click position
-                if (traceVanilla != null && traceVanilla.getType() == HitResult.Type.BLOCK)
+                if (protocol == EasyPlaceProtocol.NONE || protocol == EasyPlaceProtocol.SLAB_ONLY)
                 {
-                    BlockHitResult hitResult = (BlockHitResult) traceVanilla;
-                    BlockPos posVanilla = hitResult.getBlockPos();
-                    Direction sideVanilla = hitResult.getSide();
-                    BlockState stateVanilla = mc.world.getBlockState(posVanilla);
-                    Vec3d hit = traceVanilla.getPos();
-                    ItemPlacementContext ctx = new ItemPlacementContext(new ItemUsageContext(mc.player, hand, hitResult));
-
-                    if (stateVanilla.canReplace(ctx) == false)
+                    // If there is a block in the world right behind the targeted schematic block, then use
+                    // that block as the click position
+                    if (traceVanilla != null && traceVanilla.getType() == HitResult.Type.BLOCK)
                     {
-                        posVanilla = posVanilla.offset(sideVanilla);
+                        BlockHitResult hitResult = (BlockHitResult) traceVanilla;
+                        BlockPos posVanilla = hitResult.getBlockPos();
+                        Direction sideVanilla = hitResult.getSide();
+                        BlockState stateVanilla = mc.world.getBlockState(posVanilla);
+                        Vec3d hit = traceVanilla.getPos();
+                        ItemPlacementContext ctx = new ItemPlacementContext(new ItemUsageContext(mc.player, hand, hitResult));
 
-                        if (pos.equals(posVanilla))
+                        if (stateVanilla.canReplace(ctx) == false)
                         {
-                            hitPos = hit;
-                            sideOrig = sideVanilla;
+                            posVanilla = posVanilla.offset(sideVanilla);
+
+                            if (pos.equals(posVanilla))
+                            {
+                                hitPos = hit;
+                                sideOrig = sideVanilla;
+                            }
                         }
                     }
                 }
 
                 Direction side = applyPlacementFacing(stateSchematic, sideOrig, stateClient);
-                EasyPlaceProtocol protocol = PlacementHandler.getEffectiveProtocolVersion();
+
+                // Support for special cases
+                PlacementProtocolData placementData = applyPlacementProtocolAll(pos, stateSchematic, hitPos);
+                if (placementData.mustFail)
+                {
+                    return ActionResult.FAIL; //disallowed cases (e.g. trying to place torch with no support block)
+                }
+
+                if (placementData.handled)
+                {
+                    pos = placementData.pos;
+                    side = placementData.side;
+                    hitPos = placementData.hitVec;
+                }
 
                 if (protocol == EasyPlaceProtocol.V3)
                 {
@@ -539,9 +586,15 @@ public class WorldUtils
 
                 BlockHitResult hitResult = new BlockHitResult(hitPos, side, pos, false);
 
-                //System.out.printf("pos: %s side: %s, hit: %s\n", pos, side, hitPos);
+                //System.out.printf("interact -> pos: %s side: %s, hit: %s\n", pos, side, hitPos);
                 // pos, side, hitPos
-                mc.interactionManager.interactBlock(mc.player, hand, hitResult);
+                ActionResult result = mc.interactionManager.interactBlock(mc.player, hand, hitResult);
+
+                // swing hand fix, see MinecraftClient#doItemUse
+                if (result.shouldSwingHand())
+                {
+                    mc.player.swingHand(hand);
+                }
 
                 if (stateSchematic.getBlock() instanceof SlabBlock && stateSchematic.get(SlabBlock.TYPE) == SlabType.DOUBLE)
                 {
@@ -558,7 +611,7 @@ public class WorldUtils
 
             return ActionResult.SUCCESS;
         }
-        else if (traceWrapper.getHitType() == RayTraceWrapper.HitType.VANILLA_BLOCK)
+        else if (traceWrapper.getHitType() == HitType.VANILLA_BLOCK)
         {
             return placementRestrictionInEffect(mc) ? ActionResult.FAIL : ActionResult.PASS;
         }
@@ -597,6 +650,76 @@ public class WorldUtils
         return false;
     }
 
+    public static class PlacementProtocolData
+    {
+        boolean handled;
+        boolean mustFail;
+        BlockPos pos;
+        Direction side;
+        Vec3d hitVec;
+    }
+
+    public static PlacementProtocolData applyPlacementProtocolAll(BlockPos pos, BlockState stateSchematic, Vec3d hitVecIn)
+    {
+        PlacementProtocolData placementData = new PlacementProtocolData();
+
+        Block stateBlock = stateSchematic.getBlock();
+        final World world = MinecraftClient.getInstance().world;
+
+        //Wall-mountable blocks
+        if (stateBlock instanceof AbstractTorchBlock ||
+            stateBlock instanceof AbstractBannerBlock ||
+            stateBlock instanceof AbstractSignBlock ||
+            stateBlock instanceof AbstractSkullBlock)
+        {
+            placementData.handled = true;
+            placementData.hitVec = hitVecIn;
+
+            if (stateBlock instanceof WallTorchBlock ||
+                stateBlock instanceof WallRedstoneTorchBlock ||
+                stateBlock instanceof WallBannerBlock ||
+                stateBlock instanceof WallSignBlock ||
+                stateBlock instanceof WallSkullBlock)
+            {
+                placementData.side = stateSchematic.get(Properties.HORIZONTAL_FACING);
+                placementData.pos = pos.offset(placementData.side.getOpposite());
+            }
+            else
+            {
+                placementData.side = Direction.UP;
+                placementData.pos = pos.down();
+            }
+
+            //If the supporting block doesn't exist, fail
+            BlockState stateFacing = world.getBlockState(placementData.pos);
+            if (stateFacing == null || stateFacing.isAir())
+            {
+                placementData.mustFail = true;
+            }
+        }
+        else if (stateBlock instanceof WallMountedBlock)
+        {
+            //If the supporting block doesn't exist, fail
+            Direction direction;
+            switch (stateSchematic.get(Properties.BLOCK_FACE))
+            {
+                case CEILING:
+                    direction = Direction.UP;
+                    break;
+                case FLOOR:
+                    direction = Direction.DOWN;
+                    break;
+                default:
+                    direction = stateSchematic.get(Properties.HORIZONTAL_FACING).getOpposite();
+            }
+
+            if (!WallMountedBlock.canPlaceAt(world, pos, direction))
+                placementData.mustFail = true;
+        }
+
+        return placementData;
+    }
+
     /**
      * Apply the Carpet-Extra mod accurate block placement protocol support
      */
@@ -606,7 +729,7 @@ public class WorldUtils
         double y = hitVecIn.y;
         double z = hitVecIn.z;
         Block block = state.getBlock();
-        Direction facing = fi.dy.masa.malilib.util.BlockUtils.getFirstPropertyFacingValue(state);
+        Direction facing = BlockUtils.getFirstPropertyFacingValue(state);
         final int propertyIncrement = 16;
         boolean hasData = false;
         int protocolValue = 0;
@@ -696,13 +819,17 @@ public class WorldUtils
         int shiftAmount = 1;
         int propCount = 0;
 
-        @Nullable DirectionProperty property = fi.dy.masa.malilib.util.BlockUtils.getFirstDirectionProperty(state);
+        //System.out.printf("hit vec.x %s, pos.x: %s\n", hitVecIn.getX(), pos.getX());
+        //System.out.printf("raw protocol value in: 0x%08X\n", protocolValue);
+
+        @Nullable DirectionProperty property = BlockUtils.getFirstDirectionProperty(state);
 
         // DirectionProperty - allow all except: VERTICAL_DIRECTION (PointedDripstone)
         if (property != null && property != Properties.VERTICAL_DIRECTION)
         {
             Direction direction = state.get(property);
             protocolValue |= direction.getId() << shiftAmount;
+            //System.out.printf("applying: 0x%08X\n", protocolValue);
             shiftAmount += 3;
             ++propCount;
         }
@@ -724,6 +851,8 @@ public class WorldUtils
 
                     int requiredBits = MathHelper.floorLog2(MathHelper.smallestEncompassingPowerOfTwo(list.size()));
                     int valueIndex = list.indexOf(state.get(prop));
+
+                    //System.out.printf("trying to apply valInd: %d, bits: %d, prot val: 0x%08X\n", valueIndex, requiredBits, protocolValue);
 
                     if (valueIndex != -1)
                     {
@@ -802,7 +931,7 @@ public class WorldUtils
 
             if (type == MessageOutputType.MESSAGE)
             {
-                InfoUtils.showGuiOrInGameMessage(Message.MessageType.WARNING, "litematica.message.placement_restriction_fail");
+                InfoUtils.showGuiOrInGameMessage(MessageType.WARNING, "litematica.message.placement_restriction_fail");
             }
             else if (type == MessageOutputType.ACTIONBAR)
             {
@@ -881,9 +1010,67 @@ public class WorldUtils
             {
                 return true;
             }
+
+            // Ignore if schematic block is wall-mountable and orientation is wrong
+            Block schematicBlock = stateSchematic.getBlock();
+            if (schematicBlock instanceof WallTorchBlock ||
+                schematicBlock instanceof WallRedstoneTorchBlock ||
+                schematicBlock instanceof WallBannerBlock ||
+                schematicBlock instanceof WallSignBlock ||
+                schematicBlock instanceof WallSkullBlock)
+            {
+                if (blockHitResult.getSide() != stateSchematic.get(Properties.HORIZONTAL_FACING))
+                    return true;
+            }
+
+            // Orientation is wrong
+            BlockState attemptState = schematicBlock.getPlacementState(ctx);
+            return !isMatchingStatePlacementRestriction (attemptState, stateSchematic);
         }
 
         return false;
+    }
+
+    private static boolean isMatchingStatePlacementRestriction (BlockState state1, BlockState state2)
+    {
+        if (state1 == null || state2 == null)
+            return false;
+        if (state1 == state2)
+            return true;
+
+        Property<?>[] orientationProperties = new Property<?>[] {
+                Properties.FACING, //pistons
+                Properties.BLOCK_HALF, //stairs, trapdoors
+                Properties.HOPPER_FACING,
+                Properties.DOOR_HINGE,
+                Properties.HORIZONTAL_FACING, //small dripleaf
+                Properties.AXIS, //logs
+                Properties.SLAB_TYPE,
+                Properties.VERTICAL_DIRECTION,
+                Properties.ROTATION, //banners
+                Properties.HANGING, //lanterns
+                Properties.BLOCK_FACE, //lever
+                Properties.ATTACHMENT, //bell (double-check for single-wall / double-wall)
+                //Properties.HORIZONTAL_AXIS, //Nether portals, though they aren't directly placeable
+                //Properties.ORIENTATION, //jigsaw blocks
+        };
+
+        for (Property<?> property : orientationProperties)
+        {
+            boolean hasProperty1 = state1.contains(property);
+            boolean hasProperty2 = state2.contains(property);
+
+            if (hasProperty1 != hasProperty2)
+                return false;
+            if (!hasProperty1)
+                continue;
+
+            if (state1.get(property) != state2.get(property))
+                return false;
+        }
+
+        //Other properties are considered as matching
+        return true;
     }
 
     public static boolean isPositionWithinRangeOfSchematicRegions(BlockPos pos, int range)

@@ -4,10 +4,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
+import net.minecraft.block.BedBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -22,7 +24,10 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.fluid.FluidState;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.chunk.WorldChunk;
 import fi.dy.masa.malilib.util.Color4f;
 import fi.dy.masa.malilib.util.EntityUtils;
@@ -43,7 +48,12 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
 
     protected volatile WorldSchematic world;
     protected final WorldRendererSchematic worldRenderer;
-    protected final AtomicReference<Set<BlockEntity>> setBlockEntities = new AtomicReference<>(new HashSet<>());
+    // UNTHREADED CODE
+    protected final ReentrantLock chunkRenderLock;
+    protected final ReentrantLock chunkRenderDataLock;
+    protected final Set<BlockEntity> setBlockEntities = new HashSet<>();
+    //
+    //protected final AtomicReference<Set<BlockEntity>> setBlockEntities = new AtomicReference<>(new HashSet<>());
     protected final BlockPos.Mutable position;
     protected final BlockPos.Mutable chunkRelativePos;
 
@@ -62,8 +72,12 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
 
     private final BufferBuilderCache builderCache;
 
+    /*  THREADED CODE
     protected AtomicReference<ChunkRenderTaskSchematic> compileTask = new AtomicReference<>(null);
     protected AtomicReference<ChunkRenderDataSchematic> chunkRenderData = new AtomicReference<>(ChunkRenderDataSchematic.EMPTY);
+     */
+    protected ChunkRenderTaskSchematic compileTask;
+    protected ChunkRenderDataSchematic chunkRenderData;
 
     private boolean needsUpdate;
     private boolean needsImmediateUpdate;
@@ -72,6 +86,9 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
     {
         this.world = world;
         this.worldRenderer = worldRenderer;
+        this.chunkRenderData = ChunkRenderDataSchematic.EMPTY;
+        this.chunkRenderLock = new ReentrantLock();
+        this.chunkRenderDataLock = new ReentrantLock();
         this.vertexBufferBlocks = new IdentityHashMap<>();
         this.vertexBufferOverlay = new IdentityHashMap<>();
         this.position = new BlockPos.Mutable();
@@ -102,7 +119,9 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
 
     protected ChunkRenderDataSchematic getChunkRenderData()
     {
-        return chunkRenderData.get();
+        // Threaded code
+        //return this.chunkRenderData.get();
+        return this.chunkRenderData;
     }
 
     protected BufferBuilderCache getBuilderCache()
@@ -112,7 +131,18 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
 
     protected void setChunkRenderData(ChunkRenderDataSchematic data)
     {
-        chunkRenderData.set(data);
+        this.chunkRenderDataLock.lock();
+
+        try
+        {
+            this.chunkRenderData = data;
+        }
+        finally
+        {
+            this.chunkRenderDataLock.unlock();
+        }
+        // Threaded Code
+        //this.chunkRenderData.set(data);
     }
 
     public BlockPos getOrigin()
@@ -177,8 +207,6 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
         RenderLayer layerTranslucent = RenderLayer.getTranslucent();
         BufferAllocatorCache allocators = task.getAllocatorCache();
 
-        //Litematica.debugLog("resortTransparency() [VBO]: resort for chunk origin [{}]", this.position.toShortString());
-
         float x = (float) cameraPos.x - this.position.getX();
         float y = (float) cameraPos.y - this.position.getY();
         float z = (float) cameraPos.z - this.position.getZ();
@@ -227,9 +255,22 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
     protected void rebuildChunk(ChunkRenderTaskSchematic task)
     {
         ChunkRenderDataSchematic data = new ChunkRenderDataSchematic();
-        task.setChunkRenderData(data);
+        //task.setChunkRenderData(data);
+        task.getLock().lock();
 
-        //Litematica.debugLog("rebuildChunk() [VBO]: bootstrap/clearing all render buffers for chunk origin [{}]", this.position.toShortString());
+        try
+        {
+            if (task.getStatus() != ChunkRenderTaskSchematic.Status.COMPILING)
+            {
+                return;
+            }
+
+            task.setChunkRenderData(data);
+        }
+        finally
+        {
+            task.getLock().unlock();
+        }
 
         this.builderCache.clearAll();
 
@@ -335,15 +376,39 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
             }
         }
 
-        Set<BlockEntity> removed = setBlockEntities.getAndSet(tileEntities);
+        this.chunkRenderLock.lock();
+
+        try
+        {
+            Set<BlockEntity> set = Sets.newHashSet(tileEntities);
+            Set<BlockEntity> set1 = Sets.newHashSet(this.setBlockEntities);
+            set.removeAll(this.setBlockEntities);
+            set1.removeAll(tileEntities);
+            this.setBlockEntities.clear();
+            this.setBlockEntities.addAll(tileEntities);
+            this.worldRenderer.updateBlockEntities(set1, set);
+            this.builderCache.clearAll();
+        }
+        finally
+        {
+            this.chunkRenderLock.unlock();
+        }
+
+        /*
+        Set<BlockEntity> removed = this.setBlockEntities.getAndSet(tileEntities);
         Set<BlockEntity> added = Sets.newHashSet(tileEntities);
         added.removeAll(removed);
         removed.removeAll(tileEntities);
-        synchronized (builderCache) {
+
+        Threaded Code
+
+        synchronized (this.builderCache)
+        {
             // probably not necessary to do block Entity update this with builderCache locked but doing so out of caution.
-            worldRenderer.updateBlockEntities(removed, added);
-            builderCache.clearAll();
+            this.worldRenderer.updateBlockEntities(removed, added);
+            this.builderCache.clearAll();
         }
+         */
 
         data.setTimeBuilt(this.world.getTime());
     }
@@ -351,8 +416,6 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
     protected void renderBlocksAndOverlay(BlockPos pos, @Nonnull ChunkRenderDataSchematic data, @Nonnull BufferAllocatorCache allocators, Set<BlockEntity> tileEntities,
             Set<RenderLayer> usedLayers, MatrixStack matrixStack)
     {
-        //Litematica.logger.warn("renderBlocksAndOverlay() [VBO] for BlockPos [{}]", pos.toShortString());
-
         BlockState stateSchematic = this.schematicWorldView.getBlockState(pos);
         BlockState stateClient    = this.clientWorldView.getBlockState(pos);
         boolean clientHasAir = stateClient.isAir();
@@ -391,8 +454,6 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
                 }
                 bufferSchematic.setOffsetY(offsetY);
 
-                //Litematica.logger.error("renderBlocksAndOverlay() -> renderFluid() [VBO] layer: [{}] //  stateSchematic [{}] // fluidState [{}]", ChunkRenderLayers.getFriendlyName(layer), stateSchematic.toString(), fluidState.toString());
-
                 this.worldRenderer.renderFluid(this.schematicWorldView, stateSchematic, fluidState, pos, bufferSchematic);
                 usedLayers.add(layer);
                 bufferSchematic.setOffsetY(0.0F);
@@ -408,8 +469,6 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
                     data.setBlockLayerStarted(layer);
                     bufferSchematic = this.preRenderBlocks(layer, allocators);
                 }
-
-                //Litematica.logger.error("renderBlocksAndOverlay() -> renderBlock() [VBO] layer: [{}] //  stateSchematic [{}]", ChunkRenderLayers.getFriendlyName(layer), stateSchematic.toString());
 
                 if (this.worldRenderer.renderBlock(this.schematicWorldView, stateSchematic, pos, matrixStack, bufferSchematic))
                 {
@@ -438,8 +497,6 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
 
     protected void renderOverlay(OverlayType type, BlockPos pos, BlockState stateSchematic, boolean missing, @Nonnull ChunkRenderDataSchematic data, @Nonnull BufferAllocatorCache allocators)
     {
-        //Litematica.logger.warn("renderOverlay() [VBO] for overlay [{}]", type.name());
-
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         BlockPos.Mutable relPos = this.getChunkRelativePosition(pos);
         OverlayRenderType overlayType;
@@ -465,8 +522,7 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
                     posMutable.set(pos.getX() + side.getOffsetX(), pos.getY() + side.getOffsetY(), pos.getZ() + side.getOffsetZ());
                     BlockState adjStateSchematic = this.schematicWorldView.getBlockState(posMutable);
                     BlockState adjStateClient    = this.clientWorldView.getBlockState(posMutable);
-
-                    OverlayType typeAdj = this.getOverlayType(adjStateSchematic, adjStateClient);
+                    OverlayType typeAdj = getOverlayType(adjStateSchematic, adjStateClient);
 
                     // Only render the model-based outlines or sides for missing blocks
                     if (missing && Configs.Visuals.SCHEMATIC_OVERLAY_MODEL_SIDES.getBooleanValue())
@@ -474,7 +530,7 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
                         BakedModel bakedModel = this.worldRenderer.getModelForState(stateSchematic);
 
                         if (type.getRenderPriority() > typeAdj.getRenderPriority() ||
-                            Block.isFaceFullSquare(stateSchematic.getCollisionShape(this.schematicWorldView, pos), side) == false)
+                                !Block.isFaceFullSquare(stateSchematic.getCollisionShape(this.schematicWorldView, pos), side))
                         {
                             RenderUtils.drawBlockModelQuadOverlayBatched(bakedModel, stateSchematic, relPos, side, this.overlayColor, 0, bufferOverlayQuads);
                         }
@@ -518,7 +574,7 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
                 bufferOverlayOutlines = this.preRenderOverlay(overlayType, allocators);
             }
 
-            this.overlayColor = new Color4f(this.overlayColor.r, this.overlayColor.g, this.overlayColor.b, 1f);
+            Color4f overlayColor = new Color4f(this.overlayColor.r, this.overlayColor.g, this.overlayColor.b, 1f);
 
             if (Configs.Visuals.OVERLAY_REDUCED_INNER_SIDES.getBooleanValue())
             {
@@ -536,7 +592,7 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
                                 posMutable.set(pos.getX() + x - 1, pos.getY() + y - 1, pos.getZ() + z - 1);
                                 BlockState adjStateSchematic = this.schematicWorldView.getBlockState(posMutable);
                                 BlockState adjStateClient    = this.clientWorldView.getBlockState(posMutable);
-                                adjTypes[x][y][z] = this.getOverlayType(adjStateSchematic, adjStateClient);
+                                adjTypes[x][y][z] = getOverlayType(adjStateSchematic, adjStateClient);
                             }
                             else
                             {
@@ -549,8 +605,6 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
                 // Only render the model-based outlines or sides for missing blocks
                 if (missing && Configs.Visuals.SCHEMATIC_OVERLAY_MODEL_OUTLINE.getBooleanValue())
                 {
-                    BakedModel bakedModel = this.worldRenderer.getModelForState(stateSchematic);
-
                     // FIXME: how to implement this correctly here... >_>
                     if (stateSchematic.isOpaque())
                     {
@@ -558,7 +612,8 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
                     }
                     else
                     {
-                        RenderUtils.drawBlockModelOutlinesBatched(bakedModel, stateSchematic, relPos, this.overlayColor, 0, bufferOverlayOutlines);
+                        BakedModel bakedModel = this.worldRenderer.getModelForState(stateSchematic);
+                        RenderUtils.drawBlockModelOutlinesBatched(bakedModel, stateSchematic, relPos, overlayColor, 0, bufferOverlayOutlines);
                     }
                 }
                 else
@@ -572,13 +627,13 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
                 if (missing && Configs.Visuals.SCHEMATIC_OVERLAY_MODEL_OUTLINE.getBooleanValue())
                 {
                     BakedModel bakedModel = this.worldRenderer.getModelForState(stateSchematic);
-                    RenderUtils.drawBlockModelOutlinesBatched(bakedModel, stateSchematic, relPos, this.overlayColor, 0, bufferOverlayOutlines);
+                    RenderUtils.drawBlockModelOutlinesBatched(bakedModel, stateSchematic, relPos, overlayColor, 0, bufferOverlayOutlines);
                 }
                 else
                 {
                     try
                     {
-                        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(relPos, this.overlayColor, 0, bufferOverlayOutlines);
+                        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(relPos, overlayColor, 0, bufferOverlayOutlines);
                     }
                     catch (Exception ignored) { }
                 }
@@ -662,15 +717,10 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
                         //System.out.printf("plop 2 index: %d, ind: %d, pos: %s, off: %s\n", index, ind, pos, posTmp);
                         try
                         {
-                            RenderUtils.drawBlockBoxEdgeBatchedLines(this.getChunkRelativePosition(pos), axis, corner, this.overlayColor, bufferOverlayOutlines);
+                            RenderUtils.drawBlockBoxEdgeBatchedLines(this.getChunkRelativePosition(pos), axis, corner, overlayColor, bufferOverlayOutlines);
                         }
                         catch (IllegalStateException err)
                         {
-                            // TODO: This is absolutely awful. Basically  some times the render buffer is closed
-                            //  while the this processing is happening but if this happens the work the thread was
-                            //  doing is going to be thrown away anyway so we just abort & no harm done. Really we
-                            //  should be using cancelable futures & coroutines to do this correctly but that is a
-                            //  task for not 1:30am when I have work tomorrow.
                             return;
                         }
                         lines++;
@@ -692,7 +742,7 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
             boolean clientHasAir = stateClient.isAir();
             boolean schematicHasAir = stateSchematic.isAir();
 
-            // TODO --> Maybe someday Mojang will add something to replace isLiquid(), and isSolid(), someday?
+            // TODO --> Maybe someday Mojang will add something to replace isLiquid(), and isSolid()
             if (schematicHasAir)
             {
                 return (clientHasAir || (this.ignoreClientWorldFluids && stateClient.isLiquid())) ? OverlayType.NONE : OverlayType.EXTRA;
@@ -718,7 +768,7 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
     }
 
     @Nullable
-    protected Color4f getOverlayColor(OverlayType overlayType)
+    protected static Color4f getOverlayColor(OverlayType overlayType)
     {
         Color4f overlayColor = null;
 
@@ -792,7 +842,7 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
     {
         if (vertexBuffer.isClosed())
         {
-            Litematica.logger.error("uploadBuiltBuffer() [VBO] - Error, vertexBuffer is closed/Null");
+            //Litematica.logger.error("uploadBuiltBuffer() [VBO] - Error, vertexBuffer is closed/Null");
             builtBuffer.close();
             return;
         }
@@ -805,7 +855,6 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
     private void postRenderBlocks(RenderLayer layer, float x, float y, float z, @Nonnull ChunkRenderDataSchematic chunkRenderData, @Nonnull BufferAllocatorCache allocators)
             throws RuntimeException
     {
-        //if (layer == RenderLayer.getTranslucent() && chunkRenderData.isBlockLayerEmpty(layer) == false)
         if (!chunkRenderData.isBlockLayerEmpty(layer))
         {
             BuiltBuffer built;
@@ -821,7 +870,8 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
 
                 if (built == null)
                 {
-                    throw new RuntimeException("failed to build BuiltBuffer");
+                    chunkRenderData.setBlockLayerUnused(layer);
+                    return;
                 }
                 else
                 {
@@ -830,7 +880,8 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
             }
             else
             {
-                throw new RuntimeException("BufferBuilder has not been initialized");
+                chunkRenderData.setBlockLayerUnused(layer);
+                return;
             }
 
             if (layer == RenderLayer.getTranslucent())
@@ -851,7 +902,6 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
             throws RuntimeException
     {
         RenderSystem.applyModelViewMatrix();
-        //if (type == OverlayRenderType.QUAD && chunkRenderData.isOverlayTypeEmpty(type) == false)
         if (chunkRenderData.isOverlayTypeEmpty(type) == false)
         {
             BuiltBuffer built;
@@ -867,7 +917,8 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
 
                 if (built == null)
                 {
-                    throw new RuntimeException("failed to build BuiltBuffer");
+                    chunkRenderData.setOverlayTypeUnused(type);
+                    return;
                 }
                 else
                 {
@@ -876,7 +927,8 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
             }
             else
             {
-                throw new RuntimeException("BufferBuilder has not been initialized");
+                chunkRenderData.setOverlayTypeUnused(type);
+                return;
             }
 
             if (type.isTranslucent() && Configs.Visuals.SCHEMATIC_OVERLAY_ENABLE_RESORTING.getBooleanValue())
@@ -919,7 +971,6 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
     {
         if (vertexBuffer.isClosed())
         {
-            Litematica.logger.error("uploadSortingState() [VBO] - Error, vertexBuffer is closed/Null");
             result.close();
             return;
         }
@@ -932,7 +983,6 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
     private void resortRenderBlocks(RenderLayer layer, float x, float y, float z, @Nonnull ChunkRenderDataSchematic chunkRenderData, @Nonnull BufferAllocatorCache allocators)
             throws InterruptedException
     {
-        //if (layer == RenderLayer.getTranslucent() && chunkRenderData.isBlockLayerEmpty(layer) == false)
         if (chunkRenderData.isBlockLayerEmpty(layer) == false)
         {
             BufferAllocator allocator = allocators.getBufferByLayer(layer);
@@ -940,18 +990,21 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
 
             if (allocator == null)
             {
-                throw new InterruptedException("Buffers are invalid");
+                chunkRenderData.setBlockLayerUnused(layer);
+                return;
             }
             if (chunkRenderData.getBuiltBufferCache().hasBuiltBufferByLayer(layer) == false)
             {
-                throw new InterruptedException("Buffers are invalid");
+                chunkRenderData.setBlockLayerUnused(layer);
+                return;
             }
 
             built = chunkRenderData.getBuiltBufferCache().getBuiltBufferByLayer(layer);
 
             if (built == null)
             {
-                throw new InterruptedException("Buffers are invalid");
+                chunkRenderData.setBlockLayerUnused(layer);
+                return;
             }
 
             if (layer == RenderLayer.getTranslucent())
@@ -980,10 +1033,6 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
                     throw new InterruptedException("Sorting Data failure");
                 }
             }
-            else
-            {
-                throw new InterruptedException("layer is not translucent");
-            }
         }
     }
 
@@ -991,8 +1040,6 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
             throws InterruptedException
     {
         RenderSystem.applyModelViewMatrix();
-
-        //if (type == OverlayRenderType.QUAD && chunkRenderData.isOverlayTypeEmpty(type) == false)
         if (chunkRenderData.isOverlayTypeEmpty(type) == false)
         {
             BufferAllocator allocator = allocators.getBufferByOverlay(type);
@@ -1000,18 +1047,21 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
 
             if (allocator == null)
             {
-                throw new InterruptedException("Buffers are invalid");
+                chunkRenderData.setOverlayTypeUnused(type);
+                return;
             }
             if (chunkRenderData.getBuiltBufferCache().hasBuiltBufferByType(type) == false)
             {
-                throw new InterruptedException("Buffers are invalid");
+                chunkRenderData.setOverlayTypeUnused(type);
+                return;
             }
 
             built = chunkRenderData.getBuiltBufferCache().getBuiltBufferByType(type);
 
             if (built == null)
             {
-                throw new InterruptedException("Buffers are invalid");
+                chunkRenderData.setOverlayTypeUnused(type);
+                return;
             }
 
             if (type.isTranslucent() && Configs.Visuals.SCHEMATIC_OVERLAY_ENABLE_RESORTING.getBooleanValue())
@@ -1040,18 +1090,35 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
                     throw new InterruptedException("Sorting Data failure");
                 }
             }
-            else
-            {
-                throw new InterruptedException("layer is not translucent");
-            }
         }
     }
 
     protected ChunkRenderTaskSchematic makeCompileTaskChunkSchematic(Supplier<Vec3d> cameraPosSupplier)
     {
+        /*  Threaded Code
+
         ChunkRenderTaskSchematic generator = new ChunkRenderTaskSchematic(this, ChunkRenderTaskSchematic.Type.REBUILD_CHUNK, cameraPosSupplier, this.getDistanceSq());
         this.finishCompileTask(generator);
         this.rebuildWorldView();
+
+        return generator;
+         */
+
+        this.chunkRenderLock.lock();
+        ChunkRenderTaskSchematic generator = null;
+
+        try
+        {
+            //if (GuiBase.isCtrlDown()) System.out.printf("makeCompileTaskChunk()\n");
+            this.finishCompileTask();
+            this.rebuildWorldView();
+            this.compileTask = new ChunkRenderTaskSchematic(this, ChunkRenderTaskSchematic.Type.REBUILD_CHUNK, cameraPosSupplier, this.getDistanceSq());
+            generator = this.compileTask;
+        }
+        finally
+        {
+            this.chunkRenderLock.unlock();
+        }
 
         return generator;
     }
@@ -1059,13 +1126,42 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
     @Nullable
     protected ChunkRenderTaskSchematic makeCompileTaskTransparencySchematic(Supplier<Vec3d> cameraPosSupplier)
     {
+        /* Threaded Code
+
         if (compileTask.get().getStatus() == ChunkRenderTaskSchematic.Status.PENDING)
             return null;
         ChunkRenderTaskSchematic newTask = new ChunkRenderTaskSchematic(this, ChunkRenderTaskSchematic.Type.RESORT_TRANSPARENCY, cameraPosSupplier, this.getDistanceSq());
         newTask.setChunkRenderData(this.chunkRenderData.get());
         finishCompileTask(newTask);
         return newTask;
+         */
+
+        this.chunkRenderLock.lock();
+
+        try
+        {
+            if (this.compileTask == null || this.compileTask.getStatus() != ChunkRenderTaskSchematic.Status.PENDING)
+            {
+                if (this.compileTask != null && this.compileTask.getStatus() != ChunkRenderTaskSchematic.Status.DONE)
+                {
+                    this.compileTask.finish();
+                }
+
+                this.compileTask = new ChunkRenderTaskSchematic(this, ChunkRenderTaskSchematic.Type.RESORT_TRANSPARENCY, cameraPosSupplier, this.getDistanceSq());
+                this.compileTask.setChunkRenderData(this.chunkRenderData);
+
+                return this.compileTask;
+            }
+        }
+        finally
+        {
+            this.chunkRenderLock.unlock();
+        }
+
+        return null;
     }
+
+    /* Threaded Code
 
     protected void finishCompileTask(@Nullable ChunkRenderTaskSchematic newTask)
     {
@@ -1073,18 +1169,51 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
         if (oldtask != null)
             oldtask.finish();
     }
+     */
+
+    protected void finishCompileTask()
+    {
+        this.chunkRenderLock.lock();
+
+        try
+        {
+            if (this.compileTask != null && this.compileTask.getStatus() != ChunkRenderTaskSchematic.Status.DONE)
+            {
+                this.compileTask.finish();
+                this.compileTask = null;
+            }
+        }
+        finally
+        {
+            this.chunkRenderLock.unlock();
+        }
+    }
+
+    protected ReentrantLock getLockCompileTask()
+    {
+        return this.chunkRenderLock;
+    }
 
     protected void clear()
     {
         try
         {
-            this.finishCompileTask(null);
+            this.finishCompileTask();
         }
         finally
         {
-            this.builderCache.clearAll();
+            /* Threaded Code
+
             this.chunkRenderData.get().clearAll();
             this.chunkRenderData.set(ChunkRenderDataSchematic.EMPTY);
+             */
+
+            if (this.chunkRenderData != null && !this.chunkRenderData.equals(ChunkRenderDataSchematic.EMPTY))
+            {
+                this.chunkRenderData.clearAll();
+            }
+            this.builderCache.clearAll();
+            this.chunkRenderData = ChunkRenderDataSchematic.EMPTY;
             this.existingOverlays.clear();
             this.hasOverlay = false;
         }
@@ -1142,39 +1271,5 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
     public void close() throws Exception
     {
         this.deleteGlResources();
-    }
-
-    public enum OverlayRenderType
-    {
-        OUTLINE     (VertexFormat.DrawMode.DEBUG_LINES, RenderLayer.DEFAULT_BUFFER_SIZE, VertexFormats.POSITION_COLOR, false, false),
-        QUAD        (VertexFormat.DrawMode.QUADS,       RenderLayer.DEFAULT_BUFFER_SIZE, VertexFormats.POSITION_COLOR, false, true);
-
-        private final VertexFormat.DrawMode drawMode;
-        private final VertexFormat vertexFormat;
-        private final int bufferSize;
-        private final boolean hasCrumbling;
-        private final boolean translucent;
-
-        OverlayRenderType(VertexFormat.DrawMode drawMode, int bufferSize, VertexFormat format, boolean crumbling, boolean translucent)
-        {
-            this.drawMode = drawMode;
-            this.bufferSize = bufferSize;
-            this.vertexFormat = format;
-            this.hasCrumbling = crumbling;
-            this.translucent = translucent;
-        }
-
-        public VertexFormat.DrawMode getDrawMode()
-        {
-            return this.drawMode;
-        }
-
-        public int getExpectedBufferSize() { return this.bufferSize; }
-
-        public VertexFormat getVertexFormat() { return this.vertexFormat; }
-
-        public boolean hasCrumbling() { return this.hasCrumbling; }
-
-        public boolean isTranslucent() { return this.translucent; }
     }
 }

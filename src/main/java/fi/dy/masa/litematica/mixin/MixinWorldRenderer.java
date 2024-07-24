@@ -35,8 +35,6 @@ public abstract class MixinWorldRenderer
     @Inject(method = "renderLayer", at = @At("TAIL"))
     private void onRenderLayer(RenderLayer renderLayer, double x, double y, double z, Matrix4f matrix4f, Matrix4f positionMatrix, CallbackInfo ci)
     {
-        //Litematica.logger.error("onRenderLayer(): [Mixin] layer [{}], [{}, {}, {}]", renderLayer.getDrawMode().name(), x, y, z);
-
         if (renderLayer == RenderLayer.getSolid())
         {
             LitematicaRenderer.getInstance().piecewiseRenderSolid(matrix4f, positionMatrix);

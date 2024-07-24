@@ -1,9 +1,11 @@
 package fi.dy.masa.litematica.render;
 
 import java.util.List;
+import it.unimi.dsi.fastutil.objects.Object2ByteLinkedOpenHashMap;
 import org.joml.Matrix4f;
 import com.mojang.blaze3d.systems.RenderSystem;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -11,11 +13,15 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.util.function.BooleanBiFunction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.math.random.LocalRandom;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 import fi.dy.masa.litematica.Litematica;
@@ -234,10 +240,7 @@ public class RenderUtils
             BufferRenderer.drawWithGlobalProgram(meshData);
             meshData.close();
         }
-        catch (Exception e)
-        {
-            Litematica.logger.error("drawBoundingBoxEdges: Failed to draw Area Selection box (Error: {})", e.getLocalizedMessage());
-        }
+        catch (Exception ignored) { }
     }
 
     private static void drawBoundingBoxLinesX(BufferBuilder buffer, float minX, float minY, float minZ, float maxX, float maxY, float maxZ, Color4f color)
@@ -303,10 +306,7 @@ public class RenderUtils
             BufferRenderer.drawWithGlobalProgram(meshData);
             meshData.close();
         }
-        catch (Exception e)
-        {
-            Litematica.logger.error("renderAreaSides: Failed to draw Area Selection box (Error: {})", e.getLocalizedMessage());
-        }
+        catch (Exception ignored) { }
 
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
@@ -489,10 +489,7 @@ public class RenderUtils
             BufferRenderer.drawWithGlobalProgram(meshData);
             meshData.close();
         }
-        catch (Exception e)
-        {
-            Litematica.logger.error("renderAreaOutlineNoCorners: Failed to draw Area Selection box (Error: {})", e.getLocalizedMessage());
-        }
+        catch (Exception ignored) { }
     }
 
     /**
@@ -508,7 +505,7 @@ public class RenderUtils
         renderModelQuadOutlines(model, state, pos, null, color, expand, buffer);
     }
 
-    private static void renderModelQuadOutlines(BakedModel model, BlockState state, BlockPos pos, Direction side, Color4f color, double expand, BufferBuilder buffer)
+    public static void renderModelQuadOutlines(BakedModel model, BlockState state, BlockPos pos, Direction side, Color4f color, double expand, BufferBuilder buffer)
     {
         try
         {
@@ -578,11 +575,11 @@ public class RenderUtils
 
     private static void renderModelQuadOverlayBatched(BlockPos pos, BufferBuilder buffer, Color4f color, List<BakedQuad> quads)
     {
-        final int size = quads.size();
+        //final int size = quads.size();
 
-        for (int i = 0; i < size; i++)
+        for (BakedQuad quad : quads)
         {
-            renderModelQuadOverlayBatched(pos, buffer, color, quads.get(i).getVertexData());
+            renderModelQuadOverlayBatched(pos, buffer, color, quad.getVertexData());
         }
     }
 

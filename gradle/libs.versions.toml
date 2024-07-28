@@ -18,7 +18,7 @@ id-modrinth="dCKRaeBC"
 id-curseforge="912441"
 
 # Mod dependencies
-mafglib="0.1.18-mc1.21"
+mafglib="0.1.19-mc1.21"
 badpackets="neo-0.8.1"
 
 # Libraries

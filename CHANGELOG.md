@@ -1,2 +1,2 @@
 ## Change
-- fix `Could not load shader file!`
+- update mafglib version

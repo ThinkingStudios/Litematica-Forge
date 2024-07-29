@@ -1,2 +1,2 @@
 ## Change
-- update NeoForge to `21.0.133-beta`
+- update MaFgLib version

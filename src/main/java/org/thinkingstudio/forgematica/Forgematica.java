@@ -15,7 +15,7 @@ public class Forgematica {
         if (FMLLoader.getDist().isClient()) {
             Litematica.onInitialize();
 
-            NeoUtils.getInstance().registerModConfigScreen(modContainer, (screen) -> {
+            NeoUtils.getInstance().registerConfigScreen(modContainer, (screen) -> {
                 GuiConfigs gui = new GuiConfigs();
                 gui.setParent(screen);
                 return gui;

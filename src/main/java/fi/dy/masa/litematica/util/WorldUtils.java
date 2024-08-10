@@ -1,12 +1,13 @@
 package fi.dy.masa.litematica.util;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import javax.annotation.Nullable;
+
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.SignBlockEntity;
@@ -37,6 +38,7 @@ import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
+
 import fi.dy.masa.malilib.gui.Message.MessageType;
 import fi.dy.masa.malilib.interfaces.IStringConsumer;
 import fi.dy.masa.malilib.util.BlockUtils;
@@ -47,6 +49,7 @@ import fi.dy.masa.litematica.config.Hotkeys;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.materials.MaterialCache;
 import fi.dy.masa.litematica.mixin.IMixinSignBlockEntity;
+import fi.dy.masa.litematica.mixin.IMixinWallMountedBlock;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic;
 import fi.dy.masa.litematica.schematic.SchematicaSchematic;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
@@ -65,6 +68,11 @@ public class WorldUtils
 {
     private static final List<PositionCache> EASY_PLACE_POSITIONS = new ArrayList<>();
     private static long easyPlaceLastPickBlockTime = System.nanoTime();
+
+    public static double getValidBlockRange(MinecraftClient mc)
+    {
+        return Configs.Generic.EASY_PLACE_VANILLA_REACH.getBooleanValue() ? mc.player.getBlockInteractionRange() : mc.player.getBlockInteractionRange() + 1.0;
+    }
 
     public static boolean shouldPreventBlockUpdates(World world)
     {
@@ -320,7 +328,7 @@ public class WorldUtils
     {
         BlockState state = Blocks.AIR.getDefaultState();
         Entity entity = fi.dy.masa.malilib.util.EntityUtils.getCameraEntity();
-        RayTraceWrapper wrapper = RayTraceUtils.getGenericTrace(mc.world, entity, 6);
+        RayTraceWrapper wrapper = RayTraceUtils.getGenericTrace(mc.world, entity, getValidBlockRange(mc));
 
         if (wrapper != null)
         {
@@ -363,11 +371,11 @@ public class WorldUtils
 
         if (closest)
         {
-            pos = RayTraceUtils.getSchematicWorldTraceIfClosest(mc.world, mc.player, 6);
+            pos = RayTraceUtils.getSchematicWorldTraceIfClosest(mc.world, mc.player, getValidBlockRange(mc));
         }
         else
         {
-            pos = RayTraceUtils.getFurthestSchematicWorldBlockBeforeVanilla(mc.world, mc.player, 6, true);
+            pos = RayTraceUtils.getFurthestSchematicWorldBlockBeforeVanilla(mc.world, mc.player, getValidBlockRange(mc), true);
         }
 
         if (pos != null)
@@ -452,7 +460,7 @@ public class WorldUtils
     private static ActionResult doEasyPlaceAction(MinecraftClient mc)
     {
         RayTraceWrapper traceWrapper;
-        double traceMaxRange = Configs.Generic.EASY_PLACE_VANILLA_REACH.getBooleanValue() ? 4.5 : 6;
+        double traceMaxRange = getValidBlockRange(mc);
 
         if (Configs.Generic.EASY_PLACE_FIRST.getBooleanValue())
         {
@@ -591,7 +599,7 @@ public class WorldUtils
                 ActionResult result = mc.interactionManager.interactBlock(mc.player, hand, hitResult);
 
                 // swing hand fix, see MinecraftClient#doItemUse
-                if (result.shouldSwingHand())
+                if (result.shouldSwingHand() && Configs.Generic.EASY_PLACE_SWING_HAND.getBooleanValue())
                 {
                     mc.player.swingHand(hand);
                 }
@@ -700,20 +708,7 @@ public class WorldUtils
         else if (stateBlock instanceof WallMountedBlock)
         {
             //If the supporting block doesn't exist, fail
-            Direction direction;
-            switch (stateSchematic.get(Properties.BLOCK_FACE))
-            {
-                case CEILING:
-                    direction = Direction.UP;
-                    break;
-                case FLOOR:
-                    direction = Direction.DOWN;
-                    break;
-                default:
-                    direction = stateSchematic.get(Properties.HORIZONTAL_FACING).getOpposite();
-            }
-
-            if (!WallMountedBlock.canPlaceAt(world, pos, direction))
+            if (!((IMixinWallMountedBlock)stateBlock).invokeCanPlaceAt(stateSchematic, world, pos))
                 placementData.mustFail = true;
         }
 
@@ -1049,7 +1044,7 @@ public class WorldUtils
                 Properties.VERTICAL_DIRECTION,
                 Properties.ROTATION, //banners
                 Properties.HANGING, //lanterns
-                Properties.BLOCK_FACE, //lever
+                Properties.BLOCK_FACE, //lever, button, grindstone
                 Properties.ATTACHMENT, //bell (double-check for single-wall / double-wall)
                 //Properties.HORIZONTAL_AXIS, //Nether portals, though they aren't directly placeable
                 //Properties.ORIENTATION, //jigsaw blocks

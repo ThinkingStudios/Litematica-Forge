@@ -1,6 +1,4 @@
 {
-    "fml.menu.mods.info.description.forgematica": "Litematica unofficial (Neo)Forge port. \nA modern schematic mod for (Neo)Forge.",
-
     "litematica.config.generic.name.easyPlaceProtocolVersion": "easyPlaceProtocolVersion",
     "litematica.config.generic.name.pasteNbtRestoreBehavior": "pasteNbtRestoreBehavior",
     "litematica.config.generic.name.pasteReplaceBehavior": "pasteReplaceBehavior",
@@ -31,6 +29,7 @@
     "litematica.config.generic.name.easyPlaceMode": "easyPlaceMode",
     "litematica.config.generic.name.easyPlaceSinglePlayerHandling": "easyPlaceSinglePlayerHandling",
     "litematica.config.generic.name.easyPlaceSwapInterval": "easyPlaceSwapInterval",
+    "litematica.config.generic.name.easyPlaceSwingHand": "easyPlaceSwingHand",
     "litematica.config.generic.name.easyPlaceVanillaReach": "easyPlaceVanillaReach",
     "litematica.config.generic.name.entityDataSync": "entityDataSync",
     "litematica.config.generic.name.entityDataSyncBackup": "entityDataSyncBackup",
@@ -65,6 +64,7 @@
     "litematica.config.generic.name.signTextPaste": "signTextPaste",
     "litematica.config.generic.name.toolItem": "toolItem",
     "litematica.config.generic.name.toolItemEnabled": "toolItemEnabled",
+    "litematica.config.generic.name.toolItemComponents": "toolItemComponents",
     "litematica.config.generic.name.unhideSchematicVCS": "unhideSchematicVCS",
 
     "litematica.config.visuals.name.enableAreaSelectionBoxesRendering": "enableAreaSelectionBoxesRendering",
@@ -180,6 +180,8 @@
     "litematica.config.hotkeys.name.schematicEditReplaceAll": "schematicEditReplaceAll",
     "litematica.config.hotkeys.name.schematicEditReplaceBlock": "schematicEditReplaceBlock",
     "litematica.config.hotkeys.name.schematicEditReplaceDirection": "schematicEditReplaceDirection",
+    "litematica.config.hotkeys.name.schematicPlacementRotation": "schematicPlacementRotation",
+    "litematica.config.hotkeys.name.schematicPlacementMirror": "schematicPlacementMirror",
     "litematica.config.hotkeys.name.schematicVersionCycleModifier": "schematicVersionCycleModifier",
     "litematica.config.hotkeys.name.schematicVersionCycleNext": "schematicVersionCycleNext",
     "litematica.config.hotkeys.name.schematicVersionCyclePrevious": "schematicVersionCyclePrevious",
@@ -243,7 +245,8 @@
     "litematica.config.generic.comment.easyPlaceMode": "When enabled, then simply trying to use an item/place a block\non schematic blocks will place that block in that position",
     "litematica.config.generic.comment.easyPlaceSinglePlayerHandling": "If enabled, then Litematica handles the so called\n\"Carpet mod Accurate Block Placement Protocol\" itself in single player.\nThis is recommended to be kept enabled if you\nare going to use Easy Place in single player.",
     "litematica.config.generic.comment.easyPlaceSwapInterval": "The interval in milliseconds the Easy Place mode waits\nafter swapping inventory slots and placing a block.\nUseful to avoid placing wrong blocks when having high ping.",
-    "litematica.config.generic.comment.easyPlaceVanillaReach": "If enabled, reduces reach distance from 6 to 4.5\nso servers don't reject placement of far blocks.",
+    "litematica.config.generic.comment.easyPlaceSwingHand": "Swing the Player's hand when using Easy Place.",
+    "litematica.config.generic.comment.easyPlaceVanillaReach": "If enabled, reduces reach distance from +1.0 to the\nVanilla value so servers don't reject placement of\nfar blocks.",
     "litematica.config.generic.comment.entityDataSync": "Use the Entity Data Sync protocol from Servux\nto obtain Entity Data from the server",
     "litematica.config.generic.comment.entityDataSyncBackup": "Use the Vanilla NBT Query method when Servux\nis not available.  This method requires Operator Privileges.",
     "litematica.config.generic.comment.executeRequireHoldingTool": "Require holding an enabled tool item\nfor the executeOperation hotkey to work",
@@ -277,6 +280,7 @@
     "litematica.config.generic.comment.signTextPaste": "Automatically set the text in the sign GUIs from the schematic",
     "litematica.config.generic.comment.toolItem": "The item to use as the \"tool\" for selections etc.",
     "litematica.config.generic.comment.toolItemEnabled": "If true, then the \"tool\" item can be used to control selections etc.",
+    "litematica.config.generic.comment.toolItemComponents": "A Data Components-aware version of toolItem.\nSet to \"empty\" to disable.\nThe syntax accepted is the same as the \"/give\" command.",
     "litematica.config.generic.comment.unhideSchematicVCS": "Un-hides the Schematic VCS (Version Control System) menu button,\nand enables the hotkey and the VCS functionality in general.\n(This was called Schematic Projects before.)\n\nIn general you §6should not§r be using this feature,\nunless you really know how it works and what it does.\nIt somewhat changes how the area selections, placements and pasting works,\nin particular that there is also an area delete operation when pasting.\n\nBasically this feature is intended for §6iterative, in-place§r design work,\nand it allows you to easier create multiple versions/snapshots\nof the same build, and also to switch between the versions by deleting what is\nin the world first, and then pasting the next version in its place.",
 
     "litematica.config.visuals.comment.enableAreaSelectionBoxesRendering": "Enable Area Selection boxes rendering",
@@ -392,6 +396,8 @@
     "litematica.config.hotkeys.comment.schematicEditReplaceAll": "Modifier key to activate the \"replace all identical\"\nreplace mode/function in the Schematic Edit tool mode",
     "litematica.config.hotkeys.comment.schematicEditReplaceBlock": "Modifier key to activate the \"replace block type\"\nreplace mode/function in the Schematic Edit tool mode",
     "litematica.config.hotkeys.comment.schematicEditReplaceDirection": "Modifier key to activate the directional/continuous\nreplace mode/function in the Schematic Edit tool mode",
+    "litematica.config.hotkeys.comment.schematicPlacementRotation": "The schematic is rotated 90 degrees clockwise when pressed",
+    "litematica.config.hotkeys.comment.schematicPlacementMirror": "The Schematic is mirror flipped when pressed",
     "litematica.config.hotkeys.comment.schematicVersionCycleModifier": "The modifier key to hold to be able to use the mouse wheel\nto cycle through the schematic versions in the Version Control tool mode",
     "litematica.config.hotkeys.comment.schematicVersionCycleNext": "A hotkey to cycle to the next schematic version in the Version Control tool mode",
     "litematica.config.hotkeys.comment.schematicVersionCyclePrevious": "A hotkey to cycle to the next schematic version in the Version Control tool mode",

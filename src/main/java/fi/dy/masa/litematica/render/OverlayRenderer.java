@@ -8,23 +8,32 @@ import java.util.Map;
 import com.google.common.collect.ImmutableMap;
 import org.joml.Matrix4f;
 import com.mojang.blaze3d.systems.RenderSystem;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.ChestBlock;
+import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.registry.Registries;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-
+import fi.dy.masa.malilib.config.HudAlignment;
+import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.gui.LeftRight;
+import fi.dy.masa.malilib.util.BlockUtils;
+import fi.dy.masa.malilib.util.Color4f;
+import fi.dy.masa.malilib.util.GuiUtils;
+import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.config.Hotkeys;
 import fi.dy.masa.litematica.data.DataManager;
+import fi.dy.masa.litematica.data.EntitiesDataStorage;
 import fi.dy.masa.litematica.gui.widgets.WidgetSchematicVerificationResult.BlockMismatchInfo;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacementManager;
@@ -37,15 +46,12 @@ import fi.dy.masa.litematica.selection.AreaSelection;
 import fi.dy.masa.litematica.selection.Box;
 import fi.dy.masa.litematica.selection.SelectionManager;
 import fi.dy.masa.litematica.util.BlockInfoAlignment;
+import fi.dy.masa.litematica.util.InventoryUtils;
 import fi.dy.masa.litematica.util.ItemUtils;
 import fi.dy.masa.litematica.util.PositionUtils.Corner;
 import fi.dy.masa.litematica.util.RayTraceUtils;
 import fi.dy.masa.litematica.util.RayTraceUtils.RayTraceWrapper;
 import fi.dy.masa.litematica.world.SchematicWorldHandler;
-import fi.dy.masa.malilib.config.HudAlignment;
-import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.gui.LeftRight;
-import fi.dy.masa.malilib.util.*;
 
 public class OverlayRenderer
 {
@@ -543,15 +549,21 @@ public class OverlayRenderer
 
             if (trace != null && trace.getType() == HitResult.Type.BLOCK)
             {
-                BlockMismatch mismatch = verifier.getMismatchForPosition(trace.getBlockPos());
                 World worldSchematic = SchematicWorldHandler.getSchematicWorld();
+                BlockPos pos = trace.getBlockPos();
+
+                if (DataManager.getInstance().hasIntegratedServer() == false)
+                {
+                    EntitiesDataStorage.getInstance().requestBlockEntity(mc.world, pos);
+                }
+
+                BlockMismatch mismatch = verifier.getMismatchForPosition(pos);
 
                 if (mismatch != null && worldSchematic != null)
                 {
                     BlockMismatchInfo info = new BlockMismatchInfo(mismatch.stateExpected, mismatch.stateFound);
                     BlockInfoAlignment align = (BlockInfoAlignment) Configs.InfoOverlays.BLOCK_INFO_OVERLAY_ALIGNMENT.getOptionListValue();
                     int offY = Configs.InfoOverlays.BLOCK_INFO_OVERLAY_OFFSET_Y.getIntegerValue();
-                    BlockPos pos = trace.getBlockPos();
                     int invHeight = RenderUtils.renderInventoryOverlays(align, offY, worldSchematic, mc.world, pos, mc, drawContext);
                     this.getOverlayPosition(align, info.getTotalWidth(), info.getTotalHeight(), offY, invHeight, mc);
                     info.render(this.blockInfoX, this.blockInfoY, mc, drawContext);
@@ -576,7 +588,6 @@ public class OverlayRenderer
         boolean hasInvClient = InventoryUtils.getInventory(worldClient, pos) != null;
         boolean hasInvSchematic = InventoryUtils.getInventory(worldSchematic, pos) != null;
         int invHeight = 0;
-
         int offY = Configs.InfoOverlays.BLOCK_INFO_OVERLAY_OFFSET_Y.getIntegerValue();
         BlockInfoAlignment align = (BlockInfoAlignment) Configs.InfoOverlays.BLOCK_INFO_OVERLAY_ALIGNMENT.getOptionListValue();
 
@@ -614,6 +625,26 @@ public class OverlayRenderer
             BlockInfo info = new BlockInfo(stateSchematic, "litematica.gui.label.block_info.state_schematic");
             this.getOverlayPosition(align, info.getTotalWidth(), info.getTotalHeight(), offY, invHeight, mc);
             info.render(this.blockInfoX, this.blockInfoY, mc, drawContext);
+        }
+    }
+
+    public void requestBlockEntityAt(World world, BlockPos pos)
+    {
+        if (!(world instanceof ServerWorld))
+        {
+            EntitiesDataStorage.getInstance().requestBlockEntity(world, pos);
+
+            BlockState state = world.getBlockState(pos);
+            if (state.getBlock() instanceof ChestBlock)
+            {
+                ChestType type = state.get(ChestBlock.CHEST_TYPE);
+
+                if (type != ChestType.SINGLE)
+                {
+                    BlockPos posAdj = pos.offset(ChestBlock.getFacing(state));
+                    EntitiesDataStorage.getInstance().requestBlockEntity(world, posAdj);
+                }
+            }
         }
     }
 

@@ -1,14 +1,16 @@
 package fi.dy.masa.litematica.event;
 
 import javax.annotation.Nullable;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.registry.DynamicRegistryManager;
+
+import fi.dy.masa.malilib.interfaces.IWorldLoadListener;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.data.EntitiesDataStorage;
 import fi.dy.masa.litematica.schematic.conversion.SchematicConversionMaps;
 import fi.dy.masa.litematica.world.SchematicWorldHandler;
-import fi.dy.masa.malilib.interfaces.IWorldLoadListener;
 
 public class WorldLoadListener implements IWorldLoadListener
 {
@@ -30,6 +32,7 @@ public class WorldLoadListener implements IWorldLoadListener
         if (worldAfter != null)
         {
             EntitiesDataStorage.getInstance().onWorldPre();
+            DataManager.getInstance().onWorldPre(worldAfter.getRegistryManager());
         }
     }
 

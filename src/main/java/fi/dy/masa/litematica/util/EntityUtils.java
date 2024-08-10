@@ -1,10 +1,10 @@
 package fi.dy.masa.litematica.util;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
@@ -51,6 +51,21 @@ public class EntityUtils
 
     public static boolean hasToolItemInHand(LivingEntity entity, Hand hand)
     {
+        // Data Component-aware toolItem Code (aka NBT)
+        if (DataManager.getInstance().hasToolItemComponents())
+        {
+            ItemStack toolItem = DataManager.getInstance().getToolItemComponents();
+            ItemStack stackHand = entity.getStackInHand(hand);
+
+            if (toolItem != null)
+            {
+                return InventoryUtils.areStacksAndNbtEqual(toolItem, stackHand);
+            }
+
+            return false;
+        }
+
+        // Standard toolItem Code
         ItemStack toolItem = DataManager.getToolItem();
 
         if (toolItem.isEmpty())

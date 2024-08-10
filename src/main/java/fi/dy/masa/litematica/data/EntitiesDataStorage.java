@@ -82,7 +82,6 @@ public class EntitiesDataStorage implements IClientTickHandler
         if (System.currentTimeMillis() - this.serverTickTime > 50)
         {
             // In this block, we do something every server tick
-
             if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() == false)
             {
                 this.serverTickTime = System.currentTimeMillis();

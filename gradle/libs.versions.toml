@@ -6,10 +6,10 @@ minecraft-range="1.21"
 minecraft_version="1.21"
 yarn_mappings="1.21+build.2"
 mappings_patch="1.21+build.4"
-neoforge="21.0.148"
+neoforge="21.0.167"
 
 # Mod properties
-version="0.1.9"
+version="0.1.10"
 maven-group="org.thinkingstudio.forgematica"
 archives-name="Forgematica"
 
@@ -18,7 +18,7 @@ id-modrinth="dCKRaeBC"
 id-curseforge="912441"
 
 # Mod dependencies
-mafglib="0.1.20-mc1.21"
+mafglib="0.1.21-mc1.21"
 badpackets="neo-0.8.1"
 
 # Libraries

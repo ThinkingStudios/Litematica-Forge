@@ -21,14 +21,17 @@ import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 
+import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.gui.GuiTextInput;
+import fi.dy.masa.malilib.gui.Message.MessageType;
+import fi.dy.masa.malilib.interfaces.IStringConsumerFeedback;
+import fi.dy.masa.malilib.util.GuiUtils;
+import fi.dy.masa.malilib.util.InfoUtils;
+import fi.dy.masa.malilib.util.LayerRange;
+import fi.dy.masa.malilib.util.SubChunkPos;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.data.SchematicHolder;
@@ -36,11 +39,7 @@ import fi.dy.masa.litematica.gui.GuiSchematicSave;
 import fi.dy.masa.litematica.gui.GuiSchematicSave.InMemorySchematicCreator;
 import fi.dy.masa.litematica.mixin.IMixinEntity;
 import fi.dy.masa.litematica.scheduler.TaskScheduler;
-import fi.dy.masa.litematica.scheduler.tasks.TaskBase;
-import fi.dy.masa.litematica.scheduler.tasks.TaskDeleteArea;
-import fi.dy.masa.litematica.scheduler.tasks.TaskPasteSchematicPerChunkCommand;
-import fi.dy.masa.litematica.scheduler.tasks.TaskPasteSchematicPerChunkDirect;
-import fi.dy.masa.litematica.scheduler.tasks.TaskSaveSchematic;
+import fi.dy.masa.litematica.scheduler.tasks.*;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic;
 import fi.dy.masa.litematica.schematic.SchematicMetadata;
 import fi.dy.masa.litematica.schematic.container.LitematicaBlockStateContainer;
@@ -56,14 +55,6 @@ import fi.dy.masa.litematica.tool.ToolMode;
 import fi.dy.masa.litematica.util.RayTraceUtils.RayTraceWrapper;
 import fi.dy.masa.litematica.world.SchematicWorldHandler;
 import fi.dy.masa.litematica.world.WorldSchematic;
-import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.gui.GuiTextInput;
-import fi.dy.masa.malilib.gui.Message.MessageType;
-import fi.dy.masa.malilib.interfaces.IStringConsumerFeedback;
-import fi.dy.masa.malilib.util.GuiUtils;
-import fi.dy.masa.malilib.util.InfoUtils;
-import fi.dy.masa.malilib.util.LayerRange;
-import fi.dy.masa.malilib.util.SubChunkPos;
 
 public class SchematicUtils
 {
@@ -381,7 +372,7 @@ public class SchematicUtils
     {
         WorldSchematic world = SchematicWorldHandler.getSchematicWorld();
         Entity entity = fi.dy.masa.malilib.util.EntityUtils.getCameraEntity();
-        RayTraceWrapper traceWrapper = RayTraceUtils.getGenericTrace(mc.world, entity, 6);
+        RayTraceWrapper traceWrapper = RayTraceUtils.getGenericTrace(mc.world, entity, WorldUtils.getValidBlockRange(mc));
 
         if (world != null && traceWrapper != null && traceWrapper.getHitType() == RayTraceWrapper.HitType.SCHEMATIC_BLOCK)
         {
@@ -957,7 +948,7 @@ public class SchematicUtils
             }
             else
             {
-                originTmp = RayTraceUtils.getTargetedPosition(mc.world, entity, 6, false);
+                originTmp = RayTraceUtils.getTargetedPosition(mc.world, entity, WorldUtils.getValidBlockRange(mc), false);
 
                 if (originTmp == null)
                 {

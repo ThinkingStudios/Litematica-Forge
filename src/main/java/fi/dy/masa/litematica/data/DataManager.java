@@ -1,18 +1,22 @@
 package fi.dy.masa.litematica.data;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+
 import fi.dy.masa.malilib.gui.interfaces.IDirectoryCache;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.litematica.Litematica;
@@ -41,6 +45,7 @@ public class DataManager implements IDirectoryCache
     private static final ArrayList<ToBooleanFunction<Text>> CHAT_LISTENERS = new ArrayList<>();
 
     private static ItemStack toolItem = new ItemStack(Items.STICK);
+    private ItemStack toolItemComponents = null;
     private static ConfigGuiTab configGuiTab = ConfigGuiTab.GENERIC;
     private static boolean createPlacementOnLoad = true;
     private static boolean canSave;
@@ -73,6 +78,7 @@ public class DataManager implements IDirectoryCache
         {
             Litematica.debugLog("DataManager#reset() - log-out");
             this.hasIntegratedServer = false;
+            this.toolItemComponents = null;
         }
         else
         {
@@ -95,9 +101,25 @@ public class DataManager implements IDirectoryCache
         return clientTickStart;
     }
 
+    public void onWorldPre(@Nonnull DynamicRegistryManager registryManager)
+    {
+        Litematica.debugLog("DataManager#onWorldPre()");
+        setToolItemComponents(Configs.Generic.TOOL_ITEM_COMPONENTS.getStringValue(), registryManager);
+    }
+
     public static ItemStack getToolItem()
     {
         return toolItem;
+    }
+
+    public boolean hasToolItemComponents()
+    {
+        return this.toolItemComponents != null;
+    }
+
+    public ItemStack getToolItemComponents()
+    {
+        return this.toolItemComponents;
     }
 
     public static void setIsCarpetServer(boolean isCarpetServer)
@@ -541,5 +563,36 @@ public class DataManager implements IDirectoryCache
             toolItem = new ItemStack(Items.STICK);
             Configs.Generic.TOOL_ITEM.setValueFromString(Registries.ITEM.getId(Items.STICK).toString());
         }
+    }
+
+    /**
+     * Sets the current toolItemComponents, if toolItemString is invalid or empty, use the regular toolItem setting
+     * Must be called "after" onWorldPre, so that the DynamicRegistry is valid.
+     *
+     * @param toolItemString (String representation of the Data Component aware id type)
+     */
+    public void setToolItemComponents(String toolItemString, @Nonnull DynamicRegistryManager registryManager)
+    {
+        if (registryManager.equals(DynamicRegistryManager.EMPTY) || toolItemString.isEmpty() || toolItemString.equals("empty"))
+        {
+            this.toolItemComponents = null;
+        }
+        else
+        {
+            this.toolItemComponents = InventoryUtils.getItemStackFromString(toolItemString, registryManager);
+        }
+
+        if (this.toolItemComponents == null)
+        {
+            Configs.Generic.TOOL_ITEM_COMPONENTS.setValueFromString("empty");
+        }
+        // This is meant to re-validate the syntax, and save it back to the Config.
+        // This is kind of janky in practice, but it does work; so I left the code here.
+        /*
+        else
+        {
+            Configs.Generic.TOOL_ITEM_COMPONENTS.setValueFromString(fi.dy.masa.litematica.util.InventoryUtils.convertItemNbtToString((NbtCompound) this.toolItemComponents.encode(registryManager)));
+        }
+         */
     }
 }

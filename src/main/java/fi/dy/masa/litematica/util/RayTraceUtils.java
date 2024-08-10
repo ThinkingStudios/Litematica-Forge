@@ -26,6 +26,7 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 
+import fi.dy.masa.malilib.util.LayerRange;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.config.Hotkeys;
 import fi.dy.masa.litematica.data.DataManager;
@@ -37,7 +38,6 @@ import fi.dy.masa.litematica.selection.Box;
 import fi.dy.masa.litematica.util.PositionUtils.Corner;
 import fi.dy.masa.litematica.util.RayTraceUtils.RayTraceWrapper.HitType;
 import fi.dy.masa.litematica.world.SchematicWorldHandler;
-import fi.dy.masa.malilib.util.LayerRange;
 
 public class RayTraceUtils
 {
@@ -565,6 +565,13 @@ public class RayTraceUtils
         }
 
         return furthestTrace != null ? new RayTraceWrapper(HitType.SCHEMATIC_BLOCK, furthestTrace) : null;
+    }
+
+    @Nonnull
+    public static HitResult getRayTraceFromEntity(World worldIn, Entity entityIn, boolean useLiquids)
+    {
+        double reach = MinecraftClient.getInstance().player != null ? MinecraftClient.getInstance().player.getEntityInteractionRange() + 0.5d : 5.0d;
+        return getRayTraceFromEntity(worldIn, entityIn, useLiquids, reach);
     }
 
     @Nonnull

@@ -32,12 +32,14 @@ import net.minecraft.block.enums.WireConnection;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.BlockView;
 
+import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.mixin.IMixinFenceGateBlock;
 import fi.dy.masa.litematica.mixin.IMixinRedstoneWireBlock;
 import fi.dy.masa.litematica.mixin.IMixinStairsBlock;
@@ -345,15 +347,20 @@ public class SchematicConversionFixers
 
     public static final IStateFixer FIXER_REDSTONE_WIRE = (reader, state, pos) -> {
         RedstoneWireBlock wire = (RedstoneWireBlock) state.getBlock();
-        state = ((IMixinRedstoneWireBlock) wire).litematicaGetPlacementState(reader, state, pos);
+        BlockState stateAdj = ((IMixinRedstoneWireBlock) wire).litematicaGetPlacementState(reader, state, pos);
 
-        // Turn all old dots into crosses, while keeping the power level
-        if (state.equals(REDSTONE_WIRE_DOT) == false && state.with(RedstoneWireBlock.POWER, 0) == REDSTONE_WIRE_DOT_OLD)
+        if (stateAdj.equals(state) == false)
         {
-            state = REDSTONE_WIRE_CROSS.with(RedstoneWireBlock.POWER, state.get(RedstoneWireBlock.POWER));
+            // Vanilla breaks Redstone connections when it doesn't detect the neighbor being powered
+            stateAdj = state;
+        }
+        // Turn all old dots into crosses, while keeping the power level
+        if (stateAdj.equals(REDSTONE_WIRE_DOT) == false && stateAdj.with(RedstoneWireBlock.POWER, 0) == REDSTONE_WIRE_DOT_OLD)
+        {
+            stateAdj = REDSTONE_WIRE_CROSS.with(RedstoneWireBlock.POWER, stateAdj.get(RedstoneWireBlock.POWER));
         }
 
-        return state;
+        return stateAdj;
     };
 
     public static final IStateFixer FIXER_SIGN = (reader, state, pos) -> {

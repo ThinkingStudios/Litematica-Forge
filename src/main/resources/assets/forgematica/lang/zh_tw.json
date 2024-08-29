@@ -473,6 +473,7 @@
     "litematica.error.area_editor.rename_sub_region.exists": "重命名子區域失敗:\n名稱為 '%s'的子區域已存在",
     "litematica.error.area_editor.switch_mode.no_selection": "無法切換到選擇模式：Normal，因為當前沒有選擇區域.\n請在選區瀏覽器中選擇一個區域或創建新的選擇",
 
+    "litematica.error.schematic_conversion.litematic_to_litematica.failed_to_downgrade_litematic": "Failed to downgrade the Litematica Schematic",
     "litematica.error.schematic_conversion.litematic_to_litematica.failed_to_read_litematic": "載入Litematica原理圖失敗",
     "litematica.error.schematic_conversion.schematic_to_litematica.failed_to_create_schematic": "創建Litematica原理圖失敗",
     "litematica.error.schematic_conversion.schematic_to_litematica.failed_to_read_schematic": "載入原理圖失敗",
@@ -929,6 +930,7 @@
     "litematica.message.removed_area_origin": "删除了放置/手動設置的區域原點",
     "litematica.message.removed_selection_box": "已删除選擇框 %s",
     "litematica.message.scheduled_task_added": "已添加計劃任務...",
+    "litematica.message.litematic_downgrade_exported_as": "Schematic export downgraded as '%s'\n§6NOTE: This is an experimental feature; data loss may occur.§r",
     "litematica.message.schematic_exported_as": "原理圖已匯出為 '%s'",
     "litematica.message.schematic_pasted": "原理圖已貼上到世界",
     "litematica.message.schematic_pasted_using_fill_and_setblock": "使用 §b%s§r 個填充命令和 §b%s§r 個設置方塊命令貼上原理圖",

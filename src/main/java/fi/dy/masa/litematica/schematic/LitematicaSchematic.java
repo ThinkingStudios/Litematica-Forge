@@ -1,5 +1,6 @@
 package fi.dy.masa.litematica.schematic;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,6 +14,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CarpetBlock;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.AbstractDecorationEntity;
 import net.minecraft.fluid.Fluid;
@@ -44,6 +46,7 @@ import fi.dy.masa.litematica.schematic.container.LitematicaBlockStateContainer;
 import fi.dy.masa.litematica.schematic.conversion.SchematicConversionFixers;
 import fi.dy.masa.litematica.schematic.conversion.SchematicConversionMaps;
 import fi.dy.masa.litematica.schematic.conversion.SchematicConverter;
+import fi.dy.masa.litematica.schematic.conversion.SchematicDowngradeConverter;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import fi.dy.masa.litematica.schematic.placement.SubRegionPlacement;
 import fi.dy.masa.litematica.selection.AreaSelection;
@@ -60,6 +63,7 @@ public class LitematicaSchematic
     public static final int SCHEMATIC_VERSION_1_13_2 = 5;
     public static final int MINECRAFT_DATA_VERSION_1_12   = 1139; // MC 1.12
     public static final int MINECRAFT_DATA_VERSION_1_13_2 = 1631; // MC 1.13.2
+    public static final int MINECRAFT_DATA_VERSION_1_20_4 = 3700; // MC 1.20.4
     public static final int MINECRAFT_DATA_VERSION = SharedConstants.getGameVersion().getSaveVersion().getId();
     public static final int SCHEMATIC_VERSION = 7;
     // This is basically a "sub-version" for the schematic version,
@@ -250,6 +254,64 @@ public class LitematicaSchematic
         }
 
         return schematic;
+    }
+
+    /**
+     * Copy an existing Litematic to a new object to make a "copy" for file export.
+     *
+     * @param existing (Existing Litematic object)
+     * @param newAuthor
+     * @return
+     */
+    public static LitematicaSchematic createEmptySchematicFromExisting(@Nonnull LitematicaSchematic existing, String newAuthor)
+    {
+        LitematicaSchematic newSchematic = new LitematicaSchematic(null, existing.schematicType);
+
+        if (newAuthor.isEmpty() == false)
+        {
+            newSchematic.metadata.setAuthor(newAuthor);
+        }
+        else
+        {
+            newSchematic.metadata.setAuthor(existing.getMetadata().getAuthor());
+        }
+        newSchematic.metadata.setName(existing.getMetadata().getName());
+        newSchematic.metadata.setDescription(existing.getMetadata().getDescription());
+        newSchematic.metadata.setTimeCreated(existing.getMetadata().getTimeCreated());
+        newSchematic.metadata.setTimeModifiedToNow();
+        newSchematic.metadata.setRegionCount(existing.getMetadata().getRegionCount());
+        newSchematic.metadata.setTotalVolume(existing.getMetadata().getTotalVolume());
+        newSchematic.metadata.setTotalBlocks(existing.getMetadata().getTotalBlocks());
+        newSchematic.metadata.setEnclosingSize(existing.getMetadata().getEnclosingSize());
+
+        return newSchematic;
+    }
+
+    public boolean downgradeV7toV6Schematic(LitematicaSchematic v7Schematic)
+    {
+        Map<String, Box> areas = v7Schematic.getAreas();
+
+        for (Box box : areas.values())
+        {
+            String regionName = box.getName();
+            BlockPos size = box.getSize();
+            final int sizeX = Math.abs(size.getX());
+            final int sizeY = Math.abs(size.getY());
+            final int sizeZ = Math.abs(size.getZ());
+            this.blockContainers.put(regionName, v7Schematic.blockContainers.get(regionName));
+
+            this.tileEntities.put(regionName, this.downgradeTileEntities_to_1_20_4(v7Schematic.tileEntities.get(regionName), MINECRAFT_DATA_VERSION));
+            NbtList list = this.writeEntitiesToNBT(v7Schematic.entities.get(regionName));
+            list = this.downgradeEntities_to_1_20_4(list, MINECRAFT_DATA_VERSION);
+            this.entities.put(regionName, this.readEntitiesFromNBT(list));
+
+            this.pendingBlockTicks.put(regionName, v7Schematic.pendingBlockTicks.get(regionName));
+            this.pendingFluidTicks.put(regionName, v7Schematic.pendingFluidTicks.get(regionName));
+            this.subRegionPositions.put(regionName, v7Schematic.subRegionPositions.get(regionName));
+            this.subRegionSizes.put(regionName, v7Schematic.subRegionSizes.get(regionName));
+        }
+
+        return false;
     }
 
     public void takeEntityDataFromSchematicaSchematic(SchematicaSchematic schematic, String subRegionName)
@@ -998,6 +1060,19 @@ public class LitematicaSchematic
 
         nbt.putInt("MinecraftDataVersion", MINECRAFT_DATA_VERSION);
         nbt.putInt("Version", SCHEMATIC_VERSION);
+        nbt.putInt("SubVersion", SCHEMATIC_VERSION_SUB);
+        nbt.put("Metadata", this.metadata.writeToNBT());
+        nbt.put("Regions", this.writeSubRegionsToNBT());
+
+        return nbt;
+    }
+
+    public NbtCompound writeToNBT_v6()
+    {
+        NbtCompound nbt = new NbtCompound();
+
+        nbt.putInt("MinecraftDataVersion", MINECRAFT_DATA_VERSION_1_20_4);
+        nbt.putInt("Version", 6);
         nbt.putInt("SubVersion", SCHEMATIC_VERSION_SUB);
         nbt.put("Metadata", this.metadata.writeToNBT());
         nbt.put("Regions", this.writeSubRegionsToNBT());
@@ -1971,6 +2046,35 @@ public class LitematicaSchematic
         return oldEntitiesList;
     }
 
+    private Map<BlockPos, NbtCompound> downgradeTileEntities_to_1_20_4(Map<BlockPos, NbtCompound> oldTE, int minecraftDataVersion)
+    {
+        Map<BlockPos, NbtCompound> newTE = new HashMap<>();
+
+        Litematica.logger.info("LitematicaSchematic: Downgrade Tile Entities from DataVersion {} -> {}", minecraftDataVersion, LitematicaSchematic.MINECRAFT_DATA_VERSION_1_20_4);
+
+        for (BlockPos key : oldTE.keySet())
+        {
+            newTE.put(key, SchematicDowngradeConverter.downgradeBlockEntity_to_1_20_4(oldTE.get(key), minecraftDataVersion, MinecraftClient.getInstance().world.getRegistryManager()));
+        }
+
+        return newTE;
+    }
+
+    private NbtList downgradeEntities_to_1_20_4(NbtList oldEntitiesList, int minecraftDataVersion)
+    {
+        NbtList newEntitiesList = new NbtList();
+        final int size = oldEntitiesList.size();
+
+        Litematica.logger.info("LitematicaSchematic: Downgrade Entities from DataVersion {} -> {}", minecraftDataVersion, LitematicaSchematic.MINECRAFT_DATA_VERSION_1_20_4);
+
+        for (int i = 0; i < size; i++)
+        {
+            newEntitiesList.add(SchematicDowngradeConverter.downgradeEntity_to_1_20_4(oldEntitiesList.getCompound(i), minecraftDataVersion, MinecraftClient.getInstance().world.getRegistryManager()));
+        }
+
+        return newEntitiesList;
+    }
+
     private List<EntityInfo> readEntitiesFromNBT(NbtList tagList)
     {
         List<EntityInfo> entityList = new ArrayList<>();
@@ -2098,6 +2202,11 @@ public class LitematicaSchematic
 
     public boolean writeToFile(File dir, String fileNameIn, boolean override)
     {
+        return this.writeToFile(dir, fileNameIn, override, false);
+    }
+
+    public boolean writeToFile(File dir, String fileNameIn, boolean override, boolean downgrade)
+    {
         String fileName = fileNameIn;
 
         if (fileName.endsWith(FILE_EXTENSION) == false)
@@ -2122,7 +2231,14 @@ public class LitematicaSchematic
             }
 
             FileOutputStream os = new FileOutputStream(fileSchematic);
-            NbtIo.writeCompressed(this.writeToNBT(), os);
+            if (downgrade)
+            {
+                NbtIo.writeCompressed(this.writeToNBT_v6(), os);
+            }
+            else
+            {
+                NbtIo.writeCompressed(this.writeToNBT(), os);
+            }
             os.close();
 
             return true;
@@ -2152,7 +2268,7 @@ public class LitematicaSchematic
             {
                 if (schematicType == FileType.SPONGE_SCHEMATIC)
                 {
-                    String name = FileUtils.getNameWithoutExtension(this.schematicFile.getName()) + " (Converted Structure)";
+                    String name = FileUtils.getNameWithoutExtension(this.schematicFile.getName()) + " (Converted Sponge)";
                     return this.readFromSpongeSchematic(name, nbt);
                 }
                 if (schematicType == FileType.VANILLA_STRUCTURE)

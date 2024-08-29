@@ -473,6 +473,7 @@
     "litematica.error.area_editor.rename_sub_region.exists": "重命名子区域失败\n已存在子区域名字为 '%s'",
     "litematica.error.area_editor.switch_mode.no_selection": "无法切换到选择模式：Normal，因为当前没有选择区域.\n请在区域选择浏览器中选择一个区域或创建一个新的选择",
 
+    "litematica.error.schematic_conversion.litematic_to_litematica.failed_to_downgrade_litematic": "Failed to downgrade the Litematica Schematic",
     "litematica.error.schematic_conversion.litematic_to_litematica.failed_to_read_litematic": "無法載入 Litematica 原理圖",
     "litematica.error.schematic_conversion.schematic_to_litematica.failed_to_create_schematic": "创建litematica原理图失败",
     "litematica.error.schematic_conversion.schematic_to_litematica.failed_to_read_schematic": "加载原理图失败",
@@ -929,6 +930,7 @@
     "litematica.message.removed_area_origin": "删除了展示的/手动区域原点",
     "litematica.message.removed_selection_box": "已删除选择框 %s",
     "litematica.message.scheduled_task_added": "添加的计划任务...",
+    "litematica.message.litematic_downgrade_exported_as": "Schematic export downgraded as '%s'\n§6NOTE: This is an experimental feature; data loss may occur.§r",
     "litematica.message.schematic_exported_as": "原理图导出为 '%s'",
     "litematica.message.schematic_pasted": "在世界上粘贴原理图",
     "litematica.message.schematic_pasted_using_fill_and_setblock": "使用§b%s§r fill 和§b%s§r setblock 命令粘贴示意图",

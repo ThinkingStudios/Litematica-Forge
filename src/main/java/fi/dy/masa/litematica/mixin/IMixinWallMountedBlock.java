@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(WallMountedBlock.class)
 public interface IMixinWallMountedBlock
 {
+
     @Invoker("canPlaceAt")
     boolean invokeCanPlaceAt(BlockState state, WorldView world, BlockPos pos);
 }

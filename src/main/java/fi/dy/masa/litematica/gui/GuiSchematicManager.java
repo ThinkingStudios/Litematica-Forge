@@ -32,7 +32,7 @@ import fi.dy.masa.malilib.util.StringUtils;
 public class GuiSchematicManager extends GuiSchematicBrowserBase implements ISelectionListener<DirectoryEntry>
 {
     private static PreviewGenerator previewGenerator;
-    private ExportType exportType = ExportType.SCHEMATIC;
+    private ExportType exportType = ExportType.V6_LITEMATIC;
 
     public GuiSchematicManager()
     {
@@ -87,7 +87,7 @@ public class GuiSchematicManager extends GuiSchematicBrowserBase implements ISel
                 x = this.createButton(x, y, ButtonListener.Type.IMPORT_SCHEMATIC);
                 x = this.createButton(x, y, ButtonListener.Type.DELETE_SCHEMATIC);
             }
-            else if (type == FileType.SCHEMATICA_SCHEMATIC || type == FileType.VANILLA_STRUCTURE)
+            else if (type == FileType.SPONGE_SCHEMATIC || type == FileType.SCHEMATICA_SCHEMATIC || type == FileType.VANILLA_STRUCTURE)
             {
                 x = this.createButton(x, y, ButtonListener.Type.IMPORT_SCHEMATIC);
                 x = this.createButton(x, y, ButtonListener.Type.DELETE_SCHEMATIC);
@@ -167,7 +167,7 @@ public class GuiSchematicManager extends GuiSchematicBrowserBase implements ISel
         @Override
         public IConfigOptionListEntry getDefaultOptionListValue()
         {
-            return ExportType.SCHEMATIC;
+            return ExportType.V6_LITEMATIC;
         }
 
         @Override
@@ -238,6 +238,7 @@ public class GuiSchematicManager extends GuiSchematicBrowserBase implements ISel
             else if (this.type == Type.IMPORT_SCHEMATIC)
             {
                 if (fileType == FileType.LITEMATICA_SCHEMATIC ||
+                    fileType == FileType.SPONGE_SCHEMATIC ||
                     fileType == FileType.SCHEMATICA_SCHEMATIC ||
                     fileType == FileType.VANILLA_STRUCTURE)
                 {
@@ -474,6 +475,7 @@ public class GuiSchematicManager extends GuiSchematicBrowserBase implements ISel
     public enum ExportType implements IConfigOptionListEntry
     {
         SCHEMATIC   ("Schematic"),
+        V6_LITEMATIC("V6 (1.20.4) Litematic"),
         VANILLA     ("Vanilla Structure");
 
         private final String displayName;
@@ -534,7 +536,7 @@ public class GuiSchematicManager extends GuiSchematicBrowserBase implements ISel
                 }
             }
 
-            return ExportType.SCHEMATIC;
+            return ExportType.V6_LITEMATIC;
         }
     }
 }

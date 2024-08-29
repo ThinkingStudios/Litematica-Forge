@@ -83,7 +83,7 @@ publisher {
     setChangelog(file("CHANGELOG.md").getText("UTF-8"))
     setVersion("${project.version}")
     setDisplayName("${project.version}")
-    setGameVersions(libs.versions.minecraft.range.get())
+    setGameVersions("1.21", "1.21.1")
     setLoaders(loom.platform.get().id())
     setCurseEnvironment("client")
     setArtifact(remapJar)

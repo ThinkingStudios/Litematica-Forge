@@ -1,15 +1,12 @@
 [versions]
-
-minecraft-range="1.21"
-
 # Base properties
-minecraft_version="1.21"
-yarn_mappings="1.21+build.2"
+minecraft_version="1.21.1"
+yarn_mappings="1.21.1+build.3"
 mappings_patch="1.21+build.4"
-neoforge="21.0.167"
+neoforge="21.1.31"
 
 # Mod properties
-version="0.1.10"
+version="0.1.11"
 maven-group="org.thinkingstudio.forgematica"
 archives-name="Forgematica"
 
@@ -18,7 +15,7 @@ id-modrinth="dCKRaeBC"
 id-curseforge="912441"
 
 # Mod dependencies
-mafglib="0.1.21-mc1.21"
+mafglib="0.1.22-mc1.21.1"
 badpackets="neo-0.8.1"
 
 # Libraries
@@ -26,7 +23,7 @@ jsr305="3.0.2"
 
 # Gradle plugin
 architectury-loom = "1.6-SNAPSHOT"
-modpublisher = "2.1.+"
+modpublisher = "2.+"
 
 [libraries]
 minecraft = { group = "com.mojang", name = "minecraft", version.ref = "minecraft_version" }

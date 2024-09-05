@@ -79,11 +79,11 @@ publisher {
     setChangelog(file("CHANGELOG.md").getText("UTF-8"))
     setVersion("${project.version}")
     setDisplayName("${project.version}")
-    setGameVersions("1.20", "1.20.1")
+    setGameVersions("1.20.1")
     setLoaders("forge")
     setCurseEnvironment("client")
     setArtifact(remapJar)
     addAdditionalFile(sourcesJar)
-    curseDepends { required("mafglib") }
-    modrinthDepends { required("mafglib") }
+    curseDepends.required("mafglib")
+    modrinthDepends.required("mafglib")
 }

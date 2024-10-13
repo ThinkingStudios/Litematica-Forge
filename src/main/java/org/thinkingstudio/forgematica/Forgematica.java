@@ -5,16 +5,16 @@ import fi.dy.masa.litematica.Reference;
 import fi.dy.masa.litematica.gui.GuiConfigs;
 import fi.dy.masa.malilib.event.InitializationHandler;
 import net.minecraftforge.fml.ModContainer;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLLoader;
 import org.thinkingstudio.mafglib.util.ForgeUtils;
 
 @Mod(Reference.MOD_ID)
 public class Forgematica {
-    public Forgematica() {
+    public Forgematica(FMLJavaModLoadingContext context) {
         if (FMLLoader.getDist().isClient()) {
-            ModContainer modContainer = ModLoadingContext.get().getActiveContainer();
+            ModContainer modContainer = context.getContainer();
 
             ForgeUtils.getInstance().getClientModIgnoredServerOnly(modContainer);
             InitializationHandler.getInstance().registerInitializationHandler(new InitHandler());

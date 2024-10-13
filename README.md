@@ -11,6 +11,7 @@ Litematica unofficial (Neo)Forge port.
 **Require [MaLiLib-Forge](https://github.com/ThinkingStudios/MaLiLib-Forge).**
 
 <img alt="forge" height="56" src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/forge_vector.svg">
+<img alt="neoforge" height="56" src="https://raw.githubusercontent.com/KessokuTeaTime/badges-extra/main/assets/cozy/supported/neoforge_vector.svg">
 
 <a href="https://modrinth.com/mod/forgematica">
 <img alt="modrinth" height="56" src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/available/modrinth_vector.svg">
@@ -44,3 +45,7 @@ dependencies {
 - Open a command prompt/terminal to the repository directory
 - run 'gradlew build'
 - The built jar file will be in build/libs/
+
+## Credits
+- [maruohon/litematica](https://github.com/maruohon/litematica)
+- [sakura-ryoko/litematica](https://github.com/sakura-ryoko/litematica)

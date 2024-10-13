@@ -56,6 +56,7 @@ import fi.dy.masa.litematica.util.EntityUtils;
 import fi.dy.masa.litematica.util.PositionUtils;
 import fi.dy.masa.litematica.util.WorldUtils;
 import fi.dy.masa.litematica.util.*;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class LitematicaSchematic
 {
@@ -2335,6 +2336,54 @@ public class LitematicaSchematic
                 {
                     metadata.readFromNBT(nbt.getCompound("Metadata"));
                     return metadata;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static Pair<SchematicSchema, SchematicMetadata> readMetadataAndVersionFromFile(File dir, String fileName)
+    {
+        NbtCompound nbt = readNbtFromFile(fileFromDirAndName(dir, fileName, FileType.LITEMATICA_SCHEMATIC));
+
+        if (nbt != null)
+        {
+            SchematicMetadata metadata = new SchematicMetadata();
+
+            if (nbt.contains("Version", Constants.NBT.TAG_INT))
+            {
+                final int version = nbt.getInt("Version");
+                final int dataVersion = nbt.contains("MinecraftDataVersion") ? nbt.getInt("MinecraftDataVersion") : Configs.Generic.DATAFIXER_DEFAULT_SCHEMA.getIntegerValue();
+
+                if (version >= 1)
+                {
+                    metadata.readFromNBT(nbt.getCompound("Metadata"));
+
+                    return Pair.of(new SchematicSchema(version, dataVersion), metadata);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static SchematicSchema readDataVersionFromFile(File dir, String fileName)
+    {
+        NbtCompound nbt = readNbtFromFile(fileFromDirAndName(dir, fileName, FileType.LITEMATICA_SCHEMATIC));
+
+        if (nbt != null)
+        {
+            if (nbt.contains("Version", Constants.NBT.TAG_INT))
+            {
+                final int version = nbt.getInt("Version");
+                final int dataVersion = nbt.contains("MinecraftDataVersion") ? nbt.getInt("MinecraftDataVersion") : Configs.Generic.DATAFIXER_DEFAULT_SCHEMA.getIntegerValue();
+
+                if (version >= 1)
+                {
+                    return new SchematicSchema(version, dataVersion);
                 }
             }
         }

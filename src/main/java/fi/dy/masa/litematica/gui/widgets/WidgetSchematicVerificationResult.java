@@ -1,8 +1,9 @@
 package fi.dy.masa.litematica.gui.widgets;
 
-import javax.annotation.Nullable;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.joml.Quaternionf;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
@@ -10,6 +11,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.BlockRenderManager;
@@ -23,6 +25,7 @@ import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.random.LocalRandom;
+
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.gui.button.ButtonBase;
 import fi.dy.masa.malilib.gui.button.ButtonGeneric;
@@ -275,7 +278,7 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
             this.drawString(x2, y, color, this.header2, drawContext);
             this.drawString(x3, y, color, this.header3, drawContext);
 
-            this.renderColumnHeader(mouseX, mouseY, Icons.ARROW_DOWN, Icons.ARROW_UP);
+            this.renderColumnHeader(mouseX, mouseY, Icons.ARROW_DOWN, Icons.ARROW_UP, drawContext);
         }
         else if (this.header1 != null)
         {
@@ -317,7 +320,7 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
             else
             {
                 drawContext.drawItem(this.mismatchInfo.stackExpected, x1, y);
-                drawContext.drawItemInSlot(this.textRenderer, this.mismatchInfo.stackExpected, x1, y);
+                drawContext.drawStackOverlay(this.textRenderer, this.mismatchInfo.stackExpected, x1, y);
             }
 
             if (this.mismatchEntry.mismatchType != MismatchType.CORRECT_STATE)
@@ -332,7 +335,7 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
                 else
                 {
                     drawContext.drawItem(this.mismatchInfo.stackFound, x2, y);
-                    drawContext.drawItemInSlot(this.textRenderer, this.mismatchInfo.stackFound, x2, y);
+                    drawContext.drawStackOverlay(this.textRenderer, this.mismatchInfo.stackFound, x2, y);
                 }
             }
 
@@ -505,7 +508,7 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
                 else
                 {
                     drawContext.drawItem(this.stackExpected, x1, iconY);
-                    drawContext.drawItemInSlot(textRenderer, this.stackExpected, x1, iconY);
+                    drawContext.drawStackOverlay(textRenderer, this.stackExpected, x1, iconY);
                 }
 
                 if (useBlockModelFound)
@@ -516,7 +519,7 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
                 else
                 {
                     drawContext.drawItem(this.stackFound, x2, iconY);
-                    drawContext.drawItemInSlot(textRenderer, this.stackFound, x2, iconY);
+                    drawContext.drawStackOverlay(textRenderer, this.stackFound, x2, iconY);
                 }
 
                 //mc.getRenderItem().zLevel -= 100;
@@ -573,7 +576,8 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
             int[] light = new int[] { l, l, l, l };
             float[] brightness = new float[] { 0.75f, 0.75f, 0.75f, 1.0f };
 
-            RenderSystem.setShader(GameRenderer::getRenderTypeTranslucentProgram);
+            RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_TRANSLUCENT);
+            //RenderSystem.setShader(GameRenderer::getRenderTypeTranslucentProgram);
             DiffuseLighting.enableGuiDepthLighting();
 
             for (Direction face : PositionUtils.ALL_DIRECTIONS)

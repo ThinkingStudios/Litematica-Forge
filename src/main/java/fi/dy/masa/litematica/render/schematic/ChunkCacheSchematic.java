@@ -58,7 +58,7 @@ public class ChunkCacheSchematic implements BlockRenderView, ChunkProvider
                 this.chunkArray[cx - this.chunkStartX][cz - this.chunkStartZ] = chunk;
 
                 if (cx == chunkX && cz == chunkZ &&
-                    chunk.areSectionsEmptyBetween(worldIn.getBottomY(), worldIn.getTopY() - 1) == false)
+                    chunk.areSectionsEmptyBetween(worldIn.getBottomY(), worldIn.getTopYInclusive() - 1) == false)
                 {
                     this.empty = false;
                 }
@@ -75,7 +75,8 @@ public class ChunkCacheSchematic implements BlockRenderView, ChunkProvider
     @Override
     public LightSourceView getChunk(int chunkX, int chunkZ)
     {
-        return null; // TODO 1.17 this shouldn't be needed since the lighting provider does nothing
+        //return null; // TODO 1.17 this shouldn't be needed since the lighting provider does nothing
+        return this.worldClient.getChunk(chunkX, chunkZ);
     }
 
     public boolean isEmpty()

@@ -1,9 +1,12 @@
 package fi.dy.masa.litematica.render.schematic;
 
-import javax.annotation.Nullable;
 import java.util.*;
+import javax.annotation.Nullable;
+
+import net.minecraft.util.profiler.Profilers;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -11,6 +14,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.GlUniform;
 import net.minecraft.client.gl.ShaderProgram;
+import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.BlockRenderManager;
@@ -26,15 +30,14 @@ import net.minecraft.util.crash.CrashReportSection;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.BlockRenderView;
-import fi.dy.masa.malilib.util.Color4f;
+
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.LayerRange;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.config.Hotkeys;
 import fi.dy.masa.litematica.data.DataManager;
-import fi.dy.masa.litematica.util.OverlayType;
 import fi.dy.masa.litematica.world.ChunkSchematic;
 import fi.dy.masa.litematica.world.WorldSchematic;
 
@@ -137,7 +140,7 @@ public class WorldRendererSchematic
 
         if (worldSchematic != null)
         {
-            this.loadRenderers();
+            this.loadRenderers(null);
         }
         else
         {
@@ -162,11 +165,15 @@ public class WorldRendererSchematic
         }
     }
 
-    public void loadRenderers()
+    public void loadRenderers(@Nullable Profiler profiler)
     {
         if (this.hasWorld())
         {
-            this.world.getProfiler().push("litematica_load_renderers");
+            if (profiler == null)
+            {
+                profiler = Profilers.get();
+            }
+            profiler.push("litematica_load_renderers");
 
             if (this.renderDispatcher == null)
             {
@@ -191,7 +198,7 @@ public class WorldRendererSchematic
             this.chunkRendererDispatcher = new ChunkRenderDispatcherSchematic(this.world, this.renderDistanceChunks, this, this.renderChunkFactory);
             this.renderEntitiesStartupCounter = 2;
 
-            this.world.getProfiler().pop();
+            profiler.pop();
         }
     }
 
@@ -205,14 +212,14 @@ public class WorldRendererSchematic
         this.renderDispatcher.stopChunkUpdates();
     }
 
-    public void setupTerrain(Camera camera, Frustum frustum, int frameCount, boolean playerSpectator)
+    public void setupTerrain(Camera camera, Frustum frustum, int frameCount, boolean playerSpectator, Profiler profiler)
     {
-        this.world.getProfiler().push("setup_terrain");
+        profiler.push("setup_terrain");
 
         if (this.chunkRendererDispatcher == null ||
             this.mc.options.getViewDistance().getValue() + 2 != this.renderDistanceChunks)
         {
-            this.loadRenderers();
+            this.loadRenderers(profiler);
         }
 
         Entity entity = EntityUtils.getCameraEntity();
@@ -224,7 +231,7 @@ public class WorldRendererSchematic
 
         //camera.update(this.world, entity, this.mc.options.perspective > 0, this.mc.options.perspective == 2, this.mc.getTickDelta());
 
-        this.world.getProfiler().push("camera");
+        profiler.push("camera");
 
         double entityX = entity.getX();
         double entityY = entity.getY();
@@ -241,7 +248,7 @@ public class WorldRendererSchematic
             this.chunkRendererDispatcher.removeOutOfRangeRenderers();
         }
 
-        this.world.getProfiler().swap("renderlist_camera");
+        profiler.swap("renderlist_camera");
 
         Vec3d cameraPos = camera.getPos();
         double cameraX = cameraPos.x;
@@ -250,7 +257,7 @@ public class WorldRendererSchematic
 
         this.renderDispatcher.setCameraPosition(cameraPos);
 
-        this.world.getProfiler().swap("culling");
+        profiler.swap("culling");
         BlockPos viewPos = BlockPos.ofFloored(cameraX, cameraY + (double) entity.getStandingEyeHeight(), cameraZ);
         final int centerChunkX = (viewPos.getX() >> 4);
         final int centerChunkZ = (viewPos.getZ() >> 4);
@@ -269,16 +276,16 @@ public class WorldRendererSchematic
         this.lastCameraPitch = camera.getPitch();
         this.lastCameraYaw = camera.getYaw();
 
-        this.world.getProfiler().swap("update");
+        profiler.swap("update");
 
         if (this.displayListEntitiesDirty)
         {
-            this.world.getProfiler().push("fetch");
+            profiler.push("fetch");
 
             this.displayListEntitiesDirty = false;
             this.renderInfos.clear();
 
-            this.world.getProfiler().swap("sort");
+            profiler.swap("sort");
             List<ChunkPos> positions = DataManager.getSchematicPlacementManager().getAndUpdateVisibleChunks(viewChunk);
             //positions.sort(new SubChunkPos.DistanceComparator(viewSubChunk));
 
@@ -287,7 +294,7 @@ public class WorldRendererSchematic
 
             //if (GuiBase.isCtrlDown()) System.out.printf("sorted positions: %d\n", positions.size());
 
-            this.world.getProfiler().swap("iteration");
+            profiler.swap("iteration");
 
             //while (queuePositions.isEmpty() == false)
             for (ChunkPos chunkPos : positions)
@@ -317,10 +324,10 @@ public class WorldRendererSchematic
                 }
             }
 
-            this.world.getProfiler().pop(); // fetch
+            profiler.pop(); // fetch
         }
 
-        this.world.getProfiler().swap("rebuild_near");
+        profiler.swap("rebuild_near");
         Set<ChunkRendererSchematicVbo> set = this.chunksToUpdate;
         this.chunksToUpdate = new LinkedHashSet<>();
 
@@ -339,28 +346,28 @@ public class WorldRendererSchematic
                 else
                 {
                     //if (GuiBase.isCtrlDown()) System.out.printf("====== update now\n");
-                    this.world.getProfiler().push("build_near");
+                    profiler.push("build_near");
 
                     this.renderDispatcher.updateChunkNow(chunkRendererTmp);
                     chunkRendererTmp.clearNeedsUpdate();
 
-                    this.world.getProfiler().pop();
+                    profiler.pop();
                 }
             }
         }
 
         this.chunksToUpdate.addAll(set);
 
-        this.world.getProfiler().pop();
-        this.world.getProfiler().pop();
+        profiler.pop();
+        profiler.pop();
     }
 
-    public void updateChunks(long finishTimeNano)
+    public void updateChunks(long finishTimeNano, Profiler profiler)
     {
-        this.mc.getProfiler().push("litematica_run_chunk_uploads");
+        profiler.push("litematica_run_chunk_uploads");
         this.displayListEntitiesDirty |= this.renderDispatcher.runChunkUploads(finishTimeNano);
 
-        this.mc.getProfiler().swap("litematica_check_update");
+        profiler.swap("litematica_check_update");
 
         if (this.chunksToUpdate.isEmpty() == false)
         {
@@ -374,16 +381,16 @@ public class WorldRendererSchematic
 
                 if (renderChunk.needsImmediateUpdate())
                 {
-                    this.mc.getProfiler().push("litematica_update_now");
+                    profiler.push("litematica_update_now");
                     flag = this.renderDispatcher.updateChunkNow(renderChunk);
                 }
                 else
                 {
-                    this.mc.getProfiler().push("litematica_update_later");
+                    profiler.push("litematica_update_later");
                     flag = this.renderDispatcher.updateChunkLater(renderChunk);
                 }
 
-                this.mc.getProfiler().pop();
+                profiler.pop();
 
                 if (!flag)
                 {
@@ -402,13 +409,13 @@ public class WorldRendererSchematic
             }
         }
 
-        this.mc.getProfiler().pop();
+        profiler.pop();
     }
 
-    public int renderBlockLayer(RenderLayer renderLayer, Matrix4f matrices, Camera camera, Matrix4f projMatrix)
+    public int renderBlockLayer(RenderLayer renderLayer, Matrix4f matrices, Camera camera, Matrix4f projMatrix, Profiler profiler)
     {
         RenderSystem.assertOnRenderThread();
-        this.world.getProfiler().push("render_block_layer_" + renderLayer.toString());
+        profiler.push("render_block_layer_" + renderLayer.toString());
 
         boolean isTranslucent = renderLayer == RenderLayer.getTranslucent();
 
@@ -421,7 +428,7 @@ public class WorldRendererSchematic
 
         if (isTranslucent)
         {
-            this.world.getProfiler().push("translucent_sort");
+            profiler.push("translucent_sort");
             double diffX = x - this.lastTranslucentSortX;
             double diffY = y - this.lastTranslucentSortY;
             double diffZ = z - this.lastTranslucentSortZ;
@@ -448,11 +455,11 @@ public class WorldRendererSchematic
                 }
             }
 
-            this.world.getProfiler().pop();
+            profiler.pop();
         }
 
-        this.world.getProfiler().push("filter_empty");
-        this.world.getProfiler().swap("render");
+        profiler.push("filter_empty");
+        profiler.swap("render");
 
         boolean reverse = isTranslucent;
         int startIndex = reverse ? this.renderInfos.size() - 1 : 0;
@@ -471,11 +478,14 @@ public class WorldRendererSchematic
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
         }
 
-        initShader(shader, matrices, projMatrix);
+        // As per IMS
+        //initShader(shader, matrices, projMatrix);
+        //shader.initializeUniforms(VertexFormat.DrawMode.QUADS, matrices, projMatrix, MinecraftClient.getInstance().getWindow());
+        shader.initializeUniforms(renderLayer.getDrawMode(), matrices, projMatrix, MinecraftClient.getInstance().getWindow());
         RenderSystem.setupShaderLights(shader);
         shader.bind();
 
-        GlUniform chunkOffsetUniform = shader.chunkOffset;
+        GlUniform chunkOffsetUniform = shader.modelOffset;
         boolean startedDrawing = false;
 
         for (int i = startIndex; i != stopIndex; i += increment)
@@ -531,33 +541,43 @@ public class WorldRendererSchematic
         VertexBuffer.unbind();
         renderLayer.endDrawing();
 
-        this.world.getProfiler().pop();
-        this.world.getProfiler().pop();
+        profiler.pop();
+        profiler.pop();
 
         return count;
     }
 
-    public void renderBlockOverlays(Matrix4f matrix4f, Camera camera, Matrix4f projMatrix)
+    public void renderBlockOverlays(Matrix4f viewMatrix, Camera camera, Matrix4f projMatrix, Profiler profiler)
     {
-        this.renderBlockOverlay(OverlayRenderType.OUTLINE, matrix4f, camera, projMatrix);
-        this.renderBlockOverlay(OverlayRenderType.QUAD, matrix4f, camera, projMatrix);
+        this.renderBlockOverlay(OverlayRenderType.OUTLINE, viewMatrix, camera, projMatrix, profiler);
+        this.renderBlockOverlay(OverlayRenderType.QUAD, viewMatrix, camera, projMatrix, profiler);
     }
+
+    /*
+    Disable, as per IMS
 
     protected static void initShader(ShaderProgram shader, Matrix4f matrix4f, Matrix4f projMatrix)
     {
-        for (int i = 0; i < 12; ++i) shader.addSampler("Sampler" + i, RenderSystem.getShaderTexture(i));
+        //for (int i = 0; i < 12; ++i) shader.addSampler("Sampler" + i, RenderSystem.getShaderTexture(i));
 
         if (shader.modelViewMat != null) shader.modelViewMat.set(matrix4f);
         if (shader.projectionMat != null) shader.projectionMat.set(projMatrix);
-        if (shader.colorModulator != null) shader.colorModulator.set(RenderSystem.getShaderColor());
-        if (shader.fogStart != null) shader.fogStart.set(RenderSystem.getShaderFogStart());
-        if (shader.fogEnd != null) shader.fogEnd.set(RenderSystem.getShaderFogEnd());
-        if (shader.fogColor != null) shader.fogColor.set(RenderSystem.getShaderFogColor());
         if (shader.textureMat != null) shader.textureMat.set(RenderSystem.getTextureMatrix());
+        if (shader.colorModulator != null) shader.colorModulator.set(RenderSystem.getShaderColor());
+        if (shader.glintAlpha != null) shader.glintAlpha.set(RenderSystem.getShaderGlintAlpha());
+        Fog fog = RenderSystem.getShaderFog();
+        if (shader.fogStart != null) shader.fogStart.set(fog.start());
+        if (shader.fogEnd != null) shader.fogEnd.set(fog.end());
+        if (shader.fogColor != null) shader.fogColor.setAndFlip(fog.red(), fog.green(), fog.blue(), fog.alpha());
+        if (shader.fogShape != null) shader.fogShape.set(fog.shape().getId());
+        Window window = MinecraftClient.getInstance().getWindow();
+        if (shader.screenSize != null) shader.screenSize.set((float) window.getFramebufferWidth(), (float) window.getFramebufferHeight());
         if (shader.gameTime != null) shader.gameTime.set(RenderSystem.getShaderGameTime());
+        if (shader.lineWidth != null) shader.lineWidth.set(RenderSystem.getShaderLineWidth());
     }
+     */
 
-    protected void renderBlockOverlay(OverlayRenderType type, Matrix4f matrix4f, Camera camera, Matrix4f projMatrix)
+    protected void renderBlockOverlay(OverlayRenderType type, Matrix4f viewMatrix, Camera camera, Matrix4f projMatrix, Profiler profiler)
     {
         RenderLayer renderLayer = RenderLayer.getTranslucent();
         renderLayer.startDrawing();
@@ -570,8 +590,8 @@ public class WorldRendererSchematic
         double y = cameraPos.y;
         double z = cameraPos.z;
 
-        this.world.getProfiler().push("overlay_" + type.name());
-        this.world.getProfiler().swap("render");
+        profiler.push("overlay_" + type.name());
+        profiler.swap("render");
 
         boolean renderThrough = Configs.Visuals.SCHEMATIC_OVERLAY_RENDER_THROUGH.getBooleanValue() || Hotkeys.RENDER_OVERLAY_THROUGH_BLOCKS.getKeybind().isKeybindHeld();
 
@@ -585,7 +605,8 @@ public class WorldRendererSchematic
         }
 
         ShaderProgram originalShader = RenderSystem.getShader();
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        //RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
         ShaderProgram shader = RenderSystem.getShader();
         BufferRenderer.reset();
@@ -622,10 +643,11 @@ public class WorldRendererSchematic
 
         renderLayer.endDrawing();
 
-        RenderSystem.setShader(() -> originalShader);
+        RenderSystem.setShader(originalShader);
+        //RenderSystem.setShader(() -> originalShader);
         RenderSystem.disableBlend();
 
-        this.world.getProfiler().pop();
+        profiler.pop();
     }
 
     public boolean renderBlock(BlockRenderView world, BlockState state, BlockPos pos, MatrixStack matrixStack, BufferBuilder bufferBuilderIn)
@@ -640,8 +662,21 @@ public class WorldRendererSchematic
             }
             else
             {
-                return renderType == BlockRenderType.MODEL &&
+                boolean result;
+                BlockModelRendererSchematic.enableCache();
+                result = renderType == BlockRenderType.MODEL &&
                        this.blockModelRenderer.renderModel(world, this.getModelForState(state), state, pos, matrixStack, bufferBuilderIn, state.getRenderingSeed(pos));
+                BlockModelRendererSchematic.disableCache();
+
+                // TODO --> For testing the Vanilla Block Model Renderer
+                /*
+                BlockModelRenderer.enableBrightnessCache();
+                this.blockRenderManager.renderBlock(state, pos, world, matrixStack, bufferBuilderIn, true, Random.create(state.getRenderingSeed(pos)));
+                result = true;
+                BlockModelRenderer.disableBrightnessCache();
+                 */
+
+                return result;
             }
         }
         catch (Throwable throwable)
@@ -673,7 +708,7 @@ public class WorldRendererSchematic
         return this.blockRenderManager.getModel(state);
     }
 
-    public void renderEntities(Camera camera, Frustum frustum, Matrix4f matrix4f, float partialTicks)
+    public void renderEntities(Camera camera, Frustum frustum, Matrix4f posMatrix, float partialTicks, Profiler profiler)
     {
         if (this.renderEntitiesStartupCounter > 0)
         {
@@ -681,7 +716,7 @@ public class WorldRendererSchematic
         }
         else
         {
-            this.world.getProfiler().push("prepare");
+            profiler.push("prepare");
 
             double cameraX = camera.getPos().x;
             double cameraY = camera.getPos().y;
@@ -696,7 +731,7 @@ public class WorldRendererSchematic
 
             this.countEntitiesTotal = this.world.getRegularEntityCount();
 
-            this.world.getProfiler().swap("regular_entities");
+            profiler.swap("regular_entities");
             //List<Entity> entitiesMultipass = Lists.<Entity>newArrayList();
 
             // TODO --> Convert Matrix4f back to to MatrixStack?
@@ -706,7 +741,7 @@ public class WorldRendererSchematic
 
             MatrixStack matrixStack = new MatrixStack();
             matrixStack.push();
-            matrixStack.multiplyPositionMatrix(matrix4f);
+            matrixStack.multiplyPositionMatrix(posMatrix);
             matrixStack.pop();
 
             VertexConsumerProvider.Immediate entityVertexConsumers = this.bufferBuilders.getEntityVertexConsumers();
@@ -739,7 +774,7 @@ public class WorldRendererSchematic
 
                             // TODO --> this render() call does not seem to have a push() and pop(),
                             //  and does not accept Matrix4f/Matrix4fStack as a parameter
-                            this.entityRenderDispatcher.render(entityTmp, x, y, z, entityTmp.getYaw(), 1.0f, matrixStack, entityVertexConsumers, this.entityRenderDispatcher.getLight(entityTmp, partialTicks));
+                            this.entityRenderDispatcher.render(entityTmp, x, y, z, partialTicks, matrixStack, entityVertexConsumers, this.entityRenderDispatcher.getLight(entityTmp, partialTicks));
                             ++this.countEntitiesRendered;
 
                             matrixStack.pop();
@@ -748,7 +783,7 @@ public class WorldRendererSchematic
                 }
             }
 
-            this.world.getProfiler().swap("block_entities");
+            profiler.swap("block_entities");
             BlockEntityRenderDispatcher renderer = MinecraftClient.getInstance().getBlockEntityRenderDispatcher();
 
             for (ChunkRendererSchematicVbo chunkRenderer : this.renderInfos)
@@ -807,7 +842,7 @@ public class WorldRendererSchematic
                 }
             }
 
-            this.world.getProfiler().pop();
+            profiler.pop();
         }
     }
 

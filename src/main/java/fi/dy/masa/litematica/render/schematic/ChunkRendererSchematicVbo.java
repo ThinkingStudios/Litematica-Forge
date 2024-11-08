@@ -1,19 +1,21 @@
 package fi.dy.masa.litematica.render.schematic;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import com.google.common.collect.Sets;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
-import fi.dy.masa.litematica.config.Hotkeys;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.GlUsage;
+import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
@@ -28,6 +30,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.chunk.WorldChunk;
+
 import fi.dy.masa.malilib.util.Color4f;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.IntBoundingBox;
@@ -107,13 +110,13 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
 
     protected VertexBuffer getBlocksVertexBufferByLayer(RenderLayer layer)
     {
-        return this.vertexBufferBlocks.computeIfAbsent(layer, l -> new VertexBuffer(VertexBuffer.Usage.STATIC));
+        return this.vertexBufferBlocks.computeIfAbsent(layer, l -> new VertexBuffer(GlUsage.STATIC_WRITE));
     }
 
     protected VertexBuffer getOverlayVertexBuffer(OverlayRenderType type)
     {
         //if (GuiBase.isCtrlDown()) System.out.printf("getOverlayVertexBuffer: type: %s, buf: %s\n", type, this.vertexBufferOverlay[type.ordinal()]);
-        return this.vertexBufferOverlay.computeIfAbsent(type, l -> new VertexBuffer(VertexBuffer.Usage.STATIC));
+        return this.vertexBufferOverlay.computeIfAbsent(type, l -> new VertexBuffer(GlUsage.STATIC_WRITE));
     }
 
     protected ChunkRenderDataSchematic getChunkRenderData()
@@ -212,7 +215,8 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
 
         if (data.isBlockLayerEmpty(layerTranslucent) == false)
         {
-            RenderSystem.setShader(GameRenderer::getRenderTypeTranslucentProgram);
+            RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_TRANSLUCENT);
+            //RenderSystem.setShader(GameRenderer::getRenderTypeTranslucentProgram);
 
             if (data.getBuiltBufferCache().hasBuiltBufferByLayer(layerTranslucent))
             {
@@ -452,11 +456,11 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
                     data.setBlockLayerStarted(layer);
                     bufferSchematic = this.preRenderBlocks(layer, allocators);
                 }
-                ((IBufferBuilderPatch) bufferSchematic).setOffsetY(offsetY);
+                ((IBufferBuilderPatch) bufferSchematic).litematica$setOffsetY(offsetY);
 
                 this.worldRenderer.renderFluid(this.schematicWorldView, stateSchematic, fluidState, pos, bufferSchematic);
                 usedLayers.add(layer);
-                ((IBufferBuilderPatch) bufferSchematic).setOffsetY(0.0F);
+                ((IBufferBuilderPatch) bufferSchematic).litematica$setOffsetY(0.0F);
             }
 
             if (stateSchematic.getRenderType() != BlockRenderType.INVISIBLE)
@@ -503,7 +507,8 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
 
     protected void renderOverlay(OverlayType type, BlockPos pos, BlockState stateSchematic, boolean missing, @Nonnull ChunkRenderDataSchematic data, @Nonnull BufferAllocatorCache allocators)
     {
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        //RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         BlockPos.Mutable relPos = this.getChunkRelativePosition(pos);
         OverlayRenderType overlayType;
 
@@ -840,7 +845,8 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
         this.existingOverlays.add(type);
         this.hasOverlay = true;
 
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        //RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         return this.builderCache.getBufferByOverlay(type, allocators);
     }
 
@@ -907,7 +913,7 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
     private void postRenderOverlay(OverlayRenderType type, float x, float y, float z, @Nonnull ChunkRenderDataSchematic chunkRenderData, @Nonnull BufferAllocatorCache allocators)
             throws RuntimeException
     {
-        RenderSystem.applyModelViewMatrix();
+        //RenderSystem.applyModelViewMatrix();
         if (chunkRenderData.isOverlayTypeEmpty(type) == false)
         {
             BuiltBuffer built;
@@ -1045,7 +1051,7 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
     private void resortRenderOverlay(OverlayRenderType type, float x, float y, float z, @Nonnull ChunkRenderDataSchematic chunkRenderData, @Nonnull BufferAllocatorCache allocators)
             throws InterruptedException
     {
-        RenderSystem.applyModelViewMatrix();
+        //RenderSystem.applyModelViewMatrix();
         if (chunkRenderData.isOverlayTypeEmpty(type) == false)
         {
             BufferAllocator allocator = allocators.getBufferByOverlay(type);

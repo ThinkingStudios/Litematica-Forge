@@ -24,6 +24,8 @@ import net.minecraft.nbt.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryEntryLookup;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.BlockMirror;
@@ -40,6 +42,7 @@ import fi.dy.masa.malilib.interfaces.IStringConsumer;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.config.Configs;
+import fi.dy.masa.litematica.data.EntitiesDataStorage;
 import fi.dy.masa.litematica.mixin.IMixinWorldTickScheduler;
 import fi.dy.masa.litematica.schematic.container.ILitematicaBlockStatePalette;
 import fi.dy.masa.litematica.schematic.container.LitematicaBlockStateContainer;
@@ -56,6 +59,7 @@ import fi.dy.masa.litematica.util.EntityUtils;
 import fi.dy.masa.litematica.util.PositionUtils;
 import fi.dy.masa.litematica.util.WorldUtils;
 import fi.dy.masa.litematica.util.*;
+import fi.dy.masa.litematica.world.SchematicWorldHandler;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class LitematicaSchematic
@@ -411,7 +415,7 @@ public class LitematicaSchematic
         }
 
         int bottomY = world.getBottomY();
-        int topY = world.getTopY();
+        int topY = world.getTopYInclusive() + 1;
         int tmp = posMinRel.getY() - regionPos.getY() + regionPosTransformed.getY() + origin.getY();
         int startY = 0;
         int endY = sizeY;
@@ -659,7 +663,20 @@ public class LitematicaSchematic
                 {
                     NbtCompound tag = new NbtCompound();
 
-                    if (entity.saveNbt(tag))
+                    if (EntitiesDataStorage.getInstance().hasServuxServer())
+                    {
+                        NbtCompound serverTags = EntitiesDataStorage.getInstance().getFromEntityCacheNbt(entity.getId());
+
+                        if (serverTags != null && !serverTags.isEmpty())
+                        {
+                            tag.copyFrom(serverTags);
+                        }
+                    }
+                    else
+                    {
+                        entity.saveNbt(tag);
+                    }
+                    if (!tag.isEmpty())
                     {
                         Vec3d posVec = new Vec3d(entity.getX() - regionPosAbs.getX(), entity.getY() - regionPosAbs.getY(), entity.getZ() - regionPosAbs.getZ());
 
@@ -866,7 +883,7 @@ public class LitematicaSchematic
 
             posUp = posUp.offset(Direction.UP);
 
-            if (posUp.getY() >= world.getTopY())
+            if (posUp.getY() >= world.getTopYInclusive() + 1)
             {
                 break;
             }
@@ -981,11 +998,21 @@ public class LitematicaSchematic
 
                             if (te != null)
                             {
-                                // TODO Add a TileEntity NBT cache from the Chunk packets, to get the original synced data (too)
                                 BlockPos pos = new BlockPos(x, y, z);
                                 NbtCompound tag = te.createNbtWithId(world.getRegistryManager());
                                 NBTUtils.writeBlockPosToTag(pos, tag);
                                 tileEntityMap.put(pos, tag);
+                            }
+                            else if (EntitiesDataStorage.getInstance().hasServuxServer())
+                            {
+                                NbtCompound tag = EntitiesDataStorage.getInstance().getFromBlockEntityCacheNbt(posMutable);
+
+                                if (tag != null && tag.isEmpty() == false)
+                                {
+                                    BlockPos pos = new BlockPos(x, y, z);
+                                    NBTUtils.writeBlockPosToTag(pos, tag);
+                                    tileEntityMap.put(pos, tag);
+                                }
                             }
                         }
                     }
@@ -1339,7 +1366,8 @@ public class LitematicaSchematic
     {
         final int size = tagList.size();
         List<BlockState> list = new ArrayList<>(size);
-        RegistryEntryLookup<Block> lookup = Registries.BLOCK.getReadOnlyWrapper();
+        //RegistryEntryLookup<Block> lookup = Registries.createEntryLookup(Registries.BLOCK);
+        RegistryEntryLookup<Block> lookup = SchematicWorldHandler.INSTANCE.getRegistryManager().getOrThrow(RegistryKeys.BLOCK);
 
         for (int id = 0; id < size; ++id)
         {
@@ -1679,7 +1707,7 @@ public class LitematicaSchematic
             BlockState air = Blocks.AIR.getDefaultState();
             int paletteSize = paletteTag.size();
             List<BlockState> list = new ArrayList<>(paletteSize);
-            RegistryEntryLookup<Block> lookup = Registries.BLOCK.getReadOnlyWrapper();
+            RegistryEntryLookup<Block> lookup = SchematicWorldHandler.INSTANCE.getRegistryManager().getOrThrow(RegistryKeys.BLOCK);
 
             DataFixerMode.Schema effective = DataFixerMode.getEffectiveSchema(minecraftDataVersion);
             if (minecraftDataVersion < LitematicaSchematic.MINECRAFT_DATA_VERSION && effective != null)
@@ -1884,7 +1912,7 @@ public class LitematicaSchematic
     public static List<BlockState> getStatesFromPaletteTag(NbtList palette)
     {
         List<BlockState> states = new ArrayList<>();
-        RegistryEntryLookup<Block> lookup = Registries.BLOCK.getReadOnlyWrapper();
+        RegistryEntryLookup<Block> lookup = SchematicWorldHandler.INSTANCE.getRegistryManager().getOrThrow(RegistryKeys.BLOCK);
         final int size = palette.size();
 
         for (int i = 0; i < size; ++i)
@@ -2131,9 +2159,25 @@ public class LitematicaSchematic
                 // Don't crash on invalid ResourceLocation in 1.13+
                 try
                 {
-                    target = registry.get(Identifier.tryParse(tag.getString(tagName)));
+                    Optional<RegistryEntry.Reference<T>> opt = registry.getEntry(Identifier.tryParse(tag.getString(tagName)));
 
-                    if (target == null || target == emptyValue)
+                    //target = registry.get(Identifier.tryParse(tag.getString(tagName)));
+                    //if (target == null || target == emptyValue)
+                    //{
+                        //continue;
+                    //}
+                    if (opt.isPresent())
+                    {
+                        if (opt.get().hasKeyAndValue())
+                        {
+                            target = opt.get().value();
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                    else
                     {
                         continue;
                     }
@@ -2355,9 +2399,9 @@ public class LitematicaSchematic
             if (nbt.contains("Version", Constants.NBT.TAG_INT))
             {
                 final int version = nbt.getInt("Version");
-                final int dataVersion = nbt.contains("MinecraftDataVersion") ? nbt.getInt("MinecraftDataVersion") : Configs.Generic.DATAFIXER_DEFAULT_SCHEMA.getIntegerValue();
+                final int dataVersion = nbt.contains("MinecraftDataVersion") ? nbt.getInt("MinecraftDataVersion") : -1;
 
-                if (version >= 1)
+                if (version >= 1 && version <= SCHEMATIC_VERSION)
                 {
                     metadata.readFromNBT(nbt.getCompound("Metadata"));
 

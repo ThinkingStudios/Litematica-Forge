@@ -25,7 +25,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.state.property.DirectionProperty;
+import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.state.property.Property;
 import net.minecraft.structure.StructurePlacementData;
@@ -455,6 +455,7 @@ public class WorldUtils
             Configs.Generic.EASY_PLACE_MODE.getBooleanValue() &&
             Configs.Generic.EASY_PLACE_HOLD_ENABLED.getBooleanValue() &&
             Hotkeys.EASY_PLACE_ACTIVATION.getKeybind().isKeybindHeld())
+            //&& Configs.Generic.EASY_PLACE_POST_REWRITE.getBooleanValue() == false)
         {
             WorldUtils.doEasyPlaceAction(mc);
         }
@@ -463,6 +464,7 @@ public class WorldUtils
     public static boolean handleEasyPlace(MinecraftClient mc)
     {
         if (Configs.Generic.EASY_PLACE_MODE.getBooleanValue() &&
+            //Configs.Generic.EASY_PLACE_POST_REWRITE.getBooleanValue() == false &&
             DataManager.getToolMode() != ToolMode.REBUILD)
         {
             ActionResult result = doEasyPlaceAction(mc);
@@ -631,7 +633,7 @@ public class WorldUtils
                 ActionResult result = mc.interactionManager.interactBlock(mc.player, hand, hitResult);
 
                 // swing hand fix, see MinecraftClient#doItemUse
-                if (result.shouldSwingHand() &&
+                if (ActionResult.SUCCESS.swingSource().equals(ActionResult.SwingSource.CLIENT) &&
                     Configs.Generic.EASY_PLACE_SWING_HAND.getBooleanValue())
                 {
                     mc.player.swingHand(hand);
@@ -741,7 +743,7 @@ public class WorldUtils
         else if (stateBlock instanceof WallMountedBlock)
         {
             //If the supporting block doesn't exist, fail
-            if (!((IMixinWallMountedBlock)stateBlock).invokeCanPlaceAt(stateSchematic, world, pos))
+            if (!((IMixinWallMountedBlock)stateBlock).litematica_invokeCanPlaceAt(stateSchematic, world, pos))
                 placementData.mustFail = true;
         }
 
@@ -850,7 +852,7 @@ public class WorldUtils
         //System.out.printf("hit vec.x %s, pos.x: %s\n", hitVecIn.getX(), pos.getX());
         //System.out.printf("raw protocol value in: 0x%08X\n", protocolValue);
 
-        @Nullable DirectionProperty property = BlockUtils.getFirstDirectionProperty(state);
+        @Nullable EnumProperty<Direction> property = BlockUtils.getFirstDirectionProperty(state);
 
         // DirectionProperty - allow all except: VERTICAL_DIRECTION (PointedDripstone)
         if (property != null && property != Properties.VERTICAL_DIRECTION)
@@ -869,7 +871,7 @@ public class WorldUtils
         {
             for (Property<?> p : propList)
             {
-                if ((p instanceof DirectionProperty) == false &&
+                if (((p instanceof EnumProperty<?> ep) && ep.getType().equals(Direction.class) == false) &&
                     PlacementHandler.WHITELISTED_PROPERTIES.contains(p))
                 {
                     @SuppressWarnings("unchecked")

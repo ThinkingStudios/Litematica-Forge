@@ -3,6 +3,9 @@ package fi.dy.masa.litematica.render.schematic;
 import java.util.*;
 import javax.annotation.Nullable;
 
+import net.minecraft.client.render.block.BlockModelRenderer;
+import net.minecraft.client.render.model.BakedModelManager;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.util.profiler.Profilers;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
@@ -82,11 +85,10 @@ public class WorldRendererSchematic
         this.mc = mc;
         this.entityRenderDispatcher = mc.getEntityRenderDispatcher();
         this.bufferBuilders = mc.getBufferBuilders();
-
-        this.renderChunkFactory = (world1, worldRenderer) -> new ChunkRendererSchematicVbo(world1, worldRenderer);
-
+        this.renderChunkFactory = ChunkRendererSchematicVbo::new;
         this.blockRenderManager = MinecraftClient.getInstance().getBlockRenderManager();
         this.blockModelRenderer = new BlockModelRendererSchematic(mc.getBlockColors());
+        this.blockModelRenderer.setBakedManager(mc.getBakedModelManager());
     }
 
     public void markNeedsUpdate()
@@ -668,6 +670,8 @@ public class WorldRendererSchematic
                        this.blockModelRenderer.renderModel(world, this.getModelForState(state), state, pos, matrixStack, bufferBuilderIn, state.getRenderingSeed(pos));
                 BlockModelRendererSchematic.disableCache();
 
+                //System.out.printf("renderBlock(): result [%s]\n", result);
+
                 // TODO --> For testing the Vanilla Block Model Renderer
                 /*
                 BlockModelRenderer.enableBrightnessCache();
@@ -705,7 +709,8 @@ public class WorldRendererSchematic
             return this.blockRenderManager.getModels().getModelManager().getMissingModel();
         }
 
-        return this.blockRenderManager.getModel(state);
+        //return this.blockRenderManager.getModel(state);
+        return this.blockRenderManager.getModels().getModel(state);
     }
 
     public void renderEntities(Camera camera, Frustum frustum, Matrix4f posMatrix, float partialTicks, Profiler profiler)

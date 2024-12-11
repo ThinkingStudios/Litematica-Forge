@@ -34,6 +34,7 @@ public class FakeLightingProvider extends LightingProvider
     public int getLight(BlockPos pos, int defaultValue)
     {
         return 15;
+        //return Configs.Visuals.RENDER_FAKE_LIGHTING_LEVEL != null ? Configs.Visuals.RENDER_FAKE_LIGHTING_LEVEL.getIntegerValue() : 15;
     }
 
     public static ChunkNibbleArray getChunkNibbleArray() { return chunkNibbleArray; }

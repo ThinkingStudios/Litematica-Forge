@@ -39,6 +39,7 @@ public class InventoryUtils
 {
     private static final List<Integer> PICK_BLOCKABLE_SLOTS = new ArrayList<>();
     private static int nextPickSlotIndex;
+    private static Pair<BlockPos, InventoryOverlay.Context> lastBlockEntityContext = null;
 
     public static void setPickBlockableSlots(String configStr)
     {
@@ -121,6 +122,10 @@ public class InventoryUtils
     public static void schematicWorldPickBlock(ItemStack stack, BlockPos pos,
                                                World schematicWorld, MinecraftClient mc)
     {
+        if (mc.player == null || mc.interactionManager == null || mc.world == null)
+        {
+            return;
+        }
         if (stack.isEmpty() == false)
         {
             PlayerInventory inv = mc.player.getInventory();
@@ -334,7 +339,27 @@ public class InventoryUtils
 
             //Litematica.logger.warn("getTarget():2: pos [{}], be [{}], nbt [{}]", pos.toShortString(), be != null, nbt != null);
 
-            return getTargetInventoryFromBlock(world, pos, be, nbt);
+            InventoryOverlay.Context ctx = getTargetInventoryFromBlock(world, pos, be, nbt);
+
+            if (world instanceof WorldSchematic)
+            {
+                return ctx;
+            }
+
+            if (lastBlockEntityContext != null && !lastBlockEntityContext.getLeft().equals(pos))
+            {
+                lastBlockEntityContext = null;
+            }
+
+            if (ctx != null && ctx.inv() != null)
+            {
+                lastBlockEntityContext = Pair.of(pos, ctx);
+                return ctx;
+            }
+            else if (lastBlockEntityContext != null && lastBlockEntityContext.getLeft().equals(pos))
+            {
+                return lastBlockEntityContext.getRight();
+            }
         }
 
         return null;
@@ -377,7 +402,7 @@ public class InventoryUtils
             }
         }
 
-        //Litematica.logger.warn("getTarget():3: pos [{}], inv [{}], be [{}], nbt [{}]", pos.toShortString(), inv != null, be != null, nbt != null ? nbt.getString("id") : new NbtCompound());
+        //Litematica.logger.warn("getTarget(): [SchematicWorld? {}] pos [{}], inv [{}], be [{}], nbt [{}]", world instanceof WorldSchematic ? "YES" : "NO", pos.toShortString(), inv != null, be != null, nbt != null ? nbt.getString("id") : new NbtCompound());
 
         if (inv == null || nbt == null)
         {

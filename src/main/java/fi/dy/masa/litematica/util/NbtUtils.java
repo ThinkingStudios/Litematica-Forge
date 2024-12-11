@@ -15,6 +15,10 @@ import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.malilib.util.Constants;
 import net.minecraft.util.math.Vec3i;
 
+/**
+ * Please use malilib/nbt/NbtUtils from now on
+ */
+@Deprecated(forRemoval = true)
 public class NbtUtils
 {
     @Nullable

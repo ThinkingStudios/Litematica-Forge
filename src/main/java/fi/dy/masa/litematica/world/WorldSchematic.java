@@ -67,7 +67,6 @@ public class WorldSchematic extends World
     private final TickManager tickManager;
     private final RegistryEntry<DimensionType> dimensionType;
     private DimensionEffects dimensionEffects = new DimensionEffects.Overworld();
-    public final boolean isClient;
 
     public WorldSchematic(MutableWorldProperties properties,
                           @Nonnull DynamicRegistryManager registryManager,
@@ -93,7 +92,6 @@ public class WorldSchematic extends World
             this.setDimension(this.mc.world.getRegistryManager());
         }
         this.tickManager = new TickManager();
-        this.isClient = false;
     }
 
     private void setDimension(DynamicRegistryManager registryManager)
@@ -136,11 +134,6 @@ public class WorldSchematic extends World
     public TickManager getTickManager()
     {
         return this.tickManager;
-    }
-
-    @Override
-    public boolean isClient() {
-        return this.isClient;
     }
 
     @Nullable

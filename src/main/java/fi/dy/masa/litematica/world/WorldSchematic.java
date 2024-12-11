@@ -1,10 +1,12 @@
 package fi.dy.masa.litematica.world;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import com.google.common.collect.ImmutableList;
+import net.neoforged.neoforge.entity.PartEntity;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.Block;
@@ -13,6 +15,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.DimensionEffects;
 import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.boss.dragon.EnderDragonPart;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
@@ -67,7 +70,6 @@ public class WorldSchematic extends World
     private final TickManager tickManager;
     private final RegistryEntry<DimensionType> dimensionType;
     private DimensionEffects dimensionEffects = new DimensionEffects.Overworld();
-    public final boolean isClient;
 
     public WorldSchematic(MutableWorldProperties properties,
                           @Nonnull DynamicRegistryManager registryManager,
@@ -80,7 +82,7 @@ public class WorldSchematic extends World
         if (this.mc == null || this.mc.world == null)
         {
             throw new RuntimeException("WorldSchematic invoked when MinecraftClient.getInstance() or mc.world is null");
-       }
+        }
         this.worldRenderer = worldRenderer;
         this.chunkManagerSchematic = new ChunkManagerSchematic(this);
         this.dimensionType = dimension;
@@ -93,7 +95,6 @@ public class WorldSchematic extends World
             this.setDimension(this.mc.world.getRegistryManager());
         }
         this.tickManager = new TickManager();
-        this.isClient = false;
     }
 
     private void setDimension(DynamicRegistryManager registryManager)
@@ -136,11 +137,6 @@ public class WorldSchematic extends World
     public TickManager getTickManager()
     {
         return this.tickManager;
-    }
-
-    @Override
-    public boolean isClient() {
-        return this.isClient;
     }
 
     @Nullable
@@ -245,6 +241,17 @@ public class WorldSchematic extends World
         // This shouldn't be used for anything in the mod, so just return null here
         return null;
     }
+
+    @Override
+    public Collection<PartEntity<?>> getEnderDragonParts() {
+        return List.of();
+    }
+
+//    @Override
+//    public Collection<EnderDragonPart> getEnderDragonParts()
+//    {
+//        return List.of();
+//    }
 
     @Override
     public List<? extends PlayerEntity> getPlayers()
@@ -513,12 +520,6 @@ public class WorldSchematic extends World
 
     @Override
     public void addParticle(ParticleEffect particleParameters_1, double double_1, double double_2, double double_3, double double_4, double double_5, double double_6)
-    {
-        // NO-OP
-    }
-
-    @Override
-    public void addParticle(ParticleEffect particleParameters_1, boolean boolean_1, double double_1, double double_2, double double_3, double double_4, double double_5, double double_6)
     {
         // NO-OP
     }

@@ -17,11 +17,11 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.BlockRenderManager;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.BakedQuad;
+import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.util.BufferAllocator;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
-import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.random.LocalRandom;
@@ -32,7 +32,7 @@ import fi.dy.masa.malilib.gui.button.ButtonGeneric;
 import fi.dy.masa.malilib.gui.button.IButtonActionListener;
 import fi.dy.masa.malilib.gui.widgets.WidgetListEntrySortable;
 import fi.dy.masa.malilib.render.RenderUtils;
-import fi.dy.masa.malilib.util.BlockUtils;
+import fi.dy.masa.malilib.util.game.BlockUtils;
 import fi.dy.masa.malilib.util.GuiUtils;
 import fi.dy.masa.malilib.util.PositionUtils;
 import fi.dy.masa.malilib.util.StringUtils;
@@ -540,8 +540,8 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
             return;
         }
 
-        RenderUtils.bindTexture(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
-        mc.getTextureManager().getTexture(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).setFilter(false, false);
+        RenderUtils.bindTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE);
+        mc.getTextureManager().getTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).setFilter(false, false);
 
         RenderUtils.setupBlend();
         RenderUtils.color(1f, 1f, 1f, 1f);
@@ -564,8 +564,11 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
 
     private static void renderModel(BakedModel model, BlockState state, MatrixStack matrixStack)
     {
+        // TODO -> Watch for side effects
+        /*
         if (model.isBuiltin() == false)
         {
+         */
             //Tessellator tessellator = Tessellator.getInstance();
             //BufferBuilder buffer = tessellator.getBuffer();
             VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(new BufferAllocator(RenderLayer.DEFAULT_BUFFER_SIZE));
@@ -591,7 +594,7 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
 
             //tessellator.draw();
             immediate.draw();
-        }
+        //}
     }
 
     private static void renderQuads(List<BakedQuad> quads, float[] brightness, int[] light,

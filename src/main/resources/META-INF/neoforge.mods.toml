@@ -29,14 +29,14 @@ side = "BOTH"
 [[dependencies.forgematica]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21,)"
+versionRange = "[1.21.4,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.forgematica]]
 modId = "mafglib"
 type = "required"
-versionRange = "*"
+versionRange = "[0.2.1,)"
 ordering = "NONE"
 side = "BOTH"
 
@@ -46,6 +46,3 @@ type = "required"
 versionRange = "*"
 ordering = "NONE"
 side = "BOTH"
-
-[entrypoints.mafglib]
-modmenu = [ "fi.dy.masa.litematica.compat.modmenu.ModMenuImpl" ]

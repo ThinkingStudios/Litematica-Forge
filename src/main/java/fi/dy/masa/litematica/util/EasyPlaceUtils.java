@@ -4,6 +4,8 @@ import java.lang.reflect.Method;
 import java.util.*;
 import javax.annotation.Nullable;
 
+import org.jetbrains.annotations.ApiStatus;
+
 import net.minecraft.block.*;
 import net.minecraft.block.enums.BlockHalf;
 import net.minecraft.block.enums.ComparatorMode;
@@ -29,20 +31,20 @@ import fi.dy.masa.malilib.registry.Registry;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.IntBoundingBox;
 import fi.dy.masa.malilib.util.LayerRange;
+import fi.dy.masa.malilib.util.game.BlockUtils;
 import fi.dy.masa.malilib.util.game.PlacementUtils;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.config.Configs;
-import fi.dy.masa.litematica.config.Hotkeys;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.materials.MaterialCache;
 import fi.dy.masa.litematica.mixin.IMixinKeyBinding;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacementManager;
-import fi.dy.masa.litematica.tool.ToolMode;
 import fi.dy.masa.litematica.world.SchematicWorldHandler;
 
 /**
- * Post Re-Write code
+ * Post Re-Write Code
  */
+@ApiStatus.Experimental
 public class EasyPlaceUtils
 {
     private static final List<PositionCache> EASY_PLACE_POSITIONS = new ArrayList<>();
@@ -476,7 +478,7 @@ public class EasyPlaceUtils
         //System.out.printf("targetPos: %s, clickPos: %s side: %s, hit: %s\n", targetBlockPos, clickPos, side, hitPos);
         stateClient = world.getBlockState(clickPos);
         boolean needsSneak = hasUseAction(stateClient.getBlock());
-        boolean didFakeSneak = needsSneak && EntityUtils.PRW_setFakedSneakingState(true);
+        boolean didFakeSneak = needsSneak && EntityUtils.setFakedSneakingState(true);
         PlayerEntity player = mc.player;
 
         BlockHitResult hitResult = new BlockHitResult(hitPos, side, clickPos, false);
@@ -512,7 +514,7 @@ public class EasyPlaceUtils
 
         if (didFakeSneak)
         {
-            EntityUtils.PRW_setFakedSneakingState(false);
+            EntityUtils.setFakedSneakingState(false);
         }
 
         return ActionResult.SUCCESS;
@@ -561,7 +563,7 @@ public class EasyPlaceUtils
         double y = hitVecIn.y;
         double z = hitVecIn.z;
         Block block = state.getBlock();
-        Optional<Direction> facingOptional = fi.dy.masa.malilib.util.BlockUtils.PRW_getFirstPropertyFacingValue(state);
+        Optional<Direction> facingOptional = BlockUtils.getFirstPropertyFacingValue(state);
 
         if (facingOptional.isPresent())
         {
@@ -590,7 +592,7 @@ public class EasyPlaceUtils
 
     private static Direction applyPlacementFacing(BlockState stateSchematic, Direction side, BlockState stateClient)
     {
-        Optional<EnumProperty<Direction>> propOptional = fi.dy.masa.malilib.util.BlockUtils.PRW_getFirstDirectionProperty(stateSchematic);
+        Optional<EnumProperty<Direction>> propOptional = BlockUtils.getFirstDirectionProperty(stateSchematic);
 
         if (propOptional.isPresent())
         {
@@ -676,7 +678,7 @@ public class EasyPlaceUtils
             ItemStack stack = MaterialCache.getInstance().getRequiredBuildItemForState(stateSchematic);
 
             // The player is holding the wrong item for the targeted position
-            return stack.isEmpty() || EntityUtils.PRW_getUsedHandForItem(mc.player, stack, true) == null;
+            return stack.isEmpty() || EntityUtils.getUsedHandForItem(mc.player, stack, true) == null;
         }
 
         return false;

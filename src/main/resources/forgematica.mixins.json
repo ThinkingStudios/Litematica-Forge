@@ -32,12 +32,14 @@
     "MixinIntegratedServer",
     "MixinMinecraftClient",
     "MixinMinecraftClient_easyPlace",
-    "MixinModelOverrideList",
     "MixinRailBlocks",
     "MixinServerPlayNetworkHandler",
     "MixinWorld",
     "MixinWorldChunk",
     "MixinWorldRenderer"
+  ],
+  "mixins": [
+    "IMixinAbstractBlock"
   ],
   "injectors": {
     "defaultRequire": 1

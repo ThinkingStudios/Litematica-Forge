@@ -756,7 +756,7 @@
     "litematica.gui.title.area_editor_simple": "区域编辑器（简单模式）",
     "litematica.gui.title.area_editor_sub_region": "区域编辑器（子区域）",
     "litematica.gui.title.area_selection_manager": "区域选择管理器",
-    "litematica.gui.title.configs": "Litematica 设置界面 - %s",
+    "litematica.gui.title.configs": "%s 设置界面 - %s",
     "litematica.gui.title.configure_schematic_placement": "配置原理图放置",
     "litematica.gui.title.configure_schematic_sub_region": "配置放置子区域",
     "litematica.gui.title.confirm_file_deletion": "确认文件删除",

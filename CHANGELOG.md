@@ -1,6 +1,6 @@
 ## Change
 - sync `sakura-ryoko/litematica` 1.21.4-0.21.0-sakura.5
-  - Bump for MaLiLib 1.21.4-0.23.0-sakura.3
+  - Bump for MaFgLib 0.2.1 (MaLiLib 1.21.4-0.23.0-sakura.3)
   - Includes Config Gui Registration code
   - fix: Easy Place Protocol not applying all possible rotation Directional Block States.
   - Temporarily Disable the Data Fixers while browsing files in order to load the file Metadata Info Pane faster than previously.

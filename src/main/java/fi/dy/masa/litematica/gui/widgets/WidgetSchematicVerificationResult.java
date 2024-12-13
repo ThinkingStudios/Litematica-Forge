@@ -29,7 +29,7 @@ import fi.dy.masa.malilib.gui.button.ButtonGeneric;
 import fi.dy.masa.malilib.gui.button.IButtonActionListener;
 import fi.dy.masa.malilib.gui.widgets.WidgetListEntrySortable;
 import fi.dy.masa.malilib.render.RenderUtils;
-import fi.dy.masa.malilib.util.BlockUtils;
+import fi.dy.masa.malilib.util.game.BlockUtils;
 import fi.dy.masa.malilib.util.GuiUtils;
 import fi.dy.masa.malilib.util.PositionUtils;
 import fi.dy.masa.malilib.util.StringUtils;
@@ -386,6 +386,7 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
         private final int totalWidth;
         private final int totalHeight;
         private final int columnWidthExpected;
+        private boolean useBackgroundMask = false;
 
         public BlockMismatchInfo(BlockState stateExpected, BlockState stateFound)
         {
@@ -439,10 +440,23 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
             return this.totalHeight;
         }
 
+        public void toggleUseBackgroundMask(boolean toggle)
+        {
+            this.useBackgroundMask = toggle;
+        }
+
         public void render(int x, int y, MinecraftClient mc, DrawContext drawContext)
         {
             if (this.stateExpected != null && this.stateFound != null)
             {
+                // TODO 1.21.2+
+                /*
+                if (this.useBackgroundMask)
+                {
+                    fi.dy.masa.litematica.render.RenderUtils.renderBackgroundMask(x + 1, y + 1, this.totalWidth - 1, this.totalHeight - 1, drawContext);
+                }
+                 */
+
                 MatrixStack matrixStack = drawContext.getMatrices();
                 matrixStack.push();
 

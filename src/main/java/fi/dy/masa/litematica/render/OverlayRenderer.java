@@ -1,12 +1,13 @@
 package fi.dy.masa.litematica.render;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableMap;
 import org.joml.Matrix4f;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -22,13 +23,14 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+
 import fi.dy.masa.malilib.config.HudAlignment;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.gui.LeftRight;
-import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.Color4f;
 import fi.dy.masa.malilib.util.GuiUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.malilib.util.game.BlockUtils;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.config.Hotkeys;
@@ -45,11 +47,8 @@ import fi.dy.masa.litematica.schematic.verifier.SchematicVerifier.MismatchRender
 import fi.dy.masa.litematica.selection.AreaSelection;
 import fi.dy.masa.litematica.selection.Box;
 import fi.dy.masa.litematica.selection.SelectionManager;
-import fi.dy.masa.litematica.util.BlockInfoAlignment;
-import fi.dy.masa.litematica.util.InventoryUtils;
-import fi.dy.masa.litematica.util.ItemUtils;
+import fi.dy.masa.litematica.util.*;
 import fi.dy.masa.litematica.util.PositionUtils.Corner;
-import fi.dy.masa.litematica.util.RayTraceUtils;
 import fi.dy.masa.litematica.util.RayTraceUtils.RayTraceWrapper;
 import fi.dy.masa.litematica.world.SchematicWorldHandler;
 
@@ -583,10 +582,14 @@ public class OverlayRenderer
         World worldClient = WorldUtils.getBestWorld(mc);
         BlockPos pos = traceWrapper.getBlockHitResult().getBlockPos();
 
+        if (mc.world == null || worldClient == null || worldSchematic == null)
+        {
+            return;
+        }
         BlockState stateClient = mc.world.getBlockState(pos);
         BlockState stateSchematic = worldSchematic.getBlockState(pos);
-        boolean hasInvClient = InventoryUtils.getInventory(worldClient, pos) != null;
-        boolean hasInvSchematic = InventoryUtils.getInventory(worldSchematic, pos) != null;
+        boolean hasInvClient = InventoryUtils.getTargetInventory(worldClient, pos) != null;
+        boolean hasInvSchematic = InventoryUtils.getTargetInventory(worldSchematic, pos) != null;
         int invHeight = 0;
         int offY = Configs.InfoOverlays.BLOCK_INFO_OVERLAY_OFFSET_Y.getIntegerValue();
         BlockInfoAlignment align = (BlockInfoAlignment) Configs.InfoOverlays.BLOCK_INFO_OVERLAY_ALIGNMENT.getOptionListValue();
@@ -612,18 +615,24 @@ public class OverlayRenderer
         {
             BlockMismatchInfo info = new BlockMismatchInfo(stateSchematic, stateClient);
             this.getOverlayPosition(align, info.getTotalWidth(), info.getTotalHeight(), offY, invHeight, mc);
+            // TODO 1.21.2+
+            //info.toggleUseBackgroundMask(true);
             info.render(this.blockInfoX, this.blockInfoY, mc, drawContext);
         }
         else if (traceWrapper.getHitType() == RayTraceWrapper.HitType.VANILLA_BLOCK)
         {
             BlockInfo info = new BlockInfo(stateClient, "litematica.gui.label.block_info.state_client");
             this.getOverlayPosition(align, info.getTotalWidth(), info.getTotalHeight(), offY, invHeight, mc);
+            // TODO 1.21.2+
+            //info.toggleUseBackgroundMask(true);
             info.render(this.blockInfoX, this.blockInfoY, mc, drawContext);
         }
         else if (traceWrapper.getHitType() == RayTraceWrapper.HitType.SCHEMATIC_BLOCK)
         {
             BlockInfo info = new BlockInfo(stateSchematic, "litematica.gui.label.block_info.state_schematic");
             this.getOverlayPosition(align, info.getTotalWidth(), info.getTotalHeight(), offY, invHeight, mc);
+            // TODO 1.21.2+
+            //info.toggleUseBackgroundMask(true);
             info.render(this.blockInfoX, this.blockInfoY, mc, drawContext);
         }
     }
@@ -766,7 +775,7 @@ public class OverlayRenderer
         }
     }
 
-    public void renderPreviewFrame(MinecraftClient mc)
+    public void renderPreviewFrame(MinecraftClient mc, DrawContext drawContext)
     {
         int width = GuiUtils.getScaledWindowWidth();
         int height = GuiUtils.getScaledWindowHeight();
@@ -782,6 +791,6 @@ public class OverlayRenderer
         AREA_SELECTED,
         AREA_UNSELECTED,
         PLACEMENT_SELECTED,
-        PLACEMENT_UNSELECTED;
+        PLACEMENT_UNSELECTED
     }
 }

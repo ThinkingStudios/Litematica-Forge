@@ -1,10 +1,11 @@
 package fi.dy.masa.litematica.schematic.conversion;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import javax.annotation.Nullable;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.block.Block;
@@ -18,8 +19,9 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+
 import fi.dy.masa.malilib.util.Constants;
-import fi.dy.masa.malilib.util.NBTUtils;
+import fi.dy.masa.malilib.util.nbt.NbtUtils;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic;
@@ -318,7 +320,7 @@ public class SchematicConversionMaps
         }
         catch (Exception e)
         {
-            BlockPos pos = NBTUtils.readBlockPos(oldBlockEntity);
+            BlockPos pos = NbtUtils.readBlockPos(oldBlockEntity);
             Litematica.logger.warn("updateBlockEntity: failed to update Block Entity [{}] at [{}], preserving original state (data may become lost)",
                                    oldBlockEntity.contains("id") ? oldBlockEntity.getString("id") : "?", pos != null ? pos.toShortString() : "?");
             return oldBlockEntity;

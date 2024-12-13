@@ -1,8 +1,9 @@
 package fi.dy.masa.litematica.schematic;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.util.*;
+import javax.annotation.Nullable;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -17,14 +18,16 @@ import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
+
 import fi.dy.masa.malilib.gui.Message.MessageType;
 import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.malilib.util.InfoUtils;
-import fi.dy.masa.malilib.util.NBTUtils;
+import fi.dy.masa.malilib.util.Schema;
+import fi.dy.masa.malilib.util.nbt.NbtUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
+import fi.dy.masa.malilib.util.position.Vec3i;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic.EntityInfo;
@@ -34,7 +37,6 @@ import fi.dy.masa.litematica.schematic.conversion.SchematicConversionMaps;
 import fi.dy.masa.litematica.schematic.conversion.SchematicConverter;
 import fi.dy.masa.litematica.util.DataFixerMode;
 import fi.dy.masa.litematica.util.EntityUtils;
-import fi.dy.masa.litematica.util.NbtUtils;
 import fi.dy.masa.litematica.util.PositionUtils;
 
 public class SchematicaSchematic
@@ -74,7 +76,7 @@ public class SchematicaSchematic
         for (int i = 0; i < size; ++i)
         {
             NbtCompound entityData = this.entities.get(i);
-            Vec3d posVec = NBTUtils.readEntityPositionFromTag(entityData);
+            Vec3d posVec = NbtUtils.readEntityPositionFromTag(entityData);
 
             if (posVec != null && entityData.isEmpty() == false)
             {
@@ -301,17 +303,21 @@ public class SchematicaSchematic
 
         for (NbtCompound tag : this.entities)
         {
-            Vec3d relativePos = NBTUtils.readEntityPositionFromTag(tag);
-            Vec3d transformedRelativePos = PositionUtils.getTransformedPosition(relativePos, mirror, rotation);
-            Vec3d realPos = transformedRelativePos.add(posStart.getX(), posStart.getY(), posStart.getZ());
-            Entity entity = EntityUtils.createEntityAndPassengersFromNBT(tag, world);
+            Vec3d relativePos = NbtUtils.readEntityPositionFromTag(tag);
 
-            if (entity != null)
+            if (relativePos != null)
             {
-                float rotationYaw = entity.applyMirror(mirror);
-                rotationYaw = rotationYaw + (entity.getYaw() - entity.applyRotation(rotation));
-                entity.refreshPositionAndAngles(realPos.x, realPos.y, realPos.z, rotationYaw, entity.getPitch());
-                EntityUtils.spawnEntityAndPassengersInWorld(entity, world);
+                Vec3d transformedRelativePos = Vec3d.of(PositionUtils.getTransformedPosition(relativePos.toVanilla(), mirror, rotation));
+                Vec3d realPos = transformedRelativePos.add(posStart.getX(), posStart.getY(), posStart.getZ());
+                Entity entity = EntityUtils.createEntityAndPassengersFromNBT(tag, world);
+
+                if (entity != null)
+                {
+                    float rotationYaw = entity.applyMirror(mirror);
+                    rotationYaw = rotationYaw + (entity.getYaw() - entity.applyRotation(rotation));
+                    entity.refreshPositionAndAngles(realPos.x, realPos.y, realPos.z, rotationYaw, entity.getPitch());
+                    EntityUtils.spawnEntityAndPassengersInWorld(entity, world);
+                }
             }
         }
     }
@@ -348,7 +354,7 @@ public class SchematicaSchematic
 
         this.blocks = new LitematicaBlockStateContainer(size.getX(), size.getY(), size.getZ());
         this.tiles.clear();
-        this.size = size;
+        this.size = Vec3i.of(size);
 
         for (int y = startY; y < endY; ++y)
         {
@@ -372,7 +378,7 @@ public class SchematicaSchematic
                         {
                             NbtCompound nbt = te.createNbtWithId(world.getRegistryManager());
                             BlockPos pos = new BlockPos(relX, relY, relZ);
-                            NBTUtils.writeBlockPosToTag(pos, nbt);
+                            NbtUtils.writeBlockPosToTag(pos, nbt);
 
                             this.tiles.put(pos, nbt);
                         }
@@ -399,7 +405,7 @@ public class SchematicaSchematic
             if (entity.saveNbt(tag))
             {
                 Vec3d pos = new Vec3d(entity.getX() - posStart.getX(), entity.getY() - posStart.getY(), entity.getZ() - posStart.getZ());
-                NBTUtils.writeEntityPositionToTag(pos, tag);
+                NbtUtils.writeEntityPositionToTag(pos, tag);
 
                 this.entities.add(tag);
             }
@@ -683,7 +689,7 @@ public class SchematicaSchematic
         this.entities.clear();
         NbtList tagList = nbt.getList("Entities", Constants.NBT.TAG_COMPOUND);
         int minecraftDataVersion = Configs.Generic.DATAFIXER_DEFAULT_SCHEMA.getIntegerValue();
-        DataFixerMode.Schema effective = DataFixerMode.getEffectiveSchema(minecraftDataVersion);
+        Schema effective = DataFixerMode.getEffectiveSchema(minecraftDataVersion);
 
         if (effective != null)
         {
@@ -712,7 +718,7 @@ public class SchematicaSchematic
         this.tiles.clear();
         NbtList tagList = nbt.getList("TileEntities", Constants.NBT.TAG_COMPOUND);
         int minecraftDataVersion = Configs.Generic.DATAFIXER_DEFAULT_SCHEMA.getIntegerValue();
-        DataFixerMode.Schema effective = DataFixerMode.getEffectiveSchema(minecraftDataVersion);
+        Schema effective = DataFixerMode.getEffectiveSchema(minecraftDataVersion);
 
         if (effective != null)
         {
@@ -727,7 +733,7 @@ public class SchematicaSchematic
         {
             NbtCompound tag = tagList.getCompound(i);
             BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
-            Vec3i size = this.blocks.getSize();
+            Vec3i size = Vec3i.of(this.blocks.getSize());
 
             if (pos.getX() >= 0 && pos.getX() < size.getX() &&
                 pos.getY() >= 0 && pos.getY() < size.getY() &&

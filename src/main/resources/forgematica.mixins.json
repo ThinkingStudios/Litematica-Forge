@@ -5,7 +5,6 @@
   "minVersion": "0.8",
   "client": [
     "IMixinChunkDeltaUpdateS2CPacket",
-    "IMixinDataQueryHandler",
     "IMixinEntity",
     "IMixinFenceGateBlock",
     "IMixinHandledScreen",
@@ -35,6 +34,7 @@
     "MixinModelOverrideList",
     "MixinRailBlocks",
     "MixinServerPlayNetworkHandler",
+    "MixinStairsBlock",
     "MixinWorld",
     "MixinWorldChunk",
     "MixinWorldRenderer"

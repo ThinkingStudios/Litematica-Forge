@@ -9,8 +9,7 @@ public class Litematica
 {
     public static final Logger logger = LogManager.getLogger(Reference.MOD_ID);
 
-    public static void onInitialize()
-    {
+    public static void onInitialize() {
         InitializationHandler.getInstance().registerInitializationHandler(new InitHandler());
     }
 

@@ -331,7 +331,11 @@ public class WorldUtils
 
     public static boolean isClientChunkLoaded(ClientWorld world, int chunkX, int chunkZ)
     {
-        return ((ClientChunkManager) world.getChunkManager()).getChunk(chunkX, chunkZ, ChunkStatus.FULL, false) != null;
+        boolean test = ((ClientChunkManager) world.getChunkManager()).getChunk(chunkX, chunkZ, ChunkStatus.FULL, false) != null;
+
+        //System.out.printf("isClientChunkLoaded(): World: [%s] / ChunkPos[%d, %d] --> [%s]\n", world.toString(), chunkX, chunkZ, test);
+
+        return test;
     }
 
     public static void loadChunksSchematicWorld(WorldSchematic world, BlockPos origin, Vec3i areaSize)
@@ -589,12 +593,13 @@ public class WorldUtils
                     }
                 }
 
-                //System.out.printf("doEasyPlaceAction - stateSchematic [%s] // sideOrig [%s]", stateSchematic.toString(), sideOrig.getName());
+                //System.out.printf("doEasyPlaceAction - stateSchematic [%s] // sideOrig [%s]\n", stateSchematic.toString(), sideOrig.getName());
 
                 Direction side = applyPlacementFacing(stateSchematic, sideOrig, stateClient);
 
                 // Support for special cases
                 PlacementProtocolData placementData = applyPlacementProtocolAll(pos, stateSchematic, hitPos);
+
                 if (placementData.mustFail)
                 {
                     return ActionResult.FAIL; //disallowed cases (e.g. trying to place torch with no support block)
@@ -765,14 +770,19 @@ public class WorldUtils
 
         if (facing.isPresent())
         {
+            //System.out.printf("(WorldUtils):v2: applying: 0x%08X (getFirstDirectionProperty() -> %s)\n", protocolValue, facing.get().getName());
+
             protocolValue = facing.get().getId();
             hasData = true; // without this down rotation would not be detected >_>
         }
         else if (state.contains(Properties.AXIS))
         {
             Direction.Axis axis = state.get(Properties.AXIS);
+            //System.out.printf("(WorldUtils):v2: 0x%08X (current axis %s)\n", protocolValue, axis.getName());
+
             protocolValue = axis.ordinal();
             hasData = true; // without this id 0 would not be detected >_>
+            //System.out.printf("(WorldUtils):v2: axis current state: %s, protocolValue 0x%08X\n", state.toString(), protocolValue);
         }
 
         if (block instanceof RepeaterBlock)
@@ -798,6 +808,8 @@ public class WorldUtils
         {
             x += (protocolValue * 2) + 2;
         }
+
+        //System.out.printf("(WorldUtils):v2: stateIn: %s // Vec3d Out [%s]\n", state.toString(), new Vec3d(x, y, z).toString());
 
         return new Vec3d(x, y, z);
     }
@@ -848,8 +860,8 @@ public class WorldUtils
         int shiftAmount = 1;
         int propCount = 0;
 
-        //System.out.printf("(WorldUtils) hit vec.x %s, pos.x: %s\n", hitVecIn.getX(), pos.getX());
-        //System.out.printf("(WorldUtils) raw protocol value in: 0x%08X\n", protocolValue);
+        //System.out.printf("(WorldUtils):v3: hit vec.x %s, pos.x: %s\n", hitVecIn.getX(), pos.getX());
+        //System.out.printf("(WorldUtils):v3: raw protocol value in: 0x%08X\n", protocolValue);
 
         Optional<EnumProperty<Direction>> property = BlockUtils.getFirstDirectionProperty(state);
 
@@ -858,7 +870,7 @@ public class WorldUtils
         {
             Direction direction = state.get(property.get());
             protocolValue |= direction.getId() << shiftAmount;
-            //System.out.printf("(WorldUtils) applying: 0x%08X (getFirstDirection %s)\n", protocolValue, property.get().getName());
+            //System.out.printf("(WorldUtils):v3: applying: 0x%08X (getFirstDirection %s)\n", protocolValue, property.get().getName());
             shiftAmount += 3;
             ++propCount;
         }
@@ -870,9 +882,23 @@ public class WorldUtils
         {
             for (Property<?> p : propList)
             {
-                //if (((p instanceof EnumProperty<?> ep) && ep.getType().equals(Direction.class) == false) &&
-                if (property.isPresent() && !property.get().equals(p) &&
+                //System.out.printf("(WorldUtils):v3: check property [%s], whitelisted [%s], blacklisted [%s]\n", p.getName(), PlacementHandler.WHITELISTED_PROPERTIES.contains(p), PlacementHandler.BLACKLISTED_PROPERTIES.contains(p));
+
+                /*
+                if ((property.isPresent() && !property.get().equals(p)) ||
+                    (property.isEmpty()) &&
                     PlacementHandler.WHITELISTED_PROPERTIES.contains(p))
+                    //PlacementHandler.WHITELISTED_PROPERTIES.contains(p) &&
+                    //!PlacementHandler.BLACKLISTED_PROPERTIES.contains(p))
+                 */
+
+                if (property.isPresent() && property.get().equals(p))
+                {
+                    //System.out.printf("(WorldUtils):v3: skipping prot val: 0x%08X [Property %s]\n", protocolValue, p.getName());
+                    continue;
+                }
+                if (PlacementHandler.WHITELISTED_PROPERTIES.contains(p) &&
+                    !PlacementHandler.BLACKLISTED_PROPERTIES.contains(p))
                 {
                     @SuppressWarnings("unchecked")
                     Property<T> prop = (Property<T>) p;
@@ -882,16 +908,22 @@ public class WorldUtils
                     int requiredBits = MathHelper.floorLog2(MathHelper.smallestEncompassingPowerOfTwo(list.size()));
                     int valueIndex = list.indexOf(state.get(prop));
 
-                    //System.out.printf("(WorldUtils) trying to apply valInd: %d, bits: %d, prot val: 0x%08X [Property %s]\n", valueIndex, requiredBits, protocolValue, prop.getName());
+                    //System.out.printf("(WorldUtils):v3: trying to apply valInd: %d, bits: %d, prot val: 0x%08X [Property %s]\n", valueIndex, requiredBits, protocolValue, prop.getName());
 
                     if (valueIndex != -1)
                     {
-                        //System.out.printf("(WorldUtils) requesting: %s = %s, index: %d\n", prop.getName(), state.get(prop), valueIndex);
+                        //System.out.printf("(WorldUtils):v3: requesting: %s = %s, index: %d\n", prop.getName(), state.get(prop), valueIndex);
                         protocolValue |= (valueIndex << shiftAmount);
                         shiftAmount += requiredBits;
                         ++propCount;
                     }
                 }
+                /*
+                else
+                {
+                    System.out.printf("(WorldUtils):v3: skipping prot val: 0x%08X [Property %s]\n", protocolValue, p.getName());
+                }
+                 */
             }
         }
         catch (Exception e)
@@ -902,7 +934,7 @@ public class WorldUtils
         if (propCount > 0)
         {
             double x = pos.getX() + relX + 2 + protocolValue;
-            //System.out.printf("(WorldUtils) request prot value 0x%08X\n", protocolValue + 2);
+            //System.out.printf("(WorldUtils):v3: request prot value 0x%08X\n", protocolValue + 2);
             return new Vec3d(x, hitVecIn.y, hitVecIn.z);
         }
 

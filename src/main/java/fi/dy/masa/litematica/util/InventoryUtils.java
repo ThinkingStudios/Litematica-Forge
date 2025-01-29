@@ -3,7 +3,7 @@ package fi.dy.masa.litematica.util;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
-import com.llamalad7.mixinextras.lib.apache.commons.tuple.Pair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.annotation.Experimental;
 
 import net.minecraft.block.Block;
@@ -34,6 +34,8 @@ import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.data.EntitiesDataStorage;
 import fi.dy.masa.litematica.world.WorldSchematic;
+
+import org.jetbrains.annotations.ApiStatus;
 
 public class InventoryUtils
 {
@@ -410,7 +412,32 @@ public class InventoryUtils
             return null;
         }
 
-        return new InventoryOverlay.Context(InventoryOverlay.getBestInventoryType(inv, nbt), inv, be != null ? be : world.getBlockEntity(pos), null, nbt);
+        return new InventoryOverlay.Context(InventoryOverlay.getBestInventoryType(inv, nbt), inv, be != null ? be : world.getBlockEntity(pos), null, nbt, new Refresher());
+    }
+
+    // This really isn't used for this use case; but this is just here for Compat
+    public static class Refresher implements InventoryOverlay.Refresher
+    {
+
+        @Override
+        public InventoryOverlay.Context onContextRefresh(InventoryOverlay.Context data, World world)
+        {
+            // Refresh data
+            if (data.be() != null)
+            {
+                getTargetInventory(world, data.be().getPos());
+                data = getTargetInventoryFromBlock(data.be().getWorld(), data.be().getPos(), data.be(), data.nbt());
+            }
+            /*
+            else if (data.entity() != null)
+            {
+                EntitiesDataStorage.getInstance().requestEntity(world, data.entity().getId());
+                data = getTargetInventoryFromEntity(data.entity(), data.nbt());
+            }
+             */
+
+            return data;
+        }
     }
 
     /**
@@ -481,11 +508,11 @@ public class InventoryUtils
      * @param threshold the number of items at or below which the re-stocking will happen
      * @param allowHotbar whether to allow taking items from other hotbar slots
      */
-    @Experimental
-    public static void PRW_preRestockHand(PlayerEntity player,
-                                          Hand hand,
-                                          int threshold,
-                                          boolean allowHotbar)
+    @ApiStatus.Experimental
+    public static void preRestockHand(PlayerEntity player,
+                                      Hand hand,
+                                      int threshold,
+                                      boolean allowHotbar)
     {
         PlayerInventory container = player.getInventory();
         final ItemStack handStack = player.getStackInHand(hand);
@@ -493,11 +520,11 @@ public class InventoryUtils
         final int max = handStack.getMaxCount();
 
         if (handStack.isEmpty() == false &&
-            PRW_getCursorStack().isEmpty() &&
+            getCursorStack().isEmpty() &&
             (count <= threshold && count < max))
         {
             int endSlot = allowHotbar ? 44 : 35;
-            int currentMainHandSlot = PRW_getSelectedHotbarSlot() + 36;
+            int currentMainHandSlot = getSelectedHotbarSlot() + 36;
             int currentSlot = hand == Hand.MAIN_HAND ? currentMainHandSlot : 45;
 
             for (int slotNum = 9; slotNum <= endSlot; ++slotNum)
@@ -531,8 +558,8 @@ public class InventoryUtils
         }
     }
 
-    @Experimental
-    public static ItemStack PRW_getCursorStack()
+    @ApiStatus.Experimental
+    public static ItemStack getCursorStack()
     {
         PlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null)
@@ -543,8 +570,8 @@ public class InventoryUtils
         return inv != null ? inv.getMainHandStack() : ItemStack.EMPTY;
     }
 
-    @Experimental
-    public static int PRW_getSelectedHotbarSlot()
+    @ApiStatus.Experimental
+    public static int getSelectedHotbarSlot()
     {
         PlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null)

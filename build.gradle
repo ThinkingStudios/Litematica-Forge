@@ -29,7 +29,7 @@ dependencies {
     neoForge libs.neoforge
 
     modImplementation libs.mafglib
-    modImplementation libs.badpackets
+    modImplementation libs.foxifiednetworking
 
     implementation libs.jsr305
 }

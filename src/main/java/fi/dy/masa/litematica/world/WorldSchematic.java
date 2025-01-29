@@ -65,7 +65,7 @@ public class WorldSchematic extends World
     private final TickManager tickManager;
     private final RegistryEntry<DimensionType> dimensionType;
     private DimensionEffects dimensionEffects = new DimensionEffects.Overworld();
-    public final boolean isClient;
+    //public final boolean isClient;
 
     public WorldSchematic(MutableWorldProperties properties,
                           @Nonnull DynamicRegistryManager registryManager,
@@ -85,16 +85,20 @@ public class WorldSchematic extends World
         this.dimensionType = dimension;
         if (!registryManager.equals(DynamicRegistryManager.EMPTY))
         {
-            //this.biome = registryManager.get(RegistryKeys.BIOME).entryOf(BiomeKeys.PLAINS);
             this.setDimension(registryManager);
         }
         else
         {
-            //this.biome = this.mc.world.getRegistryManager().get(RegistryKeys.BIOME).entryOf(BiomeKeys.PLAINS);
             this.setDimension(this.mc.world.getRegistryManager());
         }
         this.tickManager = new TickManager();
-        this.isClient = false;
+        //this.isClient = false;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "SchematicWorld["+REGISTRY_KEY.getValue().toString()+"]";
     }
 
     private void setDimension(DynamicRegistryManager registryManager)
@@ -136,10 +140,10 @@ public class WorldSchematic extends World
         return this.tickManager;
     }
 
-    @Override
-    public boolean isClient() {
-        return this.isClient;
-    }
+//    @Override
+//    public boolean isClient() {
+//        return this.isClient;
+//    }
 
     @Nullable
     @Override

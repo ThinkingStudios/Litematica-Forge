@@ -1,4 +1,2 @@
 ## Change
-- sync `sakura-ryoko/litematica` 1.21-0.19.54-sakura.6
-    - feat: Make it so that the entityDataSyncBackup mode is capable of saving Litematics with Server-side NBT data, similar to how Servux functions.
-      NOTE: This requires Litematica 'marking' your game session as safe to do so before hand. It does this by marking it safe after Requesting and Receiving a QueryNBT packet successfully. You can do this by going up to any simple Chest and pressing I (Info Overlay) once. This is because the operation involves potentially dozens of Packets being sent without OP status and that can be problematic, and can cause long delays in saving your Litematic without having OP. Using Servux is better overall because with the Servux packets; the data is sent in a single Large packet per a Chunk, rather than multiple packets; one for every single Block Entity or Entity within the Logical Bounding Box... But the goal is to help players who do not have access to a Fabric Server with Servux installed.
+- sync `sakura-ryoko/litematica` 1.21-0.19.56-sakura.1.

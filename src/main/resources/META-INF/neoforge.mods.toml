@@ -39,10 +39,3 @@ type = "required"
 versionRange = "*"
 ordering = "NONE"
 side = "BOTH"
-
-[[dependencies.forgematica]]
-modId = "badpackets"
-type = "required"
-versionRange = "*"
-ordering = "NONE"
-side = "BOTH"

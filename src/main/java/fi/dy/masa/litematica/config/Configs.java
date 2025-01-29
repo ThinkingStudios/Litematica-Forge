@@ -1,6 +1,7 @@
 package fi.dy.masa.litematica.config;
 
 import java.io.File;
+import java.util.List;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -12,6 +13,7 @@ import fi.dy.masa.malilib.config.HudAlignment;
 import fi.dy.masa.malilib.config.IConfigBase;
 import fi.dy.masa.malilib.config.IConfigHandler;
 import fi.dy.masa.malilib.config.options.*;
+import fi.dy.masa.malilib.hotkeys.IHotkey;
 import fi.dy.masa.malilib.util.FileUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.MessageOutputType;
@@ -32,6 +34,7 @@ public class Configs implements IConfigHandler
         public static final ConfigOptionList    PASTE_REPLACE_BEHAVIOR      = new ConfigOptionList("pasteReplaceBehavior", ReplaceBehavior.NONE).apply(GENERIC_KEY);
         public static final ConfigOptionList    PLACEMENT_REPLACE_BEHAVIOR  = new ConfigOptionList("placementReplaceBehavior", ReplaceBehavior.ALL).apply(GENERIC_KEY);
         public static final ConfigOptionList    PLACEMENT_RESTRICTION_WARN  = new ConfigOptionList("placementRestrictionWarn", MessageOutputType.ACTIONBAR).apply(GENERIC_KEY);
+        public static final ConfigOptionList    SCHEMATIC_VCS_DELETE_MODE   = new ConfigOptionList("schematicVcsDeleteMode", PlacementDeletionMode.MATCHING_BLOCK).apply(GENERIC_KEY);
         public static final ConfigOptionList    SELECTION_CORNERS_MODE      = new ConfigOptionList("selectionCornersMode", CornerSelectionMode.CORNERS).apply(GENERIC_KEY);
 
         public static final ConfigBoolean       CUSTOM_SCHEMATIC_BASE_DIRECTORY_ENABLED = new ConfigBoolean("customSchematicBaseDirectoryEnabled", false).apply(GENERIC_KEY);
@@ -63,13 +66,14 @@ public class Configs implements IConfigHandler
         public static final ConfigInteger       EASY_PLACE_SWAP_INTERVAL    = new ConfigInteger("easyPlaceSwapInterval", 0, 0, 10000).apply(GENERIC_KEY);
         public static final ConfigBoolean       EASY_PLACE_SWING_HAND       = new ConfigBoolean("easyPlaceSwingHand", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       EASY_PLACE_VANILLA_REACH    = new ConfigBoolean("easyPlaceVanillaReach", false).apply(GENERIC_KEY);
-        public static final ConfigBoolean       ENTITY_DATA_SYNC            = new ConfigBoolean("entityDataSync", true).apply(GENERIC_KEY);
-        public static final ConfigBoolean       ENTITY_DATA_SYNC_BACKUP     = new ConfigBoolean("entityDataSyncBackup", true).apply(GENERIC_KEY);
-        public static final ConfigFloat         ENTITY_DATA_SYNC_CACHE_TIMEOUT= new ConfigFloat("entityDataSyncCacheTimeout", 2.0f, 0.25f, 30.0f).apply(GENERIC_KEY);
+        public static final ConfigBooleanHotkeyed ENTITY_DATA_SYNC          = new ConfigBooleanHotkeyed("entityDataSync", false, "").apply(GENERIC_KEY);
+        public static final ConfigBoolean       ENTITY_DATA_SYNC_BACKUP     = new ConfigBoolean("entityDataSyncBackup", false).apply(GENERIC_KEY);
+        public static final ConfigFloat         ENTITY_DATA_SYNC_CACHE_TIMEOUT= new ConfigFloat("entityDataSyncCacheTimeout", 0.75f, 0.25f, 30.0f).apply(GENERIC_KEY);
         public static final ConfigBoolean       ENTITY_DATA_LOAD_NBT        = new ConfigBoolean("entityDataSyncLoadNbt", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       EXECUTE_REQUIRE_TOOL        = new ConfigBoolean("executeRequireHoldingTool", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       FIX_CHEST_MIRROR            = new ConfigBoolean("fixChestMirror", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       FIX_RAIL_ROTATION           = new ConfigBoolean("fixRailRotation", true).apply(GENERIC_KEY);
+        public static final ConfigBoolean       FIX_STAIRS_MIRROR           = new ConfigBoolean("fixStairsMirror", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       GENERATE_LOWERCASE_NAMES    = new ConfigBoolean("generateLowercaseNames", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       HIGHLIGHT_BLOCK_IN_INV      = new ConfigBoolean("highlightBlockInInventory", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       ITEM_USE_PACKET_CHECK_BYPASS= new ConfigBoolean("itemUsePacketCheckBypass", true).apply(GENERIC_KEY);
@@ -130,6 +134,7 @@ public class Configs implements IConfigHandler
                 EXECUTE_REQUIRE_TOOL,
                 FIX_CHEST_MIRROR,
                 FIX_RAIL_ROTATION,
+                FIX_STAIRS_MIRROR,
                 GENERATE_LOWERCASE_NAMES,
                 HIGHLIGHT_BLOCK_IN_INV,
                 ITEM_USE_PACKET_CHECK_BYPASS,
@@ -163,6 +168,7 @@ public class Configs implements IConfigHandler
                 UNHIDE_SCHEMATIC_PROJECTS,
 
                 PASTE_REPLACE_BEHAVIOR,
+                SCHEMATIC_VCS_DELETE_MODE,
                 SELECTION_CORNERS_MODE,
 
                 COMMAND_FILL_MAX_VOLUME,
@@ -177,6 +183,10 @@ public class Configs implements IConfigHandler
                 PICK_BLOCKABLE_SLOTS,
                 TOOL_ITEM,
                 TOOL_ITEM_COMPONENTS
+        );
+
+        public static final List<IHotkey> HOTKEY_LIST = ImmutableList.of(
+                ENTITY_DATA_SYNC
         );
     }
 

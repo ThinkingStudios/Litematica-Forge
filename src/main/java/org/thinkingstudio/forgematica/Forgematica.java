@@ -2,24 +2,21 @@ package org.thinkingstudio.forgematica;
 
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.Reference;
-import fi.dy.masa.litematica.gui.GuiConfigs;
+import fi.dy.masa.litematica.compat.modmenu.ModMenuImpl;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLLoader;
-import org.thinkingstudio.mafglib.util.NeoUtils;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import org.thinkingstudio.mafglib.loader.FoxifiedLoader;
 
 @Mod(value = Reference.MOD_ID, dist = Dist.CLIENT)
 public class Forgematica {
     public Forgematica(ModContainer modContainer) {
         if (FMLLoader.getDist().isClient()) {
-            Litematica.onInitialize();
+            FoxifiedLoader.registerExtensionPoint(modContainer, IConfigScreenFactory.class, new ModMenuImpl().getModConfigScreenFactory());
 
-            NeoUtils.getInstance().registerConfigScreen(modContainer, (screen) -> {
-                GuiConfigs gui = new GuiConfigs();
-                gui.setParent(screen);
-                return gui;
-            });
+            Litematica.onInitialize();
         }
     }
 }

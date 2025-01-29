@@ -1,7 +1,6 @@
 package fi.dy.masa.litematica.network;
 
 import io.netty.buffer.Unpooled;
-import lol.bai.badpackets.api.play.ClientPlayContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.nbt.NbtCompound;
@@ -11,6 +10,7 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.random.Random;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import fi.dy.masa.malilib.network.IClientPayloadData;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.network.PacketSplitter;
@@ -25,8 +25,9 @@ public abstract class ServuxLitematicaHandler<T extends CustomPayload> implement
     private final static ServuxLitematicaHandler<ServuxLitematicaPacket.Payload> INSTANCE = new ServuxLitematicaHandler<>()
     {
         @Override
-        public void receive(ClientPlayContext context, ServuxLitematicaPacket.Payload payload) {
-            ServuxLitematicaHandler.INSTANCE.receivePlayPayload(context, payload);
+        public void receive(ServuxLitematicaPacket.Payload payload, ClientPlayNetworking.Context context)
+        {
+            ServuxLitematicaHandler.INSTANCE.receivePlayPayload(payload, context);
         }
     };
     public static ServuxLitematicaHandler<ServuxLitematicaPacket.Payload> getInstance() { return INSTANCE; }
@@ -129,7 +130,7 @@ public abstract class ServuxLitematicaHandler<T extends CustomPayload> implement
     }
 
     @Override
-    public void receivePlayPayload(ClientPlayContext ctx, T payload)
+    public void receivePlayPayload(T payload, ClientPlayNetworking.Context ctx)
     {
         if (payload.getId().id().equals(CHANNEL_ID))
         {

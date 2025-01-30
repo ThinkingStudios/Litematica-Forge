@@ -1,14 +1,2 @@
 ## Change
-- sync `sakura-ryoko/litematica` 1.21.4-0.21.0-sakura.5
-  - Bump for MaFgLib 0.2.1 (MaLiLib 1.21.4-0.23.0-sakura.3)
-  - Includes Config Gui Registration code
-  - fix: Easy Place Protocol not applying all possible rotation Directional Block States.
-  - Temporarily Disable the Data Fixers while browsing files in order to load the file Metadata Info Pane faster than previously.
-  - Update Chinese lang files, thanks to DreamingLri and snowlinouo, and zly2006
-  - feat: renderInfoOverlay Hotkey is now defaulted to allow an Empty Keybinding to match the Config Comment; this allows you to 'empty' the key bind, and have Info Overlay to always be active.
-  - fix: Info Overlay not being able to see Empty Block Entities.
-  - fix: InfoOverlay getting confused with the ClientWorld
-  - feat/fix: add switchable AO Processor config,renderAOModernEnabled in order to disable / enable the 'new' AO Processor code; or continue using the older code from 2018 without the "Shadows" that it creates in between block layers.
-  - Port to 1.21.4
-  - Add Italian, & Ukrainian
-  - Add File Info for when you are browsing Sponge and Vanilla Structure files. Note, that as of now, it is temporarily loading the files in order to get the Metadata, and due to the Data Fixers, there is sometimes a delay in doing so the first time for each file. I plan on trying to speed that up in a future release.
+- sync `sakura-ryoko/litematica` 1.21.4-0.21.2-sakura.2

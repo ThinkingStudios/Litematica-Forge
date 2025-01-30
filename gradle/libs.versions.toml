@@ -6,7 +6,7 @@ mappings_patch="1.21+build.4"
 neoforge="21.4.16-beta"
 
 # Mod properties
-version="0.2.0"
+version="0.2.1"
 maven-group="org.thinkingstudio.forgematica"
 archives-name="Forgematica"
 

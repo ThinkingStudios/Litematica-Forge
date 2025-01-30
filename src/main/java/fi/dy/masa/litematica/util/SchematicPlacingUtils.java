@@ -21,19 +21,15 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.*;
 import net.minecraft.util.math.Direction.AxisDirection;
 import net.minecraft.world.World;
 import net.minecraft.world.tick.OrderedTick;
 import net.minecraft.world.tick.WorldTickScheduler;
 
-import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.malilib.util.IntBoundingBox;
+import fi.dy.masa.malilib.util.data.Constants;
 import fi.dy.masa.malilib.util.nbt.NbtUtils;
-import fi.dy.masa.malilib.util.position.Vec3d;
-import fi.dy.masa.malilib.util.position.Vec3i;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic;
@@ -383,8 +379,8 @@ public class SchematicPlacingUtils
         for (EntityInfo info : entityList)
         {
             Vec3d pos = info.posVec;
-            pos = Vec3d.of(PositionUtils.getTransformedPosition(pos.toVanilla(), schematicPlacement.getMirror(), schematicPlacement.getRotation()));
-            pos = Vec3d.of(PositionUtils.getTransformedPosition(pos.toVanilla(), placement.getMirror(), placement.getRotation()));
+            pos = PositionUtils.getTransformedPosition(pos, schematicPlacement.getMirror(), schematicPlacement.getRotation());
+            pos = PositionUtils.getTransformedPosition(pos, placement.getMirror(), placement.getRotation());
             double x = pos.x + offX;
             double y = pos.y + offY;
             double z = pos.z + offZ;

@@ -22,27 +22,20 @@ config = "forgematica.mixins.json"
 [[dependencies.forgematica]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21,)"
+versionRange = "[21.3,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.forgematica]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21.4,)"
+versionRange = "[1.21.3,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.forgematica]]
 modId = "mafglib"
 type = "required"
-versionRange = "[0.2.1,)"
-ordering = "NONE"
-side = "BOTH"
-
-[[dependencies.forgematica]]
-modId = "badpackets"
-type = "required"
-versionRange = "*"
+versionRange = "[0.2.5,)"
 ordering = "NONE"
 side = "BOTH"

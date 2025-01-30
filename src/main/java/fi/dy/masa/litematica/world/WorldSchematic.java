@@ -15,7 +15,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.DimensionEffects;
 import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.boss.dragon.EnderDragonPart;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
@@ -40,7 +39,6 @@ import net.minecraft.world.LightType;
 import net.minecraft.world.MutableWorldProperties;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
@@ -97,6 +95,12 @@ public class WorldSchematic extends World
         this.tickManager = new TickManager();
     }
 
+    @Override
+    public String toString()
+    {
+        return "SchematicWorld["+REGISTRY_KEY.getValue().toString()+"]";
+    }
+
     private void setDimension(DynamicRegistryManager registryManager)
     {
         RegistryEntryLookup<DimensionType> entryLookup = registryManager.getOrThrow(RegistryKeys.DIMENSION_TYPE);
@@ -105,17 +109,14 @@ public class WorldSchematic extends World
 
         if (this.dimensionType.equals(nether))
         {
-            //this.biome = this.getWastes(registryManager);
             this.biome = WorldUtils.getWastes(registryManager);
         }
         else if (this.dimensionType.equals(end))
         {
-            //this.biome = this.getTheEnd(registryManager);
             this.biome = WorldUtils.getTheEnd(registryManager);
         }
         else
         {
-            //this.biome = this.getPlains(registryManager);
             this.biome = WorldUtils.getPlains(registryManager);
         }
 
@@ -643,24 +644,6 @@ public class WorldSchematic extends World
         {
             return FeatureSet.empty();
         }
-    }
-
-    private RegistryEntry<Biome> getPlains(DynamicRegistryManager registryManager)
-    {
-        RegistryEntryLookup<Biome> biomeLookup = registryManager.getOrThrow(RegistryKeys.BIOME);
-        return biomeLookup.getOrThrow(BiomeKeys.PLAINS);
-    }
-
-    private RegistryEntry<Biome> getWastes(DynamicRegistryManager registryManager)
-    {
-        RegistryEntryLookup<Biome> biomeLookup = registryManager.getOrThrow(RegistryKeys.BIOME);
-        return biomeLookup.getOrThrow(BiomeKeys.NETHER_WASTES);
-    }
-
-    private RegistryEntry<Biome> getTheEnd(DynamicRegistryManager registryManager)
-    {
-        RegistryEntryLookup<Biome> biomeLookup = registryManager.getOrThrow(RegistryKeys.BIOME);
-        return biomeLookup.getOrThrow(BiomeKeys.THE_END);
     }
 
     @Override

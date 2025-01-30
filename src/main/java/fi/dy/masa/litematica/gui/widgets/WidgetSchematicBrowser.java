@@ -48,7 +48,7 @@ public class WidgetSchematicBrowser extends WidgetFileBrowserBase
 
         this.title = StringUtils.translate("litematica.gui.title.schematic_browser");
         this.infoWidth = 170;
-        this.infoHeight = 290;
+        this.infoHeight = 310;
         this.parent = parent;
     }
 
@@ -148,7 +148,7 @@ public class WidgetSchematicBrowser extends WidgetFileBrowserBase
             this.drawString(drawContext, str, x, y, textColor);
             y += 12;
 
-            if (this.parent.height >= 340)
+            if (this.parent.getScreenHeight() >= 340)
             {
                 str = StringUtils.translate("litematica.gui.label.schematic_info.total_volume", meta.getTotalVolume());
                 this.drawString(drawContext, str, x, y, textColor);
@@ -220,7 +220,14 @@ public class WidgetSchematicBrowser extends WidgetFileBrowserBase
 
                 if (schema != null)
                 {
-                    str = StringUtils.translate("litematica.gui.label.schematic_info.schema", schema.getString(), version.minecraftDataVersion());
+                    if (version.minecraftDataVersion() - LitematicaSchematic.MINECRAFT_DATA_VERSION > 100)
+                    {
+                        str = StringUtils.translate("litematica.gui.label.schematic_info.schema.newer", schema.getString(), version.minecraftDataVersion());
+                    }
+                    else
+                    {
+                        str = StringUtils.translate("litematica.gui.label.schematic_info.schema", schema.getString(), version.minecraftDataVersion());
+                    }
                     this.drawString(drawContext, str, x, y, textColor);
                     y += 12;
                 }
@@ -236,7 +243,8 @@ public class WidgetSchematicBrowser extends WidgetFileBrowserBase
 
             if (pair != null)
             {
-                y += 14;
+                //y += 14;
+                y += 12;
 
                 int iconSize = pair.getRight().getImage().getWidth();
                 boolean needsScaling = height < this.infoHeight;
@@ -348,7 +356,7 @@ public class WidgetSchematicBrowser extends WidgetFileBrowserBase
                         {
                             int val = previewImageData[i++];
                             // Swap the color channels from ARGB to ABGR
-                            val = (val & 0xFF00FF00) | (val & 0xFF0000) >> 16 | (val & 0xFF) << 16;
+                            //val = (val & 0xFF00FF00) | (val & 0xFF0000) >> 16 | (val & 0xFF) << 16;
                             image.setColorArgb(x, y, val);
                         }
                     }

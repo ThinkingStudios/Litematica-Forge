@@ -40,7 +40,7 @@ public class Hotkeys
     public static final ConfigHotkey PICK_BLOCK_FIRST                   = new ConfigHotkey("pickBlockFirst",                    "BUTTON_3",     KeybindSettings.PRESS_ALLOWEXTRA).apply(HOTKEYS_KEY);
     public static final ConfigHotkey PICK_BLOCK_LAST                    = new ConfigHotkey("pickBlockLast",                     "",             KeybindSettings.MODIFIER_INGAME).apply(HOTKEYS_KEY);
     public static final ConfigHotkey PICK_BLOCK_TOGGLE                  = new ConfigHotkey("pickBlockToggle",                   "M,BUTTON_3").apply(HOTKEYS_KEY);
-    public static final ConfigHotkey RENDER_INFO_OVERLAY                = new ConfigHotkey("renderInfoOverlay",                 "I",            KeybindSettings.PRESS_ALLOWEXTRA_EMPTY).apply(HOTKEYS_KEY);
+    public static final ConfigHotkey RENDER_INFO_OVERLAY                = new ConfigHotkey("renderInfoOverlay",                 "I",             KeybindSettings.PRESS_ALLOWEXTRA).apply(HOTKEYS_KEY);
     public static final ConfigHotkey RENDER_OVERLAY_THROUGH_BLOCKS      = new ConfigHotkey("renderOverlayThroughBlocks",        "RIGHT_CONTROL", KeybindSettings.PRESS_ALLOWEXTRA).apply(HOTKEYS_KEY);
     public static final ConfigHotkey RERENDER_SCHEMATIC                 = new ConfigHotkey("rerenderSchematic",                 "F3,M").apply(HOTKEYS_KEY);
     public static final ConfigHotkey SAVE_AREA_AS_IN_MEMORY_SCHEMATIC   = new ConfigHotkey("saveAreaAsInMemorySchematic",       "").apply(HOTKEYS_KEY);
@@ -53,6 +53,7 @@ public class Hotkeys
     public static final ConfigHotkey SCHEMATIC_EDIT_REPLACE_DIRECTION   = new ConfigHotkey("schematicEditReplaceDirection",     "", KeybindSettings.MODIFIER_INGAME).apply(HOTKEYS_KEY);
     public static final ConfigHotkey SCHEMATIC_PLACEMENT_ROTATION       = new ConfigHotkey("schematicPlacementRotation",        "",     KeybindSettings.MODIFIER_INGAME).apply(HOTKEYS_KEY);
     public static final ConfigHotkey SCHEMATIC_PLACEMENT_MIRROR         = new ConfigHotkey("schematicPlacementMirror",          "",     KeybindSettings.MODIFIER_INGAME).apply(HOTKEYS_KEY);
+    public static final ConfigHotkey SCHEMATIC_VCS_DELETE_BY_PLACEMENT  = new ConfigHotkey("schematicVCSDeleteBlockByPlacement","").apply(HOTKEYS_KEY);
     public static final ConfigHotkey SCHEMATIC_VERSION_CYCLE_MODIFIER   = new ConfigHotkey("schematicVersionCycleModifier",     "",     KeybindSettings.MODIFIER_INGAME).apply(HOTKEYS_KEY);
     public static final ConfigHotkey SCHEMATIC_VERSION_CYCLE_NEXT       = new ConfigHotkey("schematicVersionCycleNext",         "").apply(HOTKEYS_KEY);
     public static final ConfigHotkey SCHEMATIC_VERSION_CYCLE_PREVIOUS   = new ConfigHotkey("schematicVersionCyclePrevious",     "").apply(HOTKEYS_KEY);
@@ -130,6 +131,7 @@ public class Hotkeys
             SCHEMATIC_EDIT_REPLACE_DIRECTION,
             SCHEMATIC_PLACEMENT_ROTATION,
             SCHEMATIC_PLACEMENT_MIRROR,
+            SCHEMATIC_VCS_DELETE_BY_PLACEMENT,
             SCHEMATIC_VERSION_CYCLE_MODIFIER,
             SCHEMATIC_VERSION_CYCLE_NEXT,
             SCHEMATIC_VERSION_CYCLE_PREVIOUS,

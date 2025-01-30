@@ -15,7 +15,6 @@ public class Forgematica {
     public Forgematica(ModContainer modContainer) {
         if (FMLLoader.getDist().isClient()) {
             FoxifiedLoader.registerExtensionPoint(modContainer, IConfigScreenFactory.class, new ModMenuImpl().getModConfigScreenFactory());
-
             Litematica.onInitialize();
         }
     }

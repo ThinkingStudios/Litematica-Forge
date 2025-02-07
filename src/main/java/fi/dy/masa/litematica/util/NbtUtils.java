@@ -9,6 +9,8 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
+
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.malilib.util.Constants;
 
@@ -46,6 +48,22 @@ public class NbtUtils
             if (tagList.getHeldType() == Constants.NBT.TAG_DOUBLE && tagList.size() == 3)
             {
                 return new Vec3d(tagList.getDouble(0), tagList.getDouble(1), tagList.getDouble(2));
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static Vec3i readVec3iFromIntArray(@Nullable NbtCompound tag, String tagName)
+    {
+        if (tag != null && tag.contains(tagName, Constants.NBT.TAG_INT_ARRAY))
+        {
+            int[] arr =  tag.getIntArray(tagName);
+
+            if (arr != null && arr.length == 3)
+            {
+                return new Vec3i(arr[0], arr[1], arr[2]);
             }
         }
 

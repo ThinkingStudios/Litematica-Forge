@@ -944,6 +944,7 @@ public class WorldUtils
      * @param pos2
      * @return
      */
+    @SuppressWarnings("removal")
     public static boolean isSliceEmpty(World world, Direction.Axis axis, BlockPos pos1, BlockPos pos2)
     {
         BlockPos.Mutable posMutable = new BlockPos.Mutable();

@@ -83,6 +83,6 @@ publisher {
     setCurseEnvironment("client")
     setArtifact(remapJar)
     addAdditionalFile(sourcesJar)
-    curseDepends.required("mafglib", "badpackets")
-    modrinthDepends.required("mafglib", "badpackets")
+    curseDepends.required("mafglib")
+    modrinthDepends.required("mafglib")
 }

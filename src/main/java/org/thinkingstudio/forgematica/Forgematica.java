@@ -9,7 +9,6 @@ import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.ModContainer;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLLoader;
@@ -24,7 +23,7 @@ public class Forgematica {
     @SuppressWarnings("removal")
     public Forgematica() {
         if (FMLLoader.getDist().isClient()) {
-            ModContainer modContainer = ModLoadingContext.get().getContainer();
+            ModContainer modContainer = FMLJavaModLoadingContext.get().getContainer();
 
             ForgeUtils.getInstance().getClientModIgnoredServerOnly(modContainer);
             Litematica.onInitialize();

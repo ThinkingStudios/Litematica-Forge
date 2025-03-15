@@ -3,10 +3,10 @@
 minecraft_version="1.21.4"
 yarn_mappings="1.21.4+build.1"
 mappings_patch="1.21+build.4"
-neoforge="21.4.16-beta"
+neoforge="21.4.111-beta"
 
 # Mod properties
-version="0.2.1"
+version="0.2.2"
 maven-group="org.thinkingstudio.forgematica"
 archives-name="Forgematica"
 
@@ -15,8 +15,7 @@ id-modrinth="dCKRaeBC"
 id-curseforge="912441"
 
 # Mod dependencies
-mafglib="0.2.5-mc1.21.4"
-foxifiednetworking="0.1.0-alpha2+mc1.21.4"
+mafglib="0.2.10-mc1.21.4"
 
 # Libraries
 jsr305="3.0.2"
@@ -31,7 +30,6 @@ yarn-mappings = { group = "net.fabricmc", name = "yarn", version.ref = "yarn_map
 yarn-mappings-patch = { group = "dev.architectury", name = "yarn-mappings-patch-neoforge", version.ref = "mappings_patch"}
 
 neoforge = { group = "net.neoforged", name = "neoforge", version.ref = "neoforge" }
-foxifiednetworking = { group = "me.textrue.foxified", name = "FoxifiedNetworking", version.ref = "foxifiednetworking" }
 mafglib = { group = "maven.modrinth", name = "mafglib", version.ref = "mafglib"}
 
 jsr305 = { group = "com.google.code.findbugs", name = "jsr305", version.ref = "jsr305"}

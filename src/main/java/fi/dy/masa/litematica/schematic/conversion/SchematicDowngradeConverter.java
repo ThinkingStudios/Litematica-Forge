@@ -1,11 +1,17 @@
 package fi.dy.masa.litematica.schematic.conversion;
 
+import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
+import net.minecraft.recipe.Recipe;
 import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
@@ -14,6 +20,7 @@ import net.minecraft.util.math.BlockPos;
 
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.data.Constants;
+import fi.dy.masa.malilib.util.nbt.NbtUtils;
 
 public class SchematicDowngradeConverter
 {
@@ -40,11 +47,119 @@ public class SchematicDowngradeConverter
                 case "HandItems" -> newEntity.put("HandItems", processEntityItems(oldEntity.getList(key, Constants.NBT.TAG_COMPOUND), minecraftDataVersion, registryManager, 2));
                 case "Item" -> newEntity.put("Item", processEntityItem(oldEntity.get(key), minecraftDataVersion, registryManager));
                 case "Inventory" -> newEntity.put("Inventory", processEntityItems(oldEntity.getList(key, Constants.NBT.TAG_COMPOUND), minecraftDataVersion, registryManager, 1));
+                // 1.21.5+ tags
+                case "equipment" -> newEntity.copyFrom(processEntityEquipment(oldEntity.get(key), minecraftDataVersion, registryManager));
+                case "drop_chances" -> newEntity.copyFrom(processEntityDropChances(oldEntity.get(key)));
+                case "fall_distance" -> newEntity.putFloat("FallDistance", oldEntity.getFloat(key));
+                // NbtUtils.readBlockPosFromArrayTag() // get(key, BlockPos.CODEC).orElse(null)
+                case "anchor_pos" -> processBlockPosTag(NbtUtils.readBlockPosFromIntArray(oldEntity, key), "A", newEntity);
+                case "block_pos" -> processBlockPosTag(NbtUtils.readBlockPosFromIntArray(oldEntity, key), "Tile", newEntity);
+                case "bound_pos" -> processBlockPosTag(NbtUtils.readBlockPosFromIntArray(oldEntity, key), "Bound", newEntity);
+                case "home_pos" -> processBlockPosTag(NbtUtils.readBlockPosFromIntArray(oldEntity, key), "HomePos", newEntity);
+                case "sleeping_pos" -> processBlockPosTag(NbtUtils.readBlockPosFromIntArray(oldEntity, key), "Sleeping", newEntity);
+                case "has_egg" -> newEntity.putBoolean("HasEgg", oldEntity.getBoolean(key));
+                case "life_ticks" -> newEntity.putInt("LifeTicks", oldEntity.getInt(key));
+                case "size" -> newEntity.putInt("Size", oldEntity.getInt(key));
                 default -> newEntity.put(key, oldEntity.get(key));
             }
         }
 
         return newEntity;
+    }
+
+    private static void processBlockPosTag(@Nullable BlockPos oldPos, String prefix, NbtCompound newTags)
+    {
+        if (oldPos != null)
+        {
+            newTags.putInt(prefix+"X", oldPos.getX());
+            newTags.putInt(prefix+"Y", oldPos.getY());
+            newTags.putInt(prefix+"Z", oldPos.getZ());
+        }
+    }
+
+    private static NbtCompound processEntityDropChances(NbtElement nbtElement)
+    {
+        NbtCompound oldTags = (NbtCompound) nbtElement;
+        NbtCompound newTags = new NbtCompound();
+        NbtList handDrops = new NbtList();
+        NbtList armorDrops = new NbtList();
+
+        for (int i = 0; i < 2; i++)
+        {
+            handDrops.add(NbtFloat.of(MobEntity.DEFAULT_DROP_CHANCE));
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            armorDrops.add(NbtFloat.of(MobEntity.DEFAULT_DROP_CHANCE));
+        }
+
+        for (String key : oldTags.getKeys())
+        {
+            switch (key)
+            {
+                case "mainhand" -> handDrops.set(0, oldTags.get(key));
+                case "offhand" -> handDrops.set(1, oldTags.get(key));
+                case "feet" -> armorDrops.set(0, oldTags.get(key));
+                case "legs" -> armorDrops.set(1, oldTags.get(key));
+                case "chest" -> armorDrops.set(2, oldTags.get(key));
+                case "head" -> armorDrops.set(3, oldTags.get(key));
+                // Not used
+                //case "body" -> newTags.put("body_armor_drop_chance", oldTags.get(key));
+                //case "saddle" -> newTags.put("SaddleItem", oldTags.get(key));
+                default -> {}
+            }
+        }
+
+        newTags.put("HandDropChances", handDrops);
+        newTags.put("ArmorDropChances", armorDrops);
+
+        return newTags;
+    }
+
+    private static NbtCompound processEntityEquipment(NbtElement equipmentEntries, int minecraftDataVersion, @Nonnull DynamicRegistryManager registryManager)
+    {
+        NbtCompound oldTags = (NbtCompound) equipmentEntries;
+        NbtCompound newTags = new NbtCompound();
+        NbtList newHandItems = new NbtList();
+        NbtList newArmorItems = new NbtList();
+
+        for (int i = 0; i < 2; i++)
+        {
+            newHandItems.add(new NbtCompound());
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            newArmorItems.add(new NbtCompound());
+        }
+
+        for (String key : oldTags.getKeys())
+        {
+            switch (key)
+            {
+                case "mainhand" -> newHandItems.set(0, processEntityItem(oldTags.get(key), minecraftDataVersion, registryManager));
+                case "offhand" -> newHandItems.set(1, processEntityItem(oldTags.get(key), minecraftDataVersion, registryManager));
+                case "feet" -> newArmorItems.set(0, processEntityItem(oldTags.get(key), minecraftDataVersion, registryManager));
+                case "legs" -> newArmorItems.set(1, processEntityItem(oldTags.get(key), minecraftDataVersion, registryManager));
+                case "chest" -> newArmorItems.set(2, processEntityItem(oldTags.get(key), minecraftDataVersion, registryManager));
+                case "head" -> newArmorItems.set(3, processEntityItem(oldTags.get(key), minecraftDataVersion, registryManager));
+                case "body" ->
+                {
+                    // Why is this duplicated in 1.20.4?  the world may never know...
+                    NbtElement ele = processEntityItem(oldTags.get(key), minecraftDataVersion, registryManager);
+                    newArmorItems.set(2, ele);
+                    newTags.put("ArmorItem", ele);
+                }
+                case "saddle" -> newTags.put("SaddleItem", processEntityItem(oldTags.get(key), minecraftDataVersion, registryManager));
+                default -> {}
+            }
+        }
+
+        newTags.put("HandItems", newHandItems);
+        newTags.put("ArmorItems", newArmorItems);
+
+        return newTags;
     }
 
     private static NbtElement processEntityItem(NbtElement itemEntry, int minecraftDataVersion, @Nonnull DynamicRegistryManager registryManager)
@@ -156,6 +271,7 @@ public class SchematicDowngradeConverter
                 newMod.putDouble("Amount", modEntry.getDouble("amount"));
                 newMod.putString("Name", modiferIdToName(modEntry.getString("id")));
                 newMod.putInt("Operation", modifierOperationToInt(modEntry.getString("operation")));
+                newMod.putUuid("UUID", modEntry.contains("UUID") ? modEntry.getUuid("UUID") : UUID.randomUUID());
                 newMods.add(newMod);
             }
             if (newMods.isEmpty() == false)
@@ -373,11 +489,36 @@ public class SchematicDowngradeConverter
                 }
                 case "RecordItem" -> newTE.put("RecordItem", processRecordItem(oldTE.get(key), minecraftDataVersion, registryManager));
                 case "Book" -> newTE.put("Book", processBookTag(oldTE.get(key), minecraftDataVersion, registryManager));
+                // 1.21.5+
+                //case "RecipesUsed" -> newTE.put("RecipesUsed", processRecipesUsedTag(oldTE));
+                case "CustomName" -> newTE.putString("CustomName", processCustomNameTag(oldTE, key, registryManager));
+                case "custom_name" -> newTE.putString("CustomName", processCustomNameTag(oldTE, key, registryManager));
                 default -> newTE.put(key, oldTE.get(key));
             }
         }
 
         return newTE;
+    }
+
+    // 1.21.5+ Only ?  Might not even be needed
+    private static NbtCompound processRecipesUsedTag(NbtElement nbtIn)
+    {
+        NbtCompound oldNbt = (NbtCompound) nbtIn;
+        NbtCompound newNbt = new NbtCompound();
+
+        // todo -- make sure this even needed
+        /*
+        Codec<Map<RegistryKey<Recipe<?>>, Integer>> CODEC = Codec.unboundedMap(Recipe.KEY_CODEC, Codec.INT);
+        Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipesUsed = new Reference2IntOpenHashMap<>();
+
+        recipesUsed.putAll((Map<? extends RegistryKey<Recipe<?>>, ? extends Integer>) oldNbt.get("RecipesUsed", CODEC).orElse(Map.of()));
+        recipesUsed.forEach((id, count) ->
+        {
+            newNbt.putInt(id.getValue().toString(), count);
+        });
+         */
+
+        return newNbt;
     }
 
     private static NbtList processItemsTag(NbtList oldItems, int minecraftDataVersion, @Nonnull DynamicRegistryManager registryManager)
@@ -946,12 +1087,18 @@ public class SchematicDowngradeConverter
     private static String processCustomNameTag(NbtCompound nameTag, String key, @Nonnull DynamicRegistryManager registryManager)
     {
         // Sometimes this is missing the 'text' designation ?
+
+        /*
         String oldNameString = nameTag.getString(key);
         MutableText oldCustomName = Text.Serialization.fromJson(oldNameString, registryManager);
 
         //System.out.printf("processCustomNameTag(): oldName [%s], text: [%s], newString [%s]\n", oldNameString, oldCustomName.getString(), newCustomName);
 
-        return Text.Serialization.toJsonString(oldCustomName, registryManager);
+         */
+
+        Text oldName = BlockEntity.tryParseCustomName(nameTag.getString(key), registryManager);
+
+        return Text.Serialization.toJsonString(oldName, registryManager);
     }
 
     private static NbtElement processBlockState(NbtElement bsTag)

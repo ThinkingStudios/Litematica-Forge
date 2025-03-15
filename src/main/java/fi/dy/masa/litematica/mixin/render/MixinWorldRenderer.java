@@ -1,8 +1,7 @@
-package fi.dy.masa.litematica.mixin;
+package fi.dy.masa.litematica.mixin.render;
 
 import java.util.List;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.util.profiler.Profilers;
 import org.joml.Matrix4f;
 
 import net.minecraft.client.MinecraftClient;
@@ -11,6 +10,8 @@ import net.minecraft.client.util.ObjectAllocator;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.profiler.Profiler;
+import net.minecraft.util.profiler.ProfilerSystem;
+import net.minecraft.util.profiler.Profilers;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,6 +20,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import fi.dy.masa.litematica.mixin.IMixinProfilerSystem;
 import fi.dy.masa.litematica.render.LitematicaRenderer;
 import fi.dy.masa.litematica.util.SchematicWorldRefresher;
 
@@ -32,7 +34,7 @@ public abstract class MixinWorldRenderer
     @Unique private Profiler profiler;
 
     @Inject(method = "reload()V", at = @At("RETURN"))
-    private void onLoadRenderers(CallbackInfo ci)
+    private void litematica_onLoadRenderers(CallbackInfo ci)
     {
         // Also (re-)load our renderer when the vanilla renderer gets reloaded
         if (this.world != null && this.world == this.client.world)
@@ -40,6 +42,10 @@ public abstract class MixinWorldRenderer
             if (this.profiler == null)
             {
                 this.profiler = Profilers.get();
+            }
+            if (this.profiler instanceof ProfilerSystem ps && !((IMixinProfilerSystem) ps).litematica_isStarted())
+            {
+                this.profiler.startTick();
             }
 
             LitematicaRenderer.getInstance().loadRenderers(this.profiler);
@@ -55,6 +61,10 @@ public abstract class MixinWorldRenderer
         {
             this.profiler = Profilers.get();
         }
+        if (this.profiler instanceof ProfilerSystem ps && !((IMixinProfilerSystem) ps).litematica_isStarted())
+        {
+            this.profiler.startTick();
+        }
 
         LitematicaRenderer.getInstance().piecewisePrepareAndUpdate(frustum, this.profiler);
     }
@@ -63,10 +73,10 @@ public abstract class MixinWorldRenderer
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/client/render/WorldRenderer;renderMain(Lnet/minecraft/client/render/FrameGraphBuilder;Lnet/minecraft/client/render/Frustum;Lnet/minecraft/client/render/Camera;Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;Lnet/minecraft/client/render/Fog;ZZLnet/minecraft/client/render/RenderTickCounter;Lnet/minecraft/util/profiler/Profiler;)V",
                     shift = At.Shift.BEFORE))
-    private void onPreRenderMain(ObjectAllocator objectAllocator, RenderTickCounter tickCounter, boolean bl,
-                                 Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager,
-                                 Matrix4f positionMatrix, Matrix4f projectionMatrix, CallbackInfo ci,
-                                 @Local Profiler profiler)
+    private void litematica_onPreRenderMain(ObjectAllocator objectAllocator, RenderTickCounter tickCounter, boolean bl,
+                                            Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager,
+                                            Matrix4f positionMatrix, Matrix4f projectionMatrix, CallbackInfo ci,
+                                            @Local Profiler profiler)
     {
         this.posMatrix = positionMatrix;
         this.ticks = tickCounter;
@@ -74,13 +84,18 @@ public abstract class MixinWorldRenderer
     }
 
     @Inject(method = "renderLayer", at = @At("TAIL"))
-    private void onRenderLayer(RenderLayer renderLayer, double x, double y, double z,
-                               Matrix4f viewMatrix, Matrix4f posMatrix, CallbackInfo ci)
+    private void litematica_onRenderLayer(RenderLayer renderLayer, double x, double y, double z,
+                                          Matrix4f viewMatrix, Matrix4f posMatrix, CallbackInfo ci)
     {
         if (this.profiler == null)
         {
             this.profiler = Profilers.get();
         }
+        if (this.profiler instanceof ProfilerSystem ps && !((IMixinProfilerSystem) ps).litematica_isStarted())
+        {
+            this.profiler.startTick();
+        }
+
         if (renderLayer == RenderLayer.getSolid())
         {
             LitematicaRenderer.getInstance().piecewiseRenderSolid(viewMatrix, posMatrix, this.profiler);
@@ -102,15 +117,25 @@ public abstract class MixinWorldRenderer
 
     @Inject(method = "renderEntities",
             at = @At(value = "RETURN"))
-    private void onPostRenderEntities(MatrixStack matrices, VertexConsumerProvider.Immediate immediate, Camera camera, RenderTickCounter tickCounter, List<Entity> entities, CallbackInfo ci)
+    private void litematica_onPostRenderEntities(MatrixStack matrices, VertexConsumerProvider.Immediate immediate, Camera camera, RenderTickCounter tickCounter, List<Entity> entities, CallbackInfo ci)
     {
         if (this.posMatrix != null &&
             this.ticks != null)
         {
+            if (this.profiler == null)
+            {
+                this.profiler = Profilers.get();
+            }
+
+            if (this.profiler instanceof ProfilerSystem ps && !((IMixinProfilerSystem) ps).litematica_isStarted())
+            {
+                this.profiler.startTick();
+            }
+
             LitematicaRenderer.getInstance().piecewiseRenderEntities(this.posMatrix, this.ticks.getTickDelta(false), this.profiler);
             this.posMatrix = null;
             this.ticks = null;
-            this.profiler = null;
+            //this.profiler = null;
         }
     }
 

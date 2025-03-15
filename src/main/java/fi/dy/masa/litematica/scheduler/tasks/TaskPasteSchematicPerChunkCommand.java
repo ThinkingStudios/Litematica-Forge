@@ -27,6 +27,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.*;
+import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.WorldChunk;
@@ -91,7 +92,7 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
     }
 
     @Override
-    public boolean execute()
+    public boolean execute(Profiler profiler)
     {
         // Nothing to do
         if (this.ignoreBlocks && this.ignoreEntities)
@@ -99,7 +100,7 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
             return true;
         }
 
-        return this.executeMultiPhase();
+        return this.executeMultiPhase(profiler);
     }
 
     @Override
@@ -255,7 +256,7 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
             PasteNbtBehavior nbtBehavior = this.nbtBehavior;
             BlockEntity be = schematicChunk.getBlockEntity(pos);
 
-            if (be != null && nbtBehavior != PasteNbtBehavior.NONE)
+            if (be != null && nbtBehavior != PasteNbtBehavior.NONE && this.useWorldEdit == false)
             {
                 Consumer<String> commandHandler = ignoreLimit ? this::sendCommand : this.queuedCommands::offer;
                 World schematicWorld = schematicChunk.getWorld();
@@ -278,7 +279,7 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
 
     protected boolean useSpecialPasting(BlockState state)
     {
-        return state.isIn(BlockTags.ALL_SIGNS);
+        return this.useWorldEdit == false && state.isIn(BlockTags.ALL_SIGNS);
     }
 
     protected boolean shouldSetBlock(BlockState stateSchematic, BlockState stateClient)

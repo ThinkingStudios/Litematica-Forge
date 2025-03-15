@@ -7,9 +7,10 @@ import fi.dy.masa.litematica.config.Configs;
 
 public class Litematica
 {
-    public static final Logger logger = LogManager.getLogger(Reference.MOD_ID);
+    public static final Logger LOGGER = LogManager.getLogger(Reference.MOD_ID);
 
-    public static void onInitialize() {
+    public static void onInitialize()
+    {
         InitializationHandler.getInstance().registerInitializationHandler(new InitHandler());
     }
 
@@ -17,7 +18,7 @@ public class Litematica
     {
         if (Configs.Generic.DEBUG_LOGGING.getBooleanValue())
         {
-            Litematica.logger.info(msg, args);
+            Litematica.LOGGER.info(msg, args);
         }
     }
 }

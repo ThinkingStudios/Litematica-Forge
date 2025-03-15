@@ -1,2 +1,2 @@
 ## Change
-- sync `sakura-ryoko/litematica` 1.21.3-0.20.4-sakura.2
+- sync `sakura-ryoko/litematica` 1.21.3-0.20.4

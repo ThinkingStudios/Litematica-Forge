@@ -17,7 +17,7 @@ A modern schematic mod for (Neo)Forge.
 '''
 
 [[mixins]]
-config = "forgematica.mixins.json"
+config = "mixins.litematica.json"
 
 [[dependencies.forgematica]]
 modId = "neoforge"

@@ -37,12 +37,14 @@ import fi.dy.masa.litematica.schematic.conversion.SchematicConversionMaps;
 import fi.dy.masa.litematica.schematic.conversion.SchematicConverter;
 import fi.dy.masa.litematica.util.DataFixerMode;
 import fi.dy.masa.litematica.util.EntityUtils;
+import fi.dy.masa.litematica.util.FileType;
 import fi.dy.masa.litematica.util.PositionUtils;
 
 public class SchematicaSchematic
 {
     public static final String FILE_EXTENSION = ".schematic";
 
+    private final SchematicMetadata metadata = new SchematicMetadata();
     private final SchematicConverter converter;
     private final BlockState[] palette = new BlockState[65536];
     private LitematicaBlockStateContainer blocks;
@@ -56,6 +58,11 @@ public class SchematicaSchematic
     private SchematicaSchematic()
     {
         this.converter = SchematicConverter.createForSchematica();
+    }
+
+    public SchematicMetadata getMetadata()
+    {
+        return this.metadata;
     }
 
     public Vec3i getSize()
@@ -146,7 +153,7 @@ public class SchematicaSchematic
                                 }
                                 catch (Exception e)
                                 {
-                                    Litematica.logger.warn("Failed to load TileEntity data for {} @ {}", state, pos);
+                                    Litematica.LOGGER.warn("Failed to load TileEntity data for {} @ {}", state, pos);
                                 }
                             }
                         }
@@ -279,7 +286,7 @@ public class SchematicaSchematic
                                         }
                                         catch (Exception e)
                                         {
-                                            Litematica.logger.warn("Failed to load TileEntity data for {} @ {}", state, pos);
+                                            Litematica.LOGGER.warn("Failed to load TileEntity data for {} @ {}", state, pos);
                                         }
                                     }
                                 }
@@ -384,8 +391,8 @@ public class SchematicaSchematic
                         }
                         catch (Exception e)
                         {
-                            Litematica.logger.warn("SchematicaSchematic: Exception while trying to store TileEntity data for block '{}' at {}",
-                                    state, posMutable.toString(), e);
+                            Litematica.LOGGER.warn("SchematicaSchematic: Exception while trying to store TileEntity data for block '{}' at {}",
+                                                   state, posMutable.toString(), e);
                         }
                     }
                 }
@@ -433,6 +440,7 @@ public class SchematicaSchematic
 
         if (schematic.readFromFile(file))
         {
+            schematic.metadata.setName(file.getName());
             return schematic;
         }
 
@@ -452,14 +460,14 @@ public class SchematicaSchematic
             }
             catch (Exception e)
             {
-                Litematica.logger.error("SchematicaSchematic: Exception while post-processing blocks for '{}'", this.fileName, e);
+                Litematica.LOGGER.error("SchematicaSchematic: Exception while post-processing blocks for '{}'", this.fileName, e);
             }
 
             return true;
         }
         else
         {
-            Litematica.logger.error("SchematicaSchematic: Missing block data in the schematic '{}'", this.fileName);
+            Litematica.LOGGER.error("SchematicaSchematic: Missing block data in the schematic '{}'", this.fileName);
             return false;
         }
     }
@@ -482,7 +490,7 @@ public class SchematicaSchematic
                 {
                     String str = String.format("SchematicaSchematic: Invalid ID '%d' in SchematicaMapping for block '%s', range: 0 - 4095", id, key);
                     InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, str);
-                    Litematica.logger.warn(str);
+                    Litematica.LOGGER.warn(str);
                     return false;
                 }
 
@@ -490,7 +498,7 @@ public class SchematicaSchematic
                 {
                     String str = String.format("SchematicaSchematic: Missing/non-existing block '%s' in SchematicaMapping", key);
                     InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, str);
-                    Litematica.logger.warn(str);
+                    Litematica.LOGGER.warn(str);
                 }
             }
         }
@@ -513,7 +521,7 @@ public class SchematicaSchematic
                 {
                     String str = String.format("SchematicaSchematic: Invalid ID '%d' (not a number) in MCEdit2 palette for block '%s'", idStr, key);
                     InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, str);
-                    Litematica.logger.warn(str);
+                    Litematica.LOGGER.warn(str);
                     return false;
                 }
 
@@ -521,7 +529,7 @@ public class SchematicaSchematic
                 {
                     String str = String.format("SchematicaSchematic: Invalid ID '%d' in MCEdit2 palette for block '%s', range: 0 - 4095", id, key);
                     InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, str);
-                    Litematica.logger.warn(str);
+                    Litematica.LOGGER.warn(str);
                     return false;
                 }
 
@@ -529,7 +537,7 @@ public class SchematicaSchematic
                 {
                     String str = String.format("SchematicaSchematic: Missing/non-existing block '%s' in MCEdit2 palette", key);
                     InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, str);
-                    Litematica.logger.warn(str);
+                    Litematica.LOGGER.warn(str);
                 }
             }
         }
@@ -593,6 +601,11 @@ public class SchematicaSchematic
 
         this.size = new Vec3i(sizeX, sizeY, sizeZ);
         this.blocks = new LitematicaBlockStateContainer(sizeX, sizeY, sizeZ);
+        this.metadata.setEnclosingSize(this.size);
+        this.metadata.setTotalBlocks(numBlocks);
+        this.metadata.setTotalVolume(sizeX * sizeY * sizeZ);
+        this.metadata.setRegionCount(1);
+        this.metadata.setFileType(FileType.SCHEMATICA_SCHEMATIC);
 
         // Old Schematica format
         if (nbt.contains("Add", Constants.NBT.TAG_BYTE_ARRAY))
@@ -691,13 +704,17 @@ public class SchematicaSchematic
         int minecraftDataVersion = Configs.Generic.DATAFIXER_DEFAULT_SCHEMA.getIntegerValue();
         Schema effective = DataFixerMode.getEffectiveSchema(minecraftDataVersion);
 
+        this.metadata.setSchematicVersion(-1);
+        this.metadata.setMinecraftDataVersion(minecraftDataVersion);
+        this.metadata.setSchema();
+
         if (effective != null)
         {
-            Litematica.logger.info("SchematicaSchematic: executing Vanilla DataFixer for Entities DataVersion {} -> {}", minecraftDataVersion, LitematicaSchematic.MINECRAFT_DATA_VERSION);
+            Litematica.LOGGER.info("SchematicaSchematic: executing Vanilla DataFixer for Entities DataVersion {} -> {}", minecraftDataVersion, LitematicaSchematic.MINECRAFT_DATA_VERSION);
         }
         else
         {
-            Litematica.logger.warn("SchematicaSchematic: Effective Schema has been bypassed.  Not applying Vanilla Data Fixer for Entities DataVersion {}", minecraftDataVersion);
+            Litematica.LOGGER.warn("SchematicaSchematic: Effective Schema has been bypassed.  Not applying Vanilla Data Fixer for Entities DataVersion {}", minecraftDataVersion);
         }
 
         for (int i = 0; i < tagList.size(); ++i)
@@ -722,11 +739,11 @@ public class SchematicaSchematic
 
         if (effective != null)
         {
-            Litematica.logger.info("SchematicaSchematic: executing Vanilla DataFixer for Tile Entities DataVersion {} -> {}", minecraftDataVersion, LitematicaSchematic.MINECRAFT_DATA_VERSION);
+            Litematica.LOGGER.info("SchematicaSchematic: executing Vanilla DataFixer for Tile Entities DataVersion {} -> {}", minecraftDataVersion, LitematicaSchematic.MINECRAFT_DATA_VERSION);
         }
         else
         {
-            Litematica.logger.warn("SchematicaSchematic: Effective Schema has been bypassed.  Not applying Vanilla Data Fixer for Tile Entities DataVersion {}", minecraftDataVersion);
+            Litematica.LOGGER.warn("SchematicaSchematic: Effective Schema has been bypassed.  Not applying Vanilla Data Fixer for Tile Entities DataVersion {}", minecraftDataVersion);
         }
 
         for (int i = 0; i < tagList.size(); ++i)
@@ -759,12 +776,12 @@ public class SchematicaSchematic
 
             try
             {
-                NbtCompound nbt = NbtUtils.readNbtFromFile(file);
+                NbtCompound nbt = NbtUtils.readNbtFromFileAsPath(file.toPath());
                 return this.readFromNBT(nbt);
             }
             catch (Exception e)
             {
-                Litematica.logger.error("SchematicaSchematic: Failed to read Schematic data from file '{}'", file.getAbsolutePath());
+                Litematica.LOGGER.error("SchematicaSchematic: Failed to read Schematic data from file '{}'", file.getAbsolutePath());
             }
         }
 

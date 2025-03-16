@@ -40,14 +40,16 @@ import fi.dy.masa.malilib.gui.Message.MessageType;
 import fi.dy.masa.malilib.interfaces.IStringConsumer;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.malilib.util.game.BlockUtils;
+import fi.dy.masa.malilib.util.game.wrap.GameWrap;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.config.Hotkeys;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.materials.MaterialCache;
-import fi.dy.masa.litematica.mixin.IMixinSignBlockEntity;
-import fi.dy.masa.litematica.mixin.IMixinWallMountedBlock;
+import fi.dy.masa.litematica.mixin.entity.IMixinSignBlockEntity;
+import fi.dy.masa.litematica.mixin.block.IMixinWallMountedBlock;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic;
+import fi.dy.masa.litematica.schematic.SchematicMetadata;
 import fi.dy.masa.litematica.schematic.SchematicaSchematic;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacementManager;
@@ -91,8 +93,68 @@ public class WorldUtils
     public static boolean convertSpongeSchematicToLitematicaSchematic(
             File inputDir, String inputFileName, File outputDir, String outputFileName, boolean ignoreEntities, boolean override, IStringConsumer feedback)
     {
-        LitematicaSchematic litematicaSchematic = convertSpongeSchematicToLitematicaSchematic(inputDir, inputFileName);
-        return litematicaSchematic != null && litematicaSchematic.writeToFile(outputDir, outputFileName, override);
+        DataFixerMode oldMode = (DataFixerMode) Configs.Generic.DATAFIXER_MODE.getOptionListValue();
+        Configs.Generic.DATAFIXER_MODE.setOptionListValue(DataFixerMode.ALWAYS);
+        LitematicaSchematic origSchematic = convertSpongeSchematicToLitematicaSchematic(inputDir, inputFileName);
+
+        if (origSchematic == null)
+        {
+            feedback.setString("litematica.error.schematic_conversion.sponge_to_litematica.failed_to_read_sponge");
+            Configs.Generic.DATAFIXER_MODE.setOptionListValue(oldMode);
+            return false;
+        }
+
+        WorldSchematic world = SchematicWorldHandler.createSchematicWorld(null);
+        BlockPos size = new BlockPos(origSchematic.getTotalSize());
+        loadChunksSchematicWorld(world, BlockPos.ORIGIN, size);
+        SchematicPlacement schematicPlacement = SchematicPlacement.createForSchematicConversion(origSchematic, BlockPos.ORIGIN);
+        origSchematic.placeToWorld(world, schematicPlacement, false); // TODO use a per-chunk version for a bit more speed
+
+        String subRegionName = FileNameUtils.getFileNameWithoutExtension(inputFileName);
+        AreaSelection area = new AreaSelection();
+        area.setName(subRegionName);
+        subRegionName = area.createNewSubRegionBox(BlockPos.ORIGIN, subRegionName);
+        area.setSelectedSubRegionBox(subRegionName);
+        Box box = area.getSelectedSubRegionBox();
+        area.setSubRegionCornerPos(box, Corner.CORNER_1, BlockPos.ORIGIN);
+        area.setSubRegionCornerPos(box, Corner.CORNER_2, size.add(-1, -1, -1));
+        LitematicaSchematic.SchematicSaveInfo info = new LitematicaSchematic.SchematicSaveInfo(false, false);
+
+        LitematicaSchematic newSchem = LitematicaSchematic.createFromWorld(world, area, info, "?", feedback);
+
+        if (newSchem == null)
+        {
+            feedback.setString("litematica.error.schematic_conversion.sponge_to_litematica.failed_to_create_litematic");
+            Configs.Generic.DATAFIXER_MODE.setOptionListValue(oldMode);
+            return false;
+        }
+
+        SchematicMetadata origMetadata = origSchematic.getMetadata();
+
+        if (origMetadata.getAuthor().isEmpty() || origMetadata.getAuthor() == "?")
+        {
+            newSchem.getMetadata().setAuthor(GameWrap.getPlayerName());
+        }
+        else
+        {
+            newSchem.getMetadata().setAuthor(origMetadata.getAuthor());
+        }
+
+        if (origMetadata.getName().isEmpty() || origMetadata.getName() == "?")
+        {
+            newSchem.getMetadata().setName(subRegionName);
+        }
+        else
+        {
+            newSchem.getMetadata().setName(origMetadata.getName());
+        }
+
+        newSchem.getMetadata().setDescription("Converted Sponge V"+origMetadata.getSchematicVersion()+", Schema "+origMetadata.getSchemaString());
+        newSchem.getMetadata().setTimeCreated(origMetadata.getTimeCreated());
+        newSchem.getMetadata().setTimeModifiedToNow();
+
+        Configs.Generic.DATAFIXER_MODE.setOptionListValue(oldMode);
+        return newSchem.writeToFile(outputDir, outputFileName, override);
     }
 
     public static boolean convertSchematicaSchematicToLitematicaSchematic(
@@ -109,31 +171,55 @@ public class WorldUtils
     {
         DataFixerMode oldMode = (DataFixerMode) Configs.Generic.DATAFIXER_MODE.getOptionListValue();
         Configs.Generic.DATAFIXER_MODE.setOptionListValue(DataFixerMode.ALWAYS);
-        LitematicaSchematic litematicaSchematic = LitematicaSchematic.createFromFile(inputDir, inputFileName, FileType.LITEMATICA_SCHEMATIC);
+        LitematicaSchematic newSchematic = LitematicaSchematic.createFromFile(inputDir, inputFileName, FileType.LITEMATICA_SCHEMATIC);
 
-        if (litematicaSchematic == null)
+        if (newSchematic == null)
         {
             feedback.setString("litematica.error.schematic_conversion.litematic_to_litematica.failed_to_read_litematic");
             Configs.Generic.DATAFIXER_MODE.setOptionListValue(oldMode);
             return null;
         }
 
-        litematicaSchematic.getMetadata().setName(outputFilename);
-        litematicaSchematic.getMetadata().setTimeModifiedToNow();
+        SchematicMetadata origMetadata = newSchematic.getMetadata();
+
+        if (origMetadata.getAuthor().isEmpty() || origMetadata.getAuthor() == "?")
+        {
+            newSchematic.getMetadata().setAuthor(GameWrap.getPlayerName());
+        }
+        else
+        {
+            newSchematic.getMetadata().setAuthor(origMetadata.getAuthor());
+        }
+
+        if (origMetadata.getName().isEmpty() || origMetadata.getName() == "?")
+        {
+            newSchematic.getMetadata().setName(outputFilename);
+        }
+        else
+        {
+            newSchematic.getMetadata().setName(origMetadata.getName());
+        }
+
+        newSchematic.getMetadata().setDescription("Converted Litematic V"+origMetadata.getSchematicVersion()+", Schema "+origMetadata.getSchemaString());
+        newSchematic.getMetadata().setTimeCreated(origMetadata.getTimeCreated());
+        newSchematic.getMetadata().setTimeModifiedToNow();
 
         Configs.Generic.DATAFIXER_MODE.setOptionListValue(oldMode);
-        return litematicaSchematic;
+        return newSchematic;
     }
 
     @Nullable
     public static LitematicaSchematic convertSchematicaSchematicToLitematicaSchematic(File inputDir, String inputFileName,
             boolean ignoreEntities, IStringConsumer feedback)
     {
+        DataFixerMode oldMode = (DataFixerMode) Configs.Generic.DATAFIXER_MODE.getOptionListValue();
+        Configs.Generic.DATAFIXER_MODE.setOptionListValue(DataFixerMode.ALWAYS);
         SchematicaSchematic schematic = SchematicaSchematic.createFromFile(new File(inputDir, inputFileName));
 
         if (schematic == null)
         {
             feedback.setString("litematica.error.schematic_conversion.schematic_to_litematica.failed_to_read_schematic");
+            Configs.Generic.DATAFIXER_MODE.setOptionListValue(oldMode);
             return null;
         }
 
@@ -144,7 +230,7 @@ public class WorldUtils
         placementSettings.setIgnoreEntities(ignoreEntities);
         schematic.placeSchematicDirectlyToChunks(world, BlockPos.ORIGIN, placementSettings);
 
-        String subRegionName = FileUtils.getNameWithoutExtension(inputFileName) + " (Converted Schematic)";
+        String subRegionName = FileNameUtils.getFileNameWithoutExtension(inputFileName) + " (Converted Schematic)";
         AreaSelection area = new AreaSelection();
         area.setName(subRegionName);
         subRegionName = area.createNewSubRegionBox(BlockPos.ORIGIN, subRegionName);
@@ -154,25 +240,100 @@ public class WorldUtils
         area.setSubRegionCornerPos(box, Corner.CORNER_2, (new BlockPos(schematic.getSize())).add(-1, -1, -1));
         LitematicaSchematic.SchematicSaveInfo info = new LitematicaSchematic.SchematicSaveInfo(false, false);
 
-        LitematicaSchematic litematicaSchematic = LitematicaSchematic.createFromWorld(world, area, info, "?", feedback);
+        LitematicaSchematic newSchematic = LitematicaSchematic.createFromWorld(world, area, info, "?", feedback);
 
-        if (litematicaSchematic != null && ignoreEntities == false)
+        if (newSchematic != null && ignoreEntities == false)
         {
-            litematicaSchematic.takeEntityDataFromSchematicaSchematic(schematic, subRegionName);
+            newSchematic.takeEntityDataFromSchematicaSchematic(schematic, subRegionName);
         }
         else
         {
             feedback.setString("litematica.error.schematic_conversion.schematic_to_litematica.failed_to_create_schematic");
         }
 
-        return litematicaSchematic;
+        newSchematic.getMetadata().setName(subRegionName);
+        newSchematic.getMetadata().setAuthor(GameWrap.getPlayerName());
+        newSchematic.getMetadata().setDescription("Converted Schematica Schematic, Schema "+schematic.getMetadata().getSchema());
+        newSchematic.getMetadata().setTimeCreated(System.currentTimeMillis());
+        newSchematic.getMetadata().setTimeModifiedToNow();
+
+        Configs.Generic.DATAFIXER_MODE.setOptionListValue(oldMode);
+        return newSchematic;
     }
 
     public static boolean convertStructureToLitematicaSchematic(File structureDir, String structureFileName,
-            File outputDir, String outputFileName, boolean override)
+                                                                File outputDir, String outputFileName, boolean override)
     {
         LitematicaSchematic litematicaSchematic = convertStructureToLitematicaSchematic(structureDir, structureFileName);
         return litematicaSchematic != null && litematicaSchematic.writeToFile(outputDir, outputFileName, override);
+    }
+
+    public static boolean convertStructureToLitematicaSchematic(File structureDir, String structureFileName,
+                                                                File outputDir, String outputFileName, boolean ignoreEntities, boolean override, IStringConsumer feedback)
+    {
+        DataFixerMode oldMode = (DataFixerMode) Configs.Generic.DATAFIXER_MODE.getOptionListValue();
+        Configs.Generic.DATAFIXER_MODE.setOptionListValue(DataFixerMode.ALWAYS);
+        LitematicaSchematic origStructure = convertStructureToLitematicaSchematic(structureDir, structureFileName);
+
+        if (origStructure == null)
+        {
+            feedback.setString("litematica.error.schematic_conversion.structure_to_litematica.failed_to_read_structure");
+            Configs.Generic.DATAFIXER_MODE.setOptionListValue(oldMode);
+            return false;
+        }
+
+        WorldSchematic world = SchematicWorldHandler.createSchematicWorld(null);
+        BlockPos size = new BlockPos(origStructure.getTotalSize());
+        loadChunksSchematicWorld(world, BlockPos.ORIGIN, size);
+        SchematicPlacement schematicPlacement = SchematicPlacement.createForSchematicConversion(origStructure, BlockPos.ORIGIN);
+        origStructure.placeToWorld(world, schematicPlacement, false); // TODO use a per-chunk version for a bit more speed
+
+        String subRegionName = FileNameUtils.getFileNameWithoutExtension(structureFileName);
+        AreaSelection area = new AreaSelection();
+        area.setName(subRegionName);
+        subRegionName = area.createNewSubRegionBox(BlockPos.ORIGIN, subRegionName);
+        area.setSelectedSubRegionBox(subRegionName);
+        Box box = area.getSelectedSubRegionBox();
+        area.setSubRegionCornerPos(box, Corner.CORNER_1, BlockPos.ORIGIN);
+        area.setSubRegionCornerPos(box, Corner.CORNER_2, size.add(-1, -1, -1));
+        LitematicaSchematic.SchematicSaveInfo info = new LitematicaSchematic.SchematicSaveInfo(false, false);
+
+        LitematicaSchematic newSchem = LitematicaSchematic.createFromWorld(world, area, info, "?", feedback);
+
+        if (newSchem == null)
+        {
+            feedback.setString("litematica.error.schematic_conversion.structure_to_litematica.failed_to_create_litematic");
+            Configs.Generic.DATAFIXER_MODE.setOptionListValue(oldMode);
+            return false;
+        }
+
+        SchematicMetadata origMetadata = origStructure.getMetadata();
+
+        if (origMetadata.getAuthor().isEmpty() || origMetadata.getAuthor() == "?")
+        {
+            newSchem.getMetadata().setAuthor(GameWrap.getPlayerName());
+        }
+        else
+        {
+            newSchem.getMetadata().setAuthor(origMetadata.getAuthor());
+        }
+
+        if (origMetadata.getName().isEmpty() || origMetadata.getName() == "?")
+        {
+            newSchem.getMetadata().setName(subRegionName);
+        }
+        else
+        {
+            newSchem.getMetadata().setName(origMetadata.getName());
+        }
+
+        newSchem.getMetadata().setDescription("Converted Vanilla Strucutre, Schema "+origMetadata.getSchemaString());
+        newSchem.getMetadata().setTimeCreated(origMetadata.getTimeCreated());
+        newSchem.getMetadata().setTimeModifiedToNow();
+
+        boolean result = newSchem.writeToFile(outputDir, outputFileName, override);
+        System.out.printf("Vanilla IMPORT DUMP (OUT-2) -->\n%s\n", newSchem.toString());
+        return result;
     }
 
     @Nullable
@@ -193,7 +354,7 @@ public class WorldUtils
         {
             String msg = "Exception while trying to load the Sponge schematic: " + e.getMessage();
             InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, msg);
-            Litematica.logger.error(msg);
+            Litematica.LOGGER.error(msg);
         }
 
         return null;
@@ -216,7 +377,7 @@ public class WorldUtils
         catch (Exception e)
         {
             InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "Exception while trying to load the vanilla structure: " + e.getMessage());
-            Litematica.logger.error("Exception while trying to load the vanilla structure: " + e.getMessage());
+            Litematica.LOGGER.error("Exception while trying to load the vanilla structure: " + e.getMessage());
         }
 
         return null;
@@ -926,7 +1087,7 @@ public class WorldUtils
         }
         catch (Exception e)
         {
-            Litematica.logger.warn("Exception trying to request placement protocol value", e);
+            Litematica.LOGGER.warn("Exception trying to request placement protocol value", e);
         }
 
         if (propCount > 0)

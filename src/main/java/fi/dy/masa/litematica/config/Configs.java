@@ -1,6 +1,7 @@
 package fi.dy.masa.litematica.config;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
@@ -17,6 +18,7 @@ import fi.dy.masa.malilib.hotkeys.IHotkey;
 import fi.dy.masa.malilib.util.FileUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.MessageOutputType;
+import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.Reference;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.selection.CornerSelectionMode;
@@ -66,6 +68,7 @@ public class Configs implements IConfigHandler
         public static final ConfigInteger       EASY_PLACE_SWAP_INTERVAL    = new ConfigInteger("easyPlaceSwapInterval", 0, 0, 10000).apply(GENERIC_KEY);
         public static final ConfigBoolean       EASY_PLACE_SWING_HAND       = new ConfigBoolean("easyPlaceSwingHand", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       EASY_PLACE_VANILLA_REACH    = new ConfigBoolean("easyPlaceVanillaReach", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       ENABLE_DIFFERENT_BLOCKS     = new ConfigBoolean("enableDifferentBlocks", false).apply(GENERIC_KEY);
         public static final ConfigBooleanHotkeyed ENTITY_DATA_SYNC          = new ConfigBooleanHotkeyed("entityDataSync", false, "").apply(GENERIC_KEY);
         public static final ConfigBoolean       ENTITY_DATA_SYNC_BACKUP     = new ConfigBoolean("entityDataSyncBackup", false).apply(GENERIC_KEY);
         public static final ConfigFloat         ENTITY_DATA_SYNC_CACHE_TIMEOUT= new ConfigFloat("entityDataSyncCacheTimeout", 0.75f, 0.25f, 30.0f).apply(GENERIC_KEY);
@@ -127,6 +130,7 @@ public class Configs implements IConfigHandler
                 EASY_PLACE_PROTOCOL,
                 EASY_PLACE_SWING_HAND,
                 EASY_PLACE_VANILLA_REACH,
+                ENABLE_DIFFERENT_BLOCKS,
                 ENTITY_DATA_SYNC,
                 ENTITY_DATA_SYNC_BACKUP,
                 ENTITY_DATA_SYNC_CACHE_TIMEOUT,
@@ -200,6 +204,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       ENABLE_SCHEMATIC_FLUIDS             = new ConfigBoolean("enableSchematicFluidRendering", true).apply(VISUALS_KEY);
         public static final ConfigBoolean       ENABLE_SCHEMATIC_OVERLAY            = new ConfigBoolean("enableSchematicOverlay",  true).apply(VISUALS_KEY);
         public static final ConfigBoolean       ENABLE_SCHEMATIC_RENDERING          = new ConfigBoolean("enableSchematicRendering", true).apply(VISUALS_KEY);
+        public static final ConfigBoolean       ENABLE_SCHEMATIC_FAKE_LIGHTING      = new ConfigBoolean("enableSchematicFakeLighting", true).apply(VISUALS_KEY);
         //public static final ConfigInteger       RENDER_SCHEMATIC_MAX_THREADS        = new ConfigInteger("renderSchematicMaxThreads", 4, 1, 16).apply(VISUALS_KEY);
         public static final ConfigDouble        GHOST_BLOCK_ALPHA                   = new ConfigDouble( "ghostBlockAlpha", 0.5, 0, 1).apply(VISUALS_KEY);
         public static final ConfigBoolean       IGNORE_EXISTING_FLUIDS              = new ConfigBoolean("ignoreExistingFluids", false).apply(VISUALS_KEY);
@@ -211,18 +216,20 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       RENDER_COLLIDING_SCHEMATIC_BLOCKS   = new ConfigBoolean("renderCollidingSchematicBlocks", false).apply(VISUALS_KEY);
         public static final ConfigBoolean       RENDER_ERROR_MARKER_CONNECTIONS     = new ConfigBoolean("renderErrorMarkerConnections", false).apply(VISUALS_KEY);
         public static final ConfigBoolean       RENDER_ERROR_MARKER_SIDES           = new ConfigBoolean("renderErrorMarkerSides", true).apply(VISUALS_KEY);
+        public static final ConfigInteger       RENDER_FAKE_LIGHTING_LEVEL          = new ConfigInteger("renderFakeLightingLevel", 15, 0, 15).apply(VISUALS_KEY);
         public static final ConfigBoolean       RENDER_PLACEMENT_BOX_SIDES          = new ConfigBoolean("renderPlacementBoxSides", false).apply(VISUALS_KEY);
         public static final ConfigBoolean       RENDER_PLACEMENT_ENCLOSING_BOX      = new ConfigBoolean("renderPlacementEnclosingBox", true).apply(VISUALS_KEY);
         public static final ConfigBoolean       RENDER_PLACEMENT_ENCLOSING_BOX_SIDES= new ConfigBoolean("renderPlacementEnclosingBoxSides", false).apply(VISUALS_KEY);
         public static final ConfigBoolean       RENDER_TRANSLUCENT_INNER_SIDES      = new ConfigBoolean("renderTranslucentBlockInnerSides", false).apply(VISUALS_KEY);
         public static final ConfigBoolean       SCHEMATIC_OVERLAY_ENABLE_OUTLINES   = new ConfigBoolean("schematicOverlayEnableOutlines",  true).apply(VISUALS_KEY);
-        public static final ConfigBoolean       SCHEMATIC_OVERLAY_ENABLE_RESORTING  = new ConfigBoolean("schematicOverlayEnableResorting",  false).apply(VISUALS_KEY);
+        public static final ConfigBoolean       SCHEMATIC_OVERLAY_ENABLE_RESORTING  = new ConfigBoolean("schematicOverlayEnableResorting",  true).apply(VISUALS_KEY);
         public static final ConfigBoolean       SCHEMATIC_OVERLAY_ENABLE_SIDES      = new ConfigBoolean("schematicOverlayEnableSides",     true).apply(VISUALS_KEY);
         public static final ConfigBoolean       SCHEMATIC_OVERLAY_MODEL_OUTLINE     = new ConfigBoolean("schematicOverlayModelOutline",    true).apply(VISUALS_KEY);
-        public static final ConfigBoolean       SCHEMATIC_OVERLAY_MODEL_SIDES       = new ConfigBoolean("schematicOverlayModelSides",      false).apply(VISUALS_KEY);
+        public static final ConfigBoolean       SCHEMATIC_OVERLAY_MODEL_SIDES       = new ConfigBoolean("schematicOverlayModelSides",      true).apply(VISUALS_KEY);
         public static final ConfigDouble        SCHEMATIC_OVERLAY_OUTLINE_WIDTH     = new ConfigDouble( "schematicOverlayOutlineWidth",  1.0, 0, 64).apply(VISUALS_KEY);
         public static final ConfigDouble        SCHEMATIC_OVERLAY_OUTLINE_WIDTH_THROUGH = new ConfigDouble("schematicOverlayOutlineWidthThrough",  3.0, 0, 64).apply(VISUALS_KEY);
         public static final ConfigBoolean       SCHEMATIC_OVERLAY_RENDER_THROUGH    = new ConfigBoolean("schematicOverlayRenderThroughBlocks", false).apply(VISUALS_KEY);
+        public static final ConfigBoolean       SCHEMATIC_OVERLAY_TYPE_DIFF_BLOCK   = new ConfigBoolean("schematicOverlayTypeDiffBlock",   true).apply(VISUALS_KEY);
         public static final ConfigBoolean       SCHEMATIC_OVERLAY_TYPE_EXTRA        = new ConfigBoolean("schematicOverlayTypeExtra",       true).apply(VISUALS_KEY);
         public static final ConfigBoolean       SCHEMATIC_OVERLAY_TYPE_MISSING      = new ConfigBoolean("schematicOverlayTypeMissing",     true).apply(VISUALS_KEY);
         public static final ConfigBoolean       SCHEMATIC_OVERLAY_TYPE_WRONG_BLOCK  = new ConfigBoolean("schematicOverlayTypeWrongBlock",  true).apply(VISUALS_KEY);
@@ -238,6 +245,7 @@ public class Configs implements IConfigHandler
                 ENABLE_PLACEMENT_BOXES_RENDERING,
                 ENABLE_SCHEMATIC_BLOCKS,
                 ENABLE_SCHEMATIC_FLUIDS,
+                ENABLE_SCHEMATIC_FAKE_LIGHTING,
                 ENABLE_SCHEMATIC_OVERLAY,
                 IGNORE_EXISTING_FLUIDS,
                 OVERLAY_REDUCED_INNER_SIDES,
@@ -247,6 +255,7 @@ public class Configs implements IConfigHandler
                 RENDER_COLLIDING_SCHEMATIC_BLOCKS,
                 RENDER_ERROR_MARKER_CONNECTIONS,
                 RENDER_ERROR_MARKER_SIDES,
+                RENDER_FAKE_LIGHTING_LEVEL,
                 RENDER_PLACEMENT_BOX_SIDES,
                 RENDER_PLACEMENT_ENCLOSING_BOX,
                 RENDER_PLACEMENT_ENCLOSING_BOX_SIDES,
@@ -257,6 +266,7 @@ public class Configs implements IConfigHandler
                 SCHEMATIC_OVERLAY_MODEL_OUTLINE,
                 SCHEMATIC_OVERLAY_MODEL_SIDES,
                 SCHEMATIC_OVERLAY_RENDER_THROUGH,
+                SCHEMATIC_OVERLAY_TYPE_DIFF_BLOCK,
                 SCHEMATIC_OVERLAY_TYPE_EXTRA,
                 SCHEMATIC_OVERLAY_TYPE_MISSING,
                 SCHEMATIC_OVERLAY_TYPE_WRONG_BLOCK,
@@ -342,6 +352,7 @@ public class Configs implements IConfigHandler
         public static final ConfigColor REBUILD_BREAK_OVERLAY_COLOR         = new ConfigColor("schematicRebuildBreakPlaceOverlayColor", "#4C33CC33").apply(COLORS_KEY);
         public static final ConfigColor REBUILD_BREAK_EXCEPT_OVERLAY_COLOR  = new ConfigColor("schematicRebuildBreakExceptPlaceOverlayColor", "#4CF03030").apply(COLORS_KEY);
         public static final ConfigColor REBUILD_REPLACE_OVERLAY_COLOR       = new ConfigColor("schematicRebuildReplaceOverlayColor","#4CF0A010").apply(COLORS_KEY);
+        public static final ConfigColor SCHEMATIC_OVERLAY_COLOR_DIFF_BLOCK  = new ConfigColor("schematicOverlayColorDiffBlock",     "#30F8D650").apply(COLORS_KEY);
         public static final ConfigColor SCHEMATIC_OVERLAY_COLOR_EXTRA       = new ConfigColor("schematicOverlayColorExtra",         "#4CFF4CE6").apply(COLORS_KEY);
         public static final ConfigColor SCHEMATIC_OVERLAY_COLOR_MISSING     = new ConfigColor("schematicOverlayColorMissing",       "#2C33B3E6").apply(COLORS_KEY);
         public static final ConfigColor SCHEMATIC_OVERLAY_COLOR_WRONG_BLOCK = new ConfigColor("schematicOverlayColorWrongBlock",    "#4CFF3333").apply(COLORS_KEY);
@@ -354,6 +365,7 @@ public class Configs implements IConfigHandler
                 REBUILD_BREAK_OVERLAY_COLOR,
                 REBUILD_BREAK_EXCEPT_OVERLAY_COLOR,
                 REBUILD_REPLACE_OVERLAY_COLOR,
+                SCHEMATIC_OVERLAY_COLOR_DIFF_BLOCK,
                 SCHEMATIC_OVERLAY_COLOR_EXTRA,
                 SCHEMATIC_OVERLAY_COLOR_MISSING,
                 SCHEMATIC_OVERLAY_COLOR_WRONG_BLOCK,
@@ -363,11 +375,11 @@ public class Configs implements IConfigHandler
 
     public static void loadFromFile()
     {
-        File configFile = new File(FileUtils.getConfigDirectory(), CONFIG_FILE_NAME);
+        Path configFile = FileUtils.getConfigDirectoryAsPath().resolve(CONFIG_FILE_NAME);
 
-        if (configFile.exists() && configFile.isFile() && configFile.canRead())
+        if (Files.exists(configFile) && Files.isReadable(configFile))
         {
-            JsonElement element = JsonUtils.parseJsonFile(configFile);
+            JsonElement element = JsonUtils.parseJsonFileAsPath(configFile);
 
             if (element != null && element.isJsonObject())
             {
@@ -378,6 +390,12 @@ public class Configs implements IConfigHandler
                 ConfigUtils.readConfigBase(root, "Hotkeys", Hotkeys.HOTKEY_LIST);
                 ConfigUtils.readConfigBase(root, "InfoOverlays", InfoOverlays.OPTIONS);
                 ConfigUtils.readConfigBase(root, "Visuals", Visuals.OPTIONS);
+
+                //Litematica.debugLog("loadFromFile(): Successfully loaded config file '{}'.", configFile.toAbsolutePath());
+            }
+            else
+            {
+                Litematica.LOGGER.error("loadFromFile(): Failed to load config file '{}'.", configFile.toAbsolutePath());
             }
         }
 
@@ -391,9 +409,15 @@ public class Configs implements IConfigHandler
 
     public static void saveToFile()
     {
-        File dir = FileUtils.getConfigDirectory();
+        Path dir = FileUtils.getConfigDirectoryAsPath();
 
-        if ((dir.exists() && dir.isDirectory()) || dir.mkdirs())
+        if (!Files.exists(dir))
+        {
+            FileUtils.createDirectoriesIfMissing(dir);
+            //Litematica.debugLog("saveToFile(): Creating directory '{}'.", dir.toAbsolutePath());
+        }
+
+        if (Files.isDirectory(dir))
         {
             JsonObject root = new JsonObject();
 
@@ -403,7 +427,11 @@ public class Configs implements IConfigHandler
             ConfigUtils.writeConfigBase(root, "InfoOverlays", InfoOverlays.OPTIONS);
             ConfigUtils.writeConfigBase(root, "Visuals", Visuals.OPTIONS);
 
-            JsonUtils.writeJsonToFile(root, new File(dir, CONFIG_FILE_NAME));
+            JsonUtils.writeJsonToFileAsPath(root, dir.resolve(CONFIG_FILE_NAME));
+        }
+        else
+        {
+            Litematica.LOGGER.error("saveToFile(): Config Folder '{}' does not exist!", dir.toAbsolutePath());
         }
     }
 

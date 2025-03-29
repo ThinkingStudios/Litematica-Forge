@@ -28,11 +28,11 @@ dependencies {
     for (String module in ffapi_modules.split(",")) {
         // Fabric API Base
         if (module == "fabric-api-base") {
-            modApi(include("org.sinytra.forgified-fabric-api:$module:0.4.42+d1308ded19")) { transitive = false }
+            modImplementation("org.sinytra.forgified-fabric-api:$module:0.4.42+d1308ded19") { transitive = false }
         }
         // Fabric Networking API V1
         if (module == "fabric-networking-api-v1") {
-            modApi(include("org.sinytra.forgified-fabric-api:$module:4.3.0+cfe47bf219")) { transitive = false }
+            modImplementation("org.sinytra.forgified-fabric-api:$module:4.3.0+cfe47bf219") { transitive = false }
         }
     }
 

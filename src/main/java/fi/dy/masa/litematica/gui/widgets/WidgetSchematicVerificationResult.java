@@ -1,22 +1,21 @@
 package fi.dy.masa.litematica.gui.widgets;
 
-import java.util.List;
 import javax.annotation.Nullable;
+import java.util.List;
 import org.joml.Quaternionf;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.BlockRenderManager;
-import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.BakedQuad;
+import net.minecraft.client.render.model.BlockModelPart;
+import net.minecraft.client.render.model.BlockStateModel;
 import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.util.BufferAllocator;
 import net.minecraft.client.util.math.MatrixStack;
@@ -32,10 +31,10 @@ import fi.dy.masa.malilib.gui.button.ButtonGeneric;
 import fi.dy.masa.malilib.gui.button.IButtonActionListener;
 import fi.dy.masa.malilib.gui.widgets.WidgetListEntrySortable;
 import fi.dy.masa.malilib.render.RenderUtils;
-import fi.dy.masa.malilib.util.game.BlockUtils;
 import fi.dy.masa.malilib.util.GuiUtils;
-import fi.dy.masa.malilib.util.PositionUtils;
 import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.malilib.util.game.BlockUtils;
+import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.gui.GuiSchematicVerifier;
 import fi.dy.masa.litematica.gui.GuiSchematicVerifier.BlockMismatchEntry;
@@ -310,7 +309,7 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
 
             //RenderUtils.enableDiffuseLightingGui3D();
 
-            BakedModel model;
+            BlockStateModel model;
 
             if (useBlockModelExpected)
             {
@@ -340,7 +339,8 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
             }
 
             //RenderUtils.disableDiffuseLighting();
-            RenderSystem.disableBlend();
+            //RenderSystem.disableBlend();
+            RenderUtils.blend(false);
         }
 
         super.render(mouseX, mouseY, selected, drawContext);
@@ -507,7 +507,7 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
                 RenderUtils.renderText(x1, y, 0xFFB0B0B0, propsExpected, drawContext);
                 RenderUtils.renderText(x2, y, 0xFFB0B0B0, propsFound, drawContext);
 
-                BakedModel model;
+                BlockStateModel model;
 
                 //TODO: RenderSystem.disableLighting();
                 //RenderUtils.enableDiffuseLightingGui3D();
@@ -542,7 +542,7 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
     }
 
     public static void renderModelInGui(int x, int y, float z,
-                                        BakedModel model, BlockState state,
+                                        BlockStateModel model, BlockState state,
                                         DrawContext drawContext, MinecraftClient mc)
     {
         MatrixStack matrixStack = drawContext.getMatrices();
@@ -552,10 +552,10 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
             return;
         }
 
-        RenderUtils.bindTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE);
+        RenderUtils.bindGuiOverlayTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, drawContext);
         mc.getTextureManager().getTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).setFilter(false, false);
 
-        RenderUtils.setupBlend();
+        RenderUtils.blend(true);
         RenderUtils.color(1f, 1f, 1f, 1f);
 
         matrixStack.push();
@@ -574,16 +574,15 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
         matrixStack.pop();
     }
 
-    private static void renderModel(BakedModel model, BlockState state, MatrixStack matrixStack)
+    private static void renderModel(BlockStateModel model, BlockState state, MatrixStack matrixStack)
     {
         // TODO -> Watch for side effects
         /*
         if (model.isBuiltin() == false)
         {
          */
-            //Tessellator tessellator = Tessellator.getInstance();
-            //BufferBuilder buffer = tessellator.getBuffer();
-            VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(new BufferAllocator(RenderLayer.DEFAULT_BUFFER_SIZE));
+            BufferAllocator allocator = new BufferAllocator(RenderLayer.DEFAULT_BUFFER_SIZE);
+            VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(allocator);
             VertexConsumer vertexConsumer = immediate.getBuffer(RenderLayer.getTranslucent());
             MatrixStack.Entry matrixEntry = matrixStack.peek();
 
@@ -591,21 +590,26 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
             int[] light = new int[] { l, l, l, l };
             float[] brightness = new float[] { 0.75f, 0.75f, 0.75f, 1.0f };
 
-            RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_TRANSLUCENT);
-            //RenderSystem.setShader(GameRenderer::getRenderTypeTranslucentProgram);
+            //RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_TRANSLUCENT);
             DiffuseLighting.enableGuiDepthLighting();
 
-            for (Direction face : PositionUtils.ALL_DIRECTIONS)
+            List<BlockModelPart> parts = model.getParts(RAND);
+
+            for (BlockModelPart part : parts)
             {
+                for (Direction face : PositionUtils.ALL_DIRECTIONS)
+                {
+                    RAND.setSeed(0);
+                    renderQuads(part.getQuads(face), brightness, light, matrixEntry, vertexConsumer);
+                }
+
                 RAND.setSeed(0);
-                renderQuads(model.getQuads(state, face, RAND), brightness, light, matrixEntry, vertexConsumer);
+                // model.getQuads(state, null, RAND)
+                renderQuads(part.getQuads(null), brightness, light, matrixEntry, vertexConsumer);
             }
 
-            RAND.setSeed(0);
-            renderQuads(model.getQuads(state, null, RAND), brightness, light, matrixEntry, vertexConsumer);
-
-            //tessellator.draw();
             immediate.draw();
+            allocator.close();
         //}
     }
 

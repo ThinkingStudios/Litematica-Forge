@@ -84,7 +84,7 @@ public class WidgetSelectionSubRegion extends WidgetListEntryBase<String>
 
         if (selected)
         {
-            RenderUtils.drawOutline(this.x, this.y, this.width, this.height, 0xFFE0E0E0, 0.001f);
+            RenderUtils.drawOutline(this.x, this.y, this.width, this.height, 0xFFE0E0E0, 0.001f, false);
         }
 
         this.drawString(this.x + 2, this.y + 7, 0xFFFFFFFF, this.entry, drawContext);
@@ -172,7 +172,7 @@ public class WidgetSelectionSubRegion extends WidgetListEntryBase<String>
 
             private final String labelKey;
 
-            private ButtonType(String labelKey)
+            ButtonType(String labelKey)
             {
                 this.labelKey = labelKey;
             }
@@ -198,8 +198,7 @@ public class WidgetSelectionSubRegion extends WidgetListEntryBase<String>
         @Override
         public boolean setString(String string)
         {
-            String oldName = this.widget.entry;
-            return this.selection.renameSubRegionBox(oldName, string, this.widget.parent.getEditorGui());
+            return this.selection.renameSubRegionBox(this.widget.entry, string, this.widget.parent.getEditorGui());
         }
     }
 }

@@ -93,6 +93,10 @@ public class SchematicWorldHandler
         if (remove)
         {
             Litematica.debugLog("Removing the schematic world...");
+            if (this.world != null)
+            {
+                this.world.clearEntities();
+            }
             this.world = null;
             LitematicaRenderer.getInstance().onSchematicWorldChanged(null);
         }

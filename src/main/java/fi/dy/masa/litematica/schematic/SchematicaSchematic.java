@@ -1,6 +1,8 @@
 package fi.dy.masa.litematica.schematic;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import javax.annotation.Nullable;
 
@@ -24,9 +26,9 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 
 import fi.dy.masa.malilib.gui.Message.MessageType;
-import fi.dy.masa.malilib.util.data.Constants;
 import fi.dy.masa.malilib.util.InfoUtils;
-import fi.dy.masa.malilib.util.Schema;
+import fi.dy.masa.malilib.util.data.Constants;
+import fi.dy.masa.malilib.util.data.Schema;
 import fi.dy.masa.malilib.util.nbt.NbtUtils;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.config.Configs;
@@ -83,7 +85,8 @@ public class SchematicaSchematic
         for (int i = 0; i < size; ++i)
         {
             NbtCompound entityData = this.entities.get(i);
-            Vec3d posVec = NbtUtils.readEntityPositionFromTag(entityData);
+//            Vec3d posVec = NbtUtils.readEntityPositionFromTag(entityData);
+            Vec3d posVec = NbtUtils.getVec3dCodec(entityData, "Pos");
 
             if (posVec != null && entityData.isEmpty() == false)
             {
@@ -268,7 +271,7 @@ public class SchematicaSchematic
                                     }
                                 }
 
-                                chunk.setBlockState(pos, state, false);
+                                chunk.setBlockState(pos, state, 3);
 
                                 if (teNBT != null)
                                 {
@@ -310,7 +313,8 @@ public class SchematicaSchematic
 
         for (NbtCompound tag : this.entities)
         {
-            Vec3d relativePos = NbtUtils.readEntityPositionFromTag(tag);
+//            Vec3d relativePos = NbtUtils.readEntityPositionFromTag(tag);
+            Vec3d relativePos = NbtUtils.getVec3dCodec(tag, "Pos");
 
             if (relativePos != null)
             {
@@ -337,12 +341,12 @@ public class SchematicaSchematic
         {
             NbtCompound tag = entry.getValue();
 
-            if (tag.getString("id").equals("minecraft:structure_block") &&
-                StructureBlockMode.valueOf(tag.getString("mode")) == StructureBlockMode.DATA)
+            if (tag.getString("id", "?").equals("minecraft:structure_block") &&
+                StructureBlockMode.valueOf(tag.getString("mode", "?")) == StructureBlockMode.DATA)
             {
                 BlockPos pos = entry.getKey();
                 pos = StructureTemplate.transform(placement, pos).add(posStart);
-                map.put(pos, tag.getString("metadata"));
+                map.put(pos, tag.getString("metadata", "?"));
             }
         }
 
@@ -412,7 +416,8 @@ public class SchematicaSchematic
             if (entity.saveNbt(tag))
             {
                 Vec3d pos = new Vec3d(entity.getX() - posStart.getX(), entity.getY() - posStart.getY(), entity.getZ() - posStart.getZ());
-                NbtUtils.writeEntityPositionToTag(pos, tag);
+//                NbtUtils.writeEntityPositionToTag(pos, tag);
+                NbtUtils.putVec3dCodec(tag, pos, "Pos");
 
                 this.entities.add(tag);
             }
@@ -433,14 +438,21 @@ public class SchematicaSchematic
         return schematic;
     }
 
+    @Deprecated
     @Nullable
     public static SchematicaSchematic createFromFile(File file)
+    {
+        return createFromFile(file.toPath());
+    }
+
+    @Nullable
+    public static SchematicaSchematic createFromFile(Path file)
     {
         SchematicaSchematic schematic = new SchematicaSchematic();
 
         if (schematic.readFromFile(file))
         {
-            schematic.metadata.setName(file.getName());
+            schematic.metadata.setName(file.getFileName().toString());
             return schematic;
         }
 
@@ -477,14 +489,14 @@ public class SchematicaSchematic
         Arrays.fill(this.palette, Blocks.AIR.getDefaultState());
 
         // Schematica palette
-        if (nbt.contains("SchematicaMapping", Constants.NBT.TAG_COMPOUND))
+        if (nbt.contains("SchematicaMapping"))
         {
-            NbtCompound tag = nbt.getCompound("SchematicaMapping");
+            NbtCompound tag = nbt.getCompoundOrEmpty("SchematicaMapping");
             Set<String> keys = tag.getKeys();
 
             for (String key : keys)
             {
-                int id = tag.getShort(key);
+                int id = tag.getShort(key, (short) -1);
 
                 if (id < 0 || id >= 4096)
                 {
@@ -503,14 +515,14 @@ public class SchematicaSchematic
             }
         }
         // MCEdit2 palette
-        else if (nbt.contains("BlockIDs", Constants.NBT.TAG_COMPOUND))
+        else if (nbt.contains("BlockIDs"))
         {
-            NbtCompound tag = nbt.getCompound("BlockIDs");
+            NbtCompound tag = nbt.getCompoundOrEmpty("BlockIDs");
             Set<String> keys = tag.getKeys();
 
             for (String idStr : keys)
             {
-                String key = tag.getString(idStr);
+                String key = tag.getString(idStr, "");
                 int id;
 
                 try
@@ -558,11 +570,11 @@ public class SchematicaSchematic
 
     private boolean readBlocksFromNBT(NbtCompound nbt)
     {
-        if (nbt.contains("Blocks", Constants.NBT.TAG_BYTE_ARRAY) == false ||
-            nbt.contains("Data", Constants.NBT.TAG_BYTE_ARRAY) == false ||
-            nbt.contains("Width", Constants.NBT.TAG_SHORT) == false ||
-            nbt.contains("Height", Constants.NBT.TAG_SHORT) == false ||
-            nbt.contains("Length", Constants.NBT.TAG_SHORT) == false)
+        if (nbt.contains("Blocks") == false ||
+            nbt.contains("Data") == false ||
+            nbt.contains("Width") == false ||
+            nbt.contains("Height") == false ||
+            nbt.contains("Length") == false)
         {
             return false;
         }
@@ -571,11 +583,11 @@ public class SchematicaSchematic
         // https://minecraft.gamepedia.com/Schematic_file_format
         // as it was on 2018-04-18.
 
-        final int sizeX = nbt.getShort("Width");
-        final int sizeY = nbt.getShort("Height");
-        final int sizeZ = nbt.getShort("Length");
-        final byte[] blockIdsByte = nbt.getByteArray("Blocks");
-        final byte[] metaArr = nbt.getByteArray("Data");
+        final int sizeX = nbt.getShort("Width", (short) 0);
+        final int sizeY = nbt.getShort("Height", (short) 0);
+        final int sizeZ = nbt.getShort("Length", (short) 0);
+        final byte[] blockIdsByte = nbt.getByteArray("Blocks").orElse(new byte[0]);
+        final byte[] metaArr = nbt.getByteArray("Data").orElse(new byte[0]);
         final int numBlocks = blockIdsByte.length;
         final int layerSize = sizeX * sizeZ;
 
@@ -608,7 +620,7 @@ public class SchematicaSchematic
         this.metadata.setFileType(FileType.SCHEMATICA_SCHEMATIC);
 
         // Old Schematica format
-        if (nbt.contains("Add", Constants.NBT.TAG_BYTE_ARRAY))
+        if (nbt.contains("Add"))
         {
             // FIXME is this array 4 or 8 bits per block?
             InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "SchematicaSchematic: Old Schematica format detected, not currently implemented...");
@@ -617,9 +629,9 @@ public class SchematicaSchematic
 
         byte[] add = null;
 
-        if (nbt.contains("AddBlocks", Constants.NBT.TAG_BYTE_ARRAY))
+        if (nbt.contains("AddBlocks"))
         {
-            add = nbt.getByteArray("AddBlocks");
+            add = nbt.getByteArray("AddBlocks").orElse(new byte[0]);
             final int expectedAddLength = (int) Math.ceil((double) blockIdsByte.length / 2D);
 
             if (add.length != expectedAddLength)
@@ -700,7 +712,7 @@ public class SchematicaSchematic
     private void readEntitiesFromNBT(NbtCompound nbt)
     {
         this.entities.clear();
-        NbtList tagList = nbt.getList("Entities", Constants.NBT.TAG_COMPOUND);
+        NbtList tagList = nbt.getListOrEmpty("Entities");
         int minecraftDataVersion = Configs.Generic.DATAFIXER_DEFAULT_SCHEMA.getIntegerValue();
         Schema effective = DataFixerMode.getEffectiveSchema(minecraftDataVersion);
 
@@ -721,11 +733,11 @@ public class SchematicaSchematic
         {
             if (effective != null)
             {
-                this.entities.add(SchematicConversionMaps.updateEntity(tagList.getCompound(i), minecraftDataVersion));
+                this.entities.add(SchematicConversionMaps.updateEntity(tagList.getCompoundOrEmpty(i), minecraftDataVersion));
             }
             else
             {
-                this.entities.add(tagList.getCompound(i));
+                this.entities.add(tagList.getCompoundOrEmpty(i));
             }
         }
     }
@@ -733,7 +745,7 @@ public class SchematicaSchematic
     private void readTileEntitiesFromNBT(NbtCompound nbt)
     {
         this.tiles.clear();
-        NbtList tagList = nbt.getList("TileEntities", Constants.NBT.TAG_COMPOUND);
+        NbtList tagList = nbt.getListOrEmpty("TileEntities");
         int minecraftDataVersion = Configs.Generic.DATAFIXER_DEFAULT_SCHEMA.getIntegerValue();
         Schema effective = DataFixerMode.getEffectiveSchema(minecraftDataVersion);
 
@@ -748,8 +760,8 @@ public class SchematicaSchematic
 
         for (int i = 0; i < tagList.size(); ++i)
         {
-            NbtCompound tag = tagList.getCompound(i);
-            BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
+            NbtCompound tag = tagList.getCompoundOrEmpty(i);
+            BlockPos pos = new BlockPos(tag.getInt("x", 0), tag.getInt("y", 0), tag.getInt("z", 0));
             Vec3i size = this.blocks.getSize();
 
             if (pos.getX() >= 0 && pos.getX() < size.getX() &&
@@ -768,20 +780,26 @@ public class SchematicaSchematic
         }
     }
 
+    @Deprecated
     public boolean readFromFile(File file)
     {
-        if (file.exists() && file.isFile() && file.canRead())
+        return this.readFromFile(file.toPath());
+    }
+
+    public boolean readFromFile(Path file)
+    {
+        if (Files.exists(file) && Files.isRegularFile(file) && Files.isReadable(file))
         {
-            this.fileName = file.getName();
+            this.fileName = file.getFileName().toString();
 
             try
             {
-                NbtCompound nbt = NbtUtils.readNbtFromFileAsPath(file.toPath());
+                NbtCompound nbt = NbtUtils.readNbtFromFileAsPath(file);
                 return this.readFromNBT(nbt);
             }
             catch (Exception e)
             {
-                Litematica.LOGGER.error("SchematicaSchematic: Failed to read Schematic data from file '{}'", file.getAbsolutePath());
+                Litematica.LOGGER.error("SchematicaSchematic: Failed to read Schematic data from file '{}'", file.toAbsolutePath());
             }
         }
 

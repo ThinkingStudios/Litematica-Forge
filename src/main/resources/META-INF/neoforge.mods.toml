@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[1,)"
+loaderVersion = "[4,)"
 license = "LGPLv3"
 
 [[mods]]
@@ -22,20 +22,20 @@ config = "mixins.litematica.json"
 [[dependencies.forgematica]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21.3,)"
+versionRange = "[21.5,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.forgematica]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21.3,)"
+versionRange = "[1.21.5,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.forgematica]]
 modId = "mafglib"
 type = "required"
-versionRange = "[0.2.5,)"
+versionRange = "[0.3.0,)"
 ordering = "NONE"
 side = "BOTH"

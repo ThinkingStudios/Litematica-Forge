@@ -1,7 +1,6 @@
 package fi.dy.masa.litematica.gui.widgets;
 
-import java.io.File;
-import java.io.FileFilter;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,8 +18,8 @@ import net.minecraft.util.math.Vec3i;
 import fi.dy.masa.malilib.gui.interfaces.ISelectionListener;
 import fi.dy.masa.malilib.gui.widgets.WidgetFileBrowserBase;
 import fi.dy.masa.malilib.render.RenderUtils;
-import fi.dy.masa.malilib.util.Schema;
 import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.malilib.util.data.Schema;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.Reference;
 import fi.dy.masa.litematica.data.DataManager;
@@ -34,9 +33,9 @@ public class WidgetSchematicBrowser extends WidgetFileBrowserBase
 {
     protected static final FileFilter SCHEMATIC_FILTER = new FileFilterSchematics();
 
-    protected final Map<File, SchematicMetadata> cachedMetadata = new HashMap<>();
-    protected final Map<File, SchematicSchema> cachedVersion = new HashMap<>();
-    protected final Map<File, Pair<Identifier, NativeImageBackedTexture>> cachedPreviewImages = new HashMap<>();
+    protected final Map<Path, SchematicMetadata> cachedMetadata = new HashMap<>();
+    protected final Map<Path, SchematicSchema> cachedVersion = new HashMap<>();
+    protected final Map<Path, Pair<Identifier, NativeImageBackedTexture>> cachedPreviewImages = new HashMap<>();
     protected final GuiSchematicBrowserBase parent;
     protected final int infoWidth;
     protected final int infoHeight;
@@ -67,7 +66,7 @@ public class WidgetSchematicBrowser extends WidgetFileBrowserBase
     }
 
     @Override
-    protected File getRootDirectory()
+    protected Path getRootDirectory()
     {
         return DataManager.getSchematicsBaseDirectory();
     }
@@ -275,7 +274,7 @@ public class WidgetSchematicBrowser extends WidgetFileBrowserBase
     @Nullable
     protected SchematicMetadata getSchematicMetadata(DirectoryEntry entry)
     {
-        File file = new File(entry.getDirectory(), entry.getName());
+        Path file = entry.getDirectory().resolve(entry.getName());
         SchematicMetadata meta = this.cachedMetadata.get(file);
 
         if (meta == null && this.cachedMetadata.containsKey(file) == false)
@@ -299,7 +298,7 @@ public class WidgetSchematicBrowser extends WidgetFileBrowserBase
     @Nullable
     protected Pair<SchematicSchema, SchematicMetadata> getSchematicVersionAndMetadata(DirectoryEntry entry)
     {
-        File file = new File(entry.getDirectory(), entry.getName());
+        Path file = entry.getDirectory().resolve(entry.getName());
         SchematicMetadata meta = this.cachedMetadata.get(file);
         SchematicSchema version = this.cachedVersion.get(file);
 
@@ -333,7 +332,7 @@ public class WidgetSchematicBrowser extends WidgetFileBrowserBase
         }
     }
 
-    private void createPreviewImage(File file, SchematicMetadata meta)
+    private void createPreviewImage(Path file, SchematicMetadata meta)
     {
         int[] previewImageData = meta.getPreviewImagePixelData();
 
@@ -346,8 +345,8 @@ public class WidgetSchematicBrowser extends WidgetFileBrowserBase
                 try
                 {
                     NativeImage image = new NativeImage(size, size, false);
-                    NativeImageBackedTexture tex = new NativeImageBackedTexture(image);
-                    Identifier rl = Identifier.of(Reference.MOD_ID, DigestUtils.sha1Hex(file.getAbsolutePath()));
+                    Identifier rl = Identifier.of(Reference.MOD_ID, DigestUtils.sha1Hex(file.toAbsolutePath().toString()));
+                    NativeImageBackedTexture tex = new NativeImageBackedTexture(rl::toString, image);
                     this.mc.getTextureManager().registerTexture(rl, tex);
 
                     for (int y = 0, i = 0; y < size; ++y)
@@ -373,12 +372,13 @@ public class WidgetSchematicBrowser extends WidgetFileBrowserBase
         }
     }
 
-    public static class FileFilterSchematics implements FileFilter
+    public static class FileFilterSchematics extends FileFilter
     {
         @Override
-        public boolean accept(File pathName)
+        public boolean accept(Path pathName)
         {
-            String name = pathName.getName();
+            String name = pathName.getFileName().toString();
+
             return  name.endsWith(".litematic") ||
                     name.endsWith(".schem") ||
                     name.endsWith(".schematic") ||

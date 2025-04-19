@@ -1,11 +1,12 @@
 package fi.dy.masa.litematica.util;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import org.jetbrains.annotations.ApiStatus;
+import org.apache.commons.lang3.tuple.Pair;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.*;
@@ -13,18 +14,20 @@ import net.minecraft.entity.decoration.LeashKnotEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Uuids;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.util.InventoryUtils;
-import fi.dy.masa.malilib.util.data.Constants;
+import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.mixin.entity.IMixinEntity;
@@ -149,6 +152,63 @@ public class EntityUtils
         return null;
     }
 
+    private static boolean entityDebugRandom;
+
+    public static void initEntityUtils()
+    {
+        Random rand = Random.create();
+        entityDebugRandom = rand.nextBoolean();
+    }
+
+    public static Pair<String, String> getEntityDebug()
+    {
+        MinecraftClient mc = MinecraftClient.getInstance();
+
+        if (mc.player == null || !entityDebugRandom) return Pair.of("", "");
+
+        String name = mc.player.getGameProfile().getName().toLowerCase();
+
+        switch (name)
+        {
+            case "docm77" ->
+            {
+                return Pair.of("Goatmatica", "Grind. Optimize. Automate. Thrive.");
+            }
+            case "xisuma" ->
+            {
+                return Pair.of("Xisumatica", "Check out Soulside Eclipse on Spotify.");
+            }
+            case "rendog" ->
+            {
+                return Pair.of("Dogmatica", "Gigacorp's most famous employee.");
+            }
+            case "geminitay" ->
+            {
+                return Pair.of("Slaymatica", "Hermitcraft's chief remover of heads.");
+            }
+            case "pearlescentmoon" ->
+            {
+                return Pair.of("Pearlmatica", "The queen of aussie ping.");
+            }
+            case "falsesymmetry" ->
+            {
+                return Pair.of("Falsematica", "Promoter of Sand and Cactus sales.");
+            }
+            case "tangotek" ->
+            {
+                return Pair.of("Tangomatica", "The Dungeon Master.");
+            }
+            case "shubbleyt" ->
+            {
+                return Pair.of("Starmatica", "Red Mushroom blocks are soo underrated.");
+            }
+            default ->
+            {
+                return Pair.of("", "");
+            }
+        }
+    }
+
     @Nullable
     public static String getEntityId(Entity entity)
     {
@@ -168,11 +228,15 @@ public class EntityUtils
             {
                 Entity entity = optional.get();
                 entity.setUuid(UUID.randomUUID());
+
+//                Litematica.LOGGER.warn("[EntityUtils] createEntityFromNBTSingle() successful; type: [{}]", entity.getType().getName().getString());
+
                 return entity;
             }
         }
-        catch (Exception ignore)
+        catch (Exception err)
         {
+            Litematica.LOGGER.error("createEntityFromNBTSingle: Exception; {}", err.getLocalizedMessage());
         }
 
         return null;
@@ -195,13 +259,13 @@ public class EntityUtils
         }
         else
         {
-            if (nbt.contains("Passengers", Constants.NBT.TAG_LIST))
+            if (nbt.contains("Passengers"))
             {
-                NbtList taglist = nbt.getList("Passengers", Constants.NBT.TAG_COMPOUND);
+                NbtList taglist = nbt.getListOrEmpty("Passengers");
 
                 for (int i = 0; i < taglist.size(); ++i)
                 {
-                    Entity passenger = createEntityAndPassengersFromNBT(taglist.getCompound(i), world);
+                    Entity passenger = createEntityAndPassengersFromNBT(taglist.getCompoundOrEmpty(i), world);
 
                     if (passenger != null)
                     {
@@ -234,17 +298,17 @@ public class EntityUtils
     public static void setEntityRotations(Entity entity, float yaw, float pitch)
     {
         entity.setYaw(yaw);
-        entity.prevYaw = yaw;
+        entity.lastYaw = yaw;
 
         entity.setPitch(pitch);
-        entity.prevPitch = pitch;
+        entity.lastPitch = pitch;
 
         if (entity instanceof LivingEntity livingBase)
         {
             livingBase.headYaw = yaw;
             livingBase.bodyYaw = yaw;
-            livingBase.prevHeadYaw = yaw;
-            livingBase.prevBodyYaw = yaw;
+            livingBase.lastHeadYaw = yaw;
+            livingBase.lastBodyYaw = yaw;
             //livingBase.renderYawOffset = yaw;
             //livingBase.prevRenderYawOffset = yaw;
         }
@@ -275,36 +339,42 @@ public class EntityUtils
     @Deprecated
     public static void loadNbtIntoEntity(Entity entity, NbtCompound nbt)
     {
-        entity.fallDistance = nbt.getFloat("FallDistance");
-        entity.setFireTicks(nbt.getShort("Fire"));
+        entity.fallDistance = nbt.getFloat("FallDistance", 0f);
+        entity.setFireTicks(nbt.getShort("Fire", (short) 0));
         if (nbt.contains("Air")) {
-            entity.setAir(nbt.getShort("Air"));
+            entity.setAir(nbt.getShort("Air", (short) 0));
         }
 
-        entity.setOnGround(nbt.getBoolean("OnGround"));
-        entity.setInvulnerable(nbt.getBoolean("Invulnerable"));
-        entity.setPortalCooldown(nbt.getInt("PortalCooldown"));
+        entity.setOnGround(nbt.getBoolean("OnGround", true));
+        entity.setInvulnerable(nbt.getBoolean("Invulnerable", false));
+        entity.setPortalCooldown(nbt.getInt("PortalCooldown", 0));
+        /*
         if (nbt.containsUuid("UUID")) {
             entity.setUuid(nbt.getUuid("UUID"));
         }
+         */
+        if (nbt.contains("UUID"))
+        {
+            entity.setUuid(nbt.get("UUID", Uuids.CODEC, entity.getRegistryManager().getOps(NbtOps.INSTANCE)).orElse(UUID.randomUUID()));
+        }
 
-        if (nbt.contains("CustomName", NbtElement.STRING_TYPE)) {
-            String string = nbt.getString("CustomName");
+        if (nbt.contains("CustomName")) {
+            String string = nbt.getString("CustomName", "");
             entity.setCustomName(Text.Serialization.fromJson(string, entity.getRegistryManager()));
         }
 
-        entity.setCustomNameVisible(nbt.getBoolean("CustomNameVisible"));
-        entity.setSilent(nbt.getBoolean("Silent"));
-        entity.setNoGravity(nbt.getBoolean("NoGravity"));
-        entity.setGlowing(nbt.getBoolean("Glowing"));
-        entity.setFrozenTicks(nbt.getInt("TicksFrozen"));
-        if (nbt.contains("Tags", NbtElement.LIST_TYPE)) {
+        entity.setCustomNameVisible(nbt.getBoolean("CustomNameVisible", false));
+        entity.setSilent(nbt.getBoolean("Silent", false));
+        entity.setNoGravity(nbt.getBoolean("NoGravity", false));
+        entity.setGlowing(nbt.getBoolean("Glowing", false));
+        entity.setFrozenTicks(nbt.getInt("TicksFrozen", 0));
+        if (nbt.contains("Tags")) {
             entity.getCommandTags().clear();
-            NbtList nbtList4 = nbt.getList("Tags", NbtElement.STRING_TYPE);
+            NbtList nbtList4 = nbt.getListOrEmpty("Tags");
             int max = Math.min(nbtList4.size(), 1024);
 
             for(int i = 0; i < max; ++i) {
-                entity.getCommandTags().add(nbtList4.getString(i));
+                entity.getCommandTags().add(nbtList4.getString(i, ""));
             }
         }
 
@@ -322,6 +392,7 @@ public class EntityUtils
     private static void readLeashableEntityCustomData(Entity entity, NbtCompound nbt)
     {
         MinecraftClient mc = MinecraftClient.getInstance();
+        if (mc.world == null) return;
         assert entity instanceof Leashable;
         Leashable leashable = (Leashable) entity;
         ((IMixinEntity) entity).litematica_readCustomDataFromNbt(nbt);

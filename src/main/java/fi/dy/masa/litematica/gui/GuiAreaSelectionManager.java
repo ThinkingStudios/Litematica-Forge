@@ -1,6 +1,6 @@
 package fi.dy.masa.litematica.gui;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.gui.GuiListBase;
@@ -15,7 +15,7 @@ import fi.dy.masa.malilib.gui.widgets.WidgetFileBrowserBase.DirectoryEntry;
 import fi.dy.masa.malilib.gui.widgets.WidgetFileBrowserBase.DirectoryEntryType;
 import fi.dy.masa.malilib.interfaces.IStringConsumer;
 import fi.dy.masa.malilib.interfaces.IStringConsumerFeedback;
-import fi.dy.masa.malilib.util.FileNameUtils;
+import fi.dy.masa.malilib.util.FileUtils;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.litematica.data.DataManager;
@@ -84,11 +84,11 @@ public class GuiAreaSelectionManager extends GuiListBase<DirectoryEntry, WidgetD
 
         if (currentSelection != null)
         {
-            int len = DataManager.getAreaSelectionsBaseDirectory().getAbsolutePath().length();
+            int len = DataManager.getAreaSelectionsBaseDirectory().toAbsolutePath().toString().length();
 
             if (currentSelection.length() > len + 1)
             {
-                currentSelection = FileNameUtils.getFileNameWithoutExtension(currentSelection.substring(len + 1));
+                currentSelection = FileUtils.getNameWithoutExtension(currentSelection.substring(len + 1));
                 String str = StringUtils.translate("litematica.gui.label.area_selection_manager.current_selection", currentSelection);
                 int w = this.getStringWidth(str);
                 this.addLabel(10, this.getScreenHeight() - 15, w, 14, 0xFFFFFFFF, str);
@@ -124,7 +124,12 @@ public class GuiAreaSelectionManager extends GuiListBase<DirectoryEntry, WidgetD
         return "area_selections";
     }
 
-    public File getDefaultDirectory()
+    public Path getDefaultDirectoryAsPath()
+    {
+        return DataManager.getAreaSelectionsBaseDirectory();
+    }
+
+    public Path getDefaultDirectory()
     {
         return DataManager.getAreaSelectionsBaseDirectory();
     }
@@ -140,7 +145,7 @@ public class GuiAreaSelectionManager extends GuiListBase<DirectoryEntry, WidgetD
     {
         if (entry.getType() == DirectoryEntryType.FILE && FileType.fromFile(entry.getFullPath()) == FileType.JSON)
         {
-            String selectionId = entry.getFullPath().getAbsolutePath();
+            String selectionId = entry.getFullPath().toAbsolutePath().toString();
 
             if (selectionId.equals(this.selectionManager.getCurrentNormalSelectionId()))
             {
@@ -183,7 +188,7 @@ public class GuiAreaSelectionManager extends GuiListBase<DirectoryEntry, WidgetD
         {
             if (this.type == ButtonType.NEW_SELECTION)
             {
-                File dir = this.gui.getListWidget().getCurrentDirectory();
+                Path dir = this.gui.getListWidget().getCurrentDirectory();
                 String title = "litematica.gui.title.create_area_selection";
                 GuiBase.openGui(new GuiTextInput(256, title, "", this.gui, new SelectionCreator(dir, this.gui)));
             }
@@ -193,7 +198,7 @@ public class GuiAreaSelectionManager extends GuiListBase<DirectoryEntry, WidgetD
 
                 if (placement != null)
                 {
-                    File dir = this.gui.getListWidget().getCurrentDirectory();
+                    Path dir = this.gui.getListWidget().getCurrentDirectory();
                     String title = "litematica.gui.title.create_area_selection_from_placement";
                     GuiBase.openGui(new GuiTextInput(256, title, placement.getName(), this.gui, new SelectionCreatorPlacement(placement, dir, this.gui)));
                 }
@@ -231,10 +236,10 @@ public class GuiAreaSelectionManager extends GuiListBase<DirectoryEntry, WidgetD
 
     public static class SelectionCreator implements IStringConsumer
     {
-        private final File dir;
+        private final Path dir;
         private final GuiAreaSelectionManager gui;
 
-        public SelectionCreator(File dir, GuiAreaSelectionManager gui)
+        public SelectionCreator(Path dir, GuiAreaSelectionManager gui)
         {
             this.dir = dir;
             this.gui = gui;
@@ -251,10 +256,10 @@ public class GuiAreaSelectionManager extends GuiListBase<DirectoryEntry, WidgetD
     public static class SelectionCreatorPlacement implements IStringConsumerFeedback
     {
         private final SchematicPlacement placement;
-        private final File dir;
+        private final Path dir;
         private final GuiAreaSelectionManager gui;
 
-        public SelectionCreatorPlacement(SchematicPlacement placement, File dir, GuiAreaSelectionManager gui)
+        public SelectionCreatorPlacement(SchematicPlacement placement, Path dir, GuiAreaSelectionManager gui)
         {
             this.placement = placement;
             this.dir = dir;

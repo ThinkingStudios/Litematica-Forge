@@ -4,15 +4,14 @@ import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
-
+import fi.dy.masa.litematica.data.SchematicHolder;
+import fi.dy.masa.litematica.gui.Icons;
+import fi.dy.masa.litematica.schematic.LitematicaSchematic;
 import fi.dy.masa.malilib.gui.LeftRight;
 import fi.dy.masa.malilib.gui.interfaces.ISelectionListener;
 import fi.dy.masa.malilib.gui.widgets.WidgetListBase;
 import fi.dy.masa.malilib.gui.widgets.WidgetSearchBar;
-import fi.dy.masa.malilib.util.FileNameUtils;
-import fi.dy.masa.litematica.data.SchematicHolder;
-import fi.dy.masa.litematica.gui.Icons;
-import fi.dy.masa.litematica.schematic.LitematicaSchematic;
+import fi.dy.masa.malilib.util.FileUtils;
 
 public class WidgetListLoadedSchematics extends WidgetListBase<LitematicaSchematic, WidgetSchematicEntry>
 {
@@ -39,7 +38,7 @@ public class WidgetListLoadedSchematics extends WidgetListBase<LitematicaSchemat
 
         if (entry.getFile() != null)
         {
-            String fileName = FileNameUtils.getFileNameWithoutExtension(entry.getFile().getName().toLowerCase());
+            String fileName = FileUtils.getNameWithoutExtension(entry.getFile().getFileName().toString().toLowerCase());
             return ImmutableList.of(metaName, fileName);
         }
         else

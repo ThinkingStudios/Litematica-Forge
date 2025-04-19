@@ -3,16 +3,15 @@ package fi.dy.masa.litematica.render;
 import javax.annotation.Nullable;
 import org.joml.Matrix4f;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.client.gl.ShaderProgram;
-import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.profiler.Profiler;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.litematica.Reference;
 import fi.dy.masa.litematica.compat.iris.IrisCompat;
 import fi.dy.masa.litematica.config.Configs;
@@ -33,6 +32,8 @@ public class LitematicaRenderer
     private boolean renderCollidingSchematicBlocks;
     private boolean renderPiecewiseSchematic;
     private boolean renderPiecewiseBlocks;
+    private boolean renderPiecewiseEntities;
+    private boolean renderPiecewiseTileEntities;
 
     private LitematicaRenderer()
     {
@@ -225,7 +226,7 @@ public class LitematicaRenderer
     }
     */
 
-    public void renderSchematicOverlay(Matrix4f viewMatrix, Matrix4f posMatrix, Profiler profiler)
+    public void renderSchematicOverlays(Camera camera, Profiler profiler)
     {
         boolean invert = Hotkeys.INVERT_OVERLAY_RENDER_STATE.getKeybind().isKeybindHeld();
 
@@ -235,24 +236,26 @@ public class LitematicaRenderer
             float lineWidth = (float) (renderThrough ? Configs.Visuals.SCHEMATIC_OVERLAY_OUTLINE_WIDTH_THROUGH.getDoubleValue() : Configs.Visuals.SCHEMATIC_OVERLAY_OUTLINE_WIDTH.getDoubleValue());
 
             profiler.push("schematic_overlay");
-            RenderSystem.disableCull();
+//            RenderUtils.culling(false);
             //TODO: RenderSystem.alphaFunc(GL11.GL_GREATER, 0.001F);
-            RenderSystem.enablePolygonOffset();
-            RenderSystem.polygonOffset(-0.4f, -0.8f);
-            RenderSystem.lineWidth(lineWidth);
-            fi.dy.masa.malilib.render.RenderUtils.setupBlend();
-            fi.dy.masa.malilib.render.RenderUtils.color(1f, 1f, 1f, 1f);
+//            RenderUtils.polygonOffset(true);
+//            RenderUtils.polygonOffset(-0.4f, -0.8f);
+            // todo move this
+//            RenderSystem.lineWidth(lineWidth);
+//            RenderUtils.blend(true);
+//            RenderUtils.color(1f, 1f, 1f, 1f);
             //TODO: RenderSystem.glMultiTexCoord2f(GL13.GL_TEXTURE1, 240.0F, 240.0F);
 
             if (!IrisCompat.isShadowPassActive())
             {
-                this.getWorldRenderer().renderBlockOverlays(viewMatrix, this.getCamera(), posMatrix, profiler);
+                // this.getCamera()
+                this.getWorldRenderer().renderBlockOverlays(camera, lineWidth, profiler);
             }
 
-            RenderSystem.enableDepthTest();
-            RenderSystem.polygonOffset(0f, 0f);
-            RenderSystem.disablePolygonOffset();
-            RenderSystem.enableCull();
+//            RenderUtils.depthTest(true);
+//            RenderUtils.polygonOffset(0f, 0f);
+//            RenderUtils.polygonOffset(false);
+//            RenderUtils.culling(true);
             profiler.pop();
         }
     }
@@ -264,24 +267,28 @@ public class LitematicaRenderer
                          this.mc.getCameraEntity() != null;
         this.renderPiecewiseSchematic = false;
         this.renderPiecewiseBlocks = false;
+        this.renderPiecewiseEntities = false;
+        this.renderPiecewiseTileEntities = false;
         WorldRendererSchematic worldRenderer = this.getWorldRenderer();
 
-        if (render && frustum != null && worldRenderer.hasWorld())
+        if (render && frustum != null && worldRenderer.hasWorld() && this.mc.player != null)
         {
             boolean invert = Hotkeys.INVERT_GHOST_BLOCK_RENDER_STATE.getKeybind().isKeybindHeld();
             this.renderPiecewiseSchematic = Configs.Visuals.ENABLE_SCHEMATIC_RENDERING.getBooleanValue() != invert;
             this.renderPiecewiseBlocks = this.renderPiecewiseSchematic && Configs.Visuals.ENABLE_SCHEMATIC_BLOCKS.getBooleanValue();
             this.renderCollidingSchematicBlocks = Configs.Visuals.RENDER_COLLIDING_SCHEMATIC_BLOCKS.getBooleanValue();
+            this.renderPiecewiseEntities = this.renderPiecewiseSchematic && Configs.Visuals.RENDER_SCHEMATIC_ENTITIES.getBooleanValue();
+            this.renderPiecewiseTileEntities = this.renderPiecewiseSchematic && Configs.Visuals.RENDER_SCHEMATIC_TILE_ENTITIES.getBooleanValue();
 
             if (this.renderPiecewiseSchematic)
             {
-                profiler.push(Reference.ID+"_culling");
+                profiler.push(Reference.MOD_ID+"_culling");
                 this.calculateFinishTime();
 
-                profiler.swap(Reference.ID+"_terrain_setup");
+                profiler.swap(Reference.MOD_ID+"_terrain_setup");
                 worldRenderer.setupTerrain(this.getCamera(), frustum, this.frameCount++, this.mc.player.isSpectator(), profiler);
 
-                profiler.swap(Reference.ID+"_update_chunks");
+                profiler.swap(Reference.MOD_ID+"_update_chunks");
                 worldRenderer.updateChunks(this.finishTimeNano, profiler);
 
                 profiler.pop();
@@ -295,22 +302,24 @@ public class LitematicaRenderer
     {
         if (this.renderPiecewiseBlocks)
         {
-            profiler.push(Reference.ID+"_solid");
+            profiler.push(Reference.MOD_ID+"_solid");
 
-            if (this.renderCollidingSchematicBlocks)
-            {
-                RenderSystem.enablePolygonOffset();
-                RenderSystem.polygonOffset(-0.3f, -0.6f);
-            }
+//            if (this.renderCollidingSchematicBlocks)
+//            {
+//                RenderUtils.polygonOffset(true);
+//                RenderUtils.polygonOffset(-0.3f, -0.6f);
+//            }
 
-            ShaderProgram shader = RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_SOLID);
-            this.getWorldRenderer().renderBlockLayer(RenderLayer.getSolid(), viewMatrix, this.getCamera(), posMatrix, profiler, shader);
+            this.getWorldRenderer().renderBlockLayer(RenderLayer.getSolid(), this.getCamera(), profiler,
+                                                     this.renderCollidingSchematicBlocks ?
+                                                     MaLiLibPipelines.SOLID_MASA_OFFSET :
+                                                     MaLiLibPipelines.SOLID_MASA);
 
-            if (this.renderCollidingSchematicBlocks)
-            {
-                RenderSystem.polygonOffset(0f, 0f);
-                RenderSystem.disablePolygonOffset();
-            }
+//            if (this.renderCollidingSchematicBlocks)
+//            {
+//                RenderUtils.polygonOffset(0f, 0f);
+//                RenderUtils.polygonOffset(false);
+//            }
 
             profiler.pop();
         }
@@ -320,22 +329,25 @@ public class LitematicaRenderer
     {
         if (this.renderPiecewiseBlocks)
         {
-            profiler.push(Reference.ID+"_cutout_mipped");
+            profiler.push(Reference.MOD_ID+"_cutout_mipped");
 
-            if (this.renderCollidingSchematicBlocks)
-            {
-                RenderSystem.enablePolygonOffset();
-                RenderSystem.polygonOffset(-0.3f, -0.6f);
-            }
+//            if (this.renderCollidingSchematicBlocks)
+//            {
+//                RenderUtils.polygonOffset(true);
+//                RenderUtils.polygonOffset(-0.3f, -0.6f);
+//            }
 
-            ShaderProgram shader = RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_CUTOUT_MIPPED);
-            this.getWorldRenderer().renderBlockLayer(RenderLayer.getCutoutMipped(), viewMatrix, this.getCamera(), posMatrix, profiler, shader);
+            this.getWorldRenderer().renderBlockLayer(RenderLayer.getCutoutMipped(), this.getCamera(), profiler,
+                                                     this.renderCollidingSchematicBlocks ?
+                                                     MaLiLibPipelines.CUTOUT_MIPPED_MASA_OFFSET :
+                                                     MaLiLibPipelines.CUTOUT_MIPPED_MASA);
 
-            if (this.renderCollidingSchematicBlocks)
-            {
-                RenderSystem.polygonOffset(0f, 0f);
-                RenderSystem.disablePolygonOffset();
-            }
+
+//            if (this.renderCollidingSchematicBlocks)
+//            {
+//                RenderUtils.polygonOffset(0f, 0f);
+//                RenderUtils.polygonOffset(false);
+//            }
 
             profiler.pop();
         }
@@ -345,22 +357,24 @@ public class LitematicaRenderer
     {
         if (this.renderPiecewiseBlocks)
         {
-            profiler.push(Reference.ID+"_cutout");
+            profiler.push(Reference.MOD_ID+"_cutout");
 
-            if (this.renderCollidingSchematicBlocks)
-            {
-                RenderSystem.enablePolygonOffset();
-                RenderSystem.polygonOffset(-0.3f, -0.6f);
-            }
+//            if (this.renderCollidingSchematicBlocks)
+//            {
+//                RenderUtils.polygonOffset(true);
+//                RenderUtils.polygonOffset(-0.3f, -0.6f);
+//            }
 
-            ShaderProgram shader = RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_CUTOUT);
-            this.getWorldRenderer().renderBlockLayer(RenderLayer.getCutout(), viewMatrix, this.getCamera(), posMatrix, profiler, shader);
+            this.getWorldRenderer().renderBlockLayer(RenderLayer.getCutout(), this.getCamera(), profiler,
+                                                     this.renderCollidingSchematicBlocks ?
+                                                     MaLiLibPipelines.CUTOUT_MASA_OFFSET :
+                                                     MaLiLibPipelines.CUTOUT_MASA);
 
-            if (this.renderCollidingSchematicBlocks)
-            {
-                RenderSystem.polygonOffset(0f, 0f);
-                RenderSystem.disablePolygonOffset();
-            }
+//            if (this.renderCollidingSchematicBlocks)
+//            {
+//                RenderUtils.polygonOffset(0f, 0f);
+//                RenderUtils.polygonOffset(false);
+//            }
 
             profiler.pop();
         }
@@ -370,65 +384,85 @@ public class LitematicaRenderer
     {
         if (this.renderPiecewiseBlocks)
         {
-            profiler.push(Reference.ID+"_translucent");
+            profiler.push(Reference.MOD_ID+"_translucent");
 
-            if (this.renderCollidingSchematicBlocks)
-            {
-                RenderSystem.enablePolygonOffset();
-                RenderSystem.polygonOffset(-0.3f, -0.6f);
-            }
+//            if (this.renderCollidingSchematicBlocks)
+//            {
+//                RenderUtils.polygonOffset(true);
+//                RenderUtils.polygonOffset(-0.3f, -0.6f);
+//            }
 
-            ShaderProgram shader = RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_TRANSLUCENT);
-            this.getWorldRenderer().renderBlockLayer(RenderLayer.getTranslucent(), viewMatrix, this.getCamera(), posMatrix, profiler, shader);
+            this.getWorldRenderer().renderBlockLayer(RenderLayer.getTranslucent(), this.getCamera(), profiler,
+                                                     this.renderCollidingSchematicBlocks ?
+                                                     MaLiLibPipelines.TRANSLUCENT_MASA_OFFSET :
+                                                     MaLiLibPipelines.TRANSLUCENT_MASA);
 
-            if (this.renderCollidingSchematicBlocks)
-            {
-                RenderSystem.polygonOffset(0f, 0f);
-                RenderSystem.disablePolygonOffset();
-            }
+//            if (this.renderCollidingSchematicBlocks)
+//            {
+//                RenderUtils.polygonOffset(0f, 0f);
+//                RenderUtils.polygonOffset(false);
+//            }
 
             profiler.pop();
         }
     }
 
-    public void piecewiseRenderOverlay(Matrix4f viewMatrix, Matrix4f posMatrix, Profiler profiler)
+    public void piecewiseRenderTripwire(Matrix4f viewMatrix, Matrix4f posMatrix, Profiler profiler)
+    {
+        if (this.renderPiecewiseBlocks)
+        {
+            profiler.push(Reference.MOD_ID+"_tripwire");
+
+//            if (this.renderCollidingSchematicBlocks)
+//            {
+//                RenderUtils.polygonOffset(true);
+//                RenderUtils.polygonOffset(-0.3f, -0.6f);
+//            }
+
+            //ShaderProgram shader = RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_TRANSLUCENT);
+            this.getWorldRenderer().renderBlockLayer(RenderLayer.getTripwire(), this.getCamera(), profiler,
+                                                     this.renderCollidingSchematicBlocks ?
+                                                     MaLiLibPipelines.TRIPWIRE_MASA_OFFSET :
+                                                     MaLiLibPipelines.TRIPWIRE_MASA);
+
+//            if (this.renderCollidingSchematicBlocks)
+//            {
+//                RenderUtils.polygonOffset(0f, 0f);
+//                RenderUtils.polygonOffset(false);
+//            }
+
+            profiler.pop();
+        }
+    }
+
+    public void piecewiseRenderOverlay(Matrix4f posMatrix, Matrix4f projMatrix, Profiler profiler)
     {
         if (this.renderPiecewiseSchematic)
         {
-            profiler.push(Reference.ID+"_schematic_overlay");
-
-            /*
-            Framebuffer fb = MinecraftClient.isFabulousGraphicsOrBetter() ? this.mc.worldRenderer.getTranslucentFramebuffer() : null;
-
-            if (fb != null)
-            {
-                fb.beginWrite(false);
-            }
-             */
-
-            this.renderSchematicOverlay(viewMatrix, posMatrix, profiler);
-
-            /*
-            if (fb != null)
-            {
-                this.mc.getFramebuffer().beginWrite(false);
-            }
-             */
-
+            profiler.push(Reference.MOD_ID+"_schematic_overlay");
+            this.renderSchematicOverlays(this.getCamera(), profiler);
             profiler.pop();
         }
 
         this.cleanup();
     }
 
-    public void piecewiseRenderEntities(Matrix4f posMatrix, float partialTicks, Profiler profiler)
+    public void piecewiseRenderEntities(MatrixStack matrices, VertexConsumerProvider.Immediate immediate, float partialTicks, Profiler profiler)
     {
-        if (this.renderPiecewiseBlocks)
+        if (this.renderPiecewiseEntities)
         {
-            profiler.push(Reference.ID+"_entities");
+            profiler.push(Reference.MOD_ID+"_entities");
+            this.getWorldRenderer().renderEntities(this.getCamera(), this.frustum, matrices, immediate, partialTicks, profiler);
+            profiler.pop();
+        }
+    }
 
-            this.getWorldRenderer().renderEntities(this.getCamera(), this.frustum, posMatrix, partialTicks, profiler);
-
+    public void piecewiseRenderBlockEntities(MatrixStack matrices, VertexConsumerProvider.Immediate immediate, VertexConsumerProvider.Immediate immediate2, float partialTicks, Profiler profiler)
+    {
+        if (this.renderPiecewiseTileEntities)
+        {
+            profiler.push(Reference.MOD_ID+"_block_entities");
+            this.getWorldRenderer().renderBlockEntities(this.getCamera(), this.frustum, matrices, immediate, immediate2, partialTicks, profiler);
             profiler.pop();
         }
     }
@@ -442,5 +476,7 @@ public class LitematicaRenderer
     {
         this.renderPiecewiseSchematic = false;
         this.renderPiecewiseBlocks = false;
+        this.renderPiecewiseEntities = false;
+        this.renderPiecewiseTileEntities = false;
     }
 }

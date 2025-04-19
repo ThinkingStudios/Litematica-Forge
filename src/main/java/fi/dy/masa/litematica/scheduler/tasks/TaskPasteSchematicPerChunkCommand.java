@@ -18,6 +18,7 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.DynamicRegistryManager;
@@ -33,8 +34,12 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.WorldChunk;
 
 import fi.dy.masa.malilib.gui.Message.MessageType;
+import fi.dy.masa.malilib.util.InfoUtils;
+import fi.dy.masa.malilib.util.IntBoundingBox;
+import fi.dy.masa.malilib.util.LayerRange;
 import fi.dy.masa.malilib.util.game.BlockUtils;
-import fi.dy.masa.malilib.util.*;
+import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.mixin.block.IMixinAbstractBlock;
@@ -285,13 +290,16 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
 
     protected boolean shouldSetBlock(BlockState stateSchematic, BlockState stateClient)
     {
+        boolean matched = stateClient == stateSchematic;
+//        Litematica.LOGGER.error("shouldSetBlock(): matched: [{}]/CBOnly [{}], client: [{}], schem: [{}]", matched, this.changedBlockOnly, stateClient.toString(), stateSchematic.toString());
+
         if (stateSchematic.hasBlockEntity() && Configs.Generic.PASTE_IGNORE_BE_ENTIRELY.getBooleanValue())
         {
             return false;
         }
 
         if ((stateSchematic.isAir() && stateClient.isAir()) ||
-            (this.changedBlockOnly && stateClient == stateSchematic))
+            (this.changedBlockOnly && matched))
         {
             return false;
         }
@@ -325,7 +333,7 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
         if (stack.isEmpty() == false)
         {
             Identifier itemId = Registries.ITEM.getId(stack.getItem());
-            int facingId = itemFrame.getHorizontalFacing().getId();
+            int facingId = itemFrame.getHorizontalFacing().getIndex();
             String nbtStr = String.format(" {Facing:%db,Item:{id:\"%s\",Count:1b}}", facingId, itemId);
             NbtComponent entityComp = stack.get(DataComponentTypes.ENTITY_DATA);
 
@@ -998,8 +1006,9 @@ public class TaskPasteSchematicPerChunkCommand extends TaskPasteSchematicPerChun
             // FIXME
             //be.setStackNbt(stack, registryManager);
             //BlockItem.setBlockEntityData(stack, be.getType(), nbt);
+
             BlockUtils.setStackNbt(stack, be, registryManager);
-            mc.player.getInventory().offHand.set(0, stack);
+            mc.player.getInventory().setStack(PlayerInventory.OFF_HAND_SLOT, stack);
             mc.interactionManager.clickCreativeStack(stack, 45);
             return true;
         }

@@ -33,6 +33,7 @@ public class ChunkSchematic extends WorldChunk
         this.timeCreated = worldIn.getTime();
         this.bottomY = worldIn.getBottomY();
         this.topY = worldIn.getTopYInclusive();
+        this.entityCount = 0;
     }
 
     @Override
@@ -60,7 +61,7 @@ public class ChunkSchematic extends WorldChunk
     }
 
     @Override
-    public BlockState setBlockState(BlockPos pos, BlockState state, boolean isMoving)
+    public BlockState setBlockState(BlockPos pos, BlockState state, int isMoving)
     {
         BlockState stateOld = this.getBlockState(pos);
         int y = pos.getY();
@@ -134,6 +135,7 @@ public class ChunkSchematic extends WorldChunk
         ++this.entityCount;
     }
 
+    // TODO --> MOVE TO EntityLookup
     public List<Entity> getEntityList()
     {
         return this.entityList;
@@ -142,6 +144,17 @@ public class ChunkSchematic extends WorldChunk
     public int getEntityCount()
     {
         return this.entityCount;
+    }
+
+    public int getTileEntityCount()
+    {
+        return this.blockEntities.size();
+    }
+
+    protected void clearEntities()
+    {
+        this.entityList.clear();
+        this.entityCount = 0;
     }
 
     public long getTimeCreated()

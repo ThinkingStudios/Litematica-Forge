@@ -29,8 +29,14 @@ public abstract class MixinWorldRenderer
 {
     @Shadow private net.minecraft.client.world.ClientWorld world;
     @Shadow @Final private MinecraftClient client;
-    @Unique private Matrix4f posMatrix = null;
-    @Unique private RenderTickCounter ticks = null;
+//    @Shadow @Final private DefaultFramebufferSet framebufferSet;
+//    @Shadow @Final private BufferBuilderStorage bufferBuilders;
+
+//    @Unique private PostEffectProcessor postEffects = null;
+//    @Unique private int width;
+//    @Unique private int height;
+//    @Unique private Matrix4f posMatrix = null;
+//    @Unique private RenderTickCounter ticks = null;
     @Unique private Profiler profiler;
 
     @Inject(method = "reload()V", at = @At("RETURN"))
@@ -74,15 +80,42 @@ public abstract class MixinWorldRenderer
                     target = "Lnet/minecraft/client/render/WorldRenderer;renderMain(Lnet/minecraft/client/render/FrameGraphBuilder;Lnet/minecraft/client/render/Frustum;Lnet/minecraft/client/render/Camera;Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;Lnet/minecraft/client/render/Fog;ZZLnet/minecraft/client/render/RenderTickCounter;Lnet/minecraft/util/profiler/Profiler;)V",
                     shift = At.Shift.BEFORE))
     private void litematica_onPreRenderMain(ObjectAllocator allocator, RenderTickCounter tickCounter, boolean renderBlockOutline,
-                                 Camera camera, GameRenderer gameRenderer, Matrix4f positionMatrix, Matrix4f matrix4f2, CallbackInfo ci,
-                                 @Local Profiler profiler)
+                                            Camera camera, GameRenderer gameRenderer, Matrix4f positionMatrix, Matrix4f matrix4f2, CallbackInfo ci,
+                                            @Local Profiler profiler)
     {
-        this.posMatrix = positionMatrix;
-        this.ticks = tickCounter;
+//        this.posMatrix = positionMatrix;
+//        this.ticks = tickCounter;
         this.profiler = profiler;
     }
 
-    @Inject(method = "renderLayer", at = @At("TAIL"))
+//    @Inject(method = "render",
+//            at = @At(value = "INVOKE",
+//                     target = "Lnet/minecraft/client/render/WorldRenderer;renderParticles(Lnet/minecraft/client/render/FrameGraphBuilder;Lnet/minecraft/client/render/Camera;FLnet/minecraft/client/render/Fog;)V",
+//                     shift = At.Shift.BEFORE))
+//    private void litematica_onRenderWorldPreParticle(ObjectAllocator allocator, RenderTickCounter tickCounter, boolean renderBlockOutline,
+//                                                     Camera camera, GameRenderer gameRenderer, Matrix4f positionMatrix, Matrix4f projectionMatrix, CallbackInfo ci,
+//                                                     @Local Profiler profiler,
+//                                                     @Local Frustum frustum,
+//                                                     @Local FrameGraphBuilder frameGraphBuilder,
+//                                                     @Local(ordinal = 0) int i, @Local(ordinal = 1) int j,
+//                                                     @Local PostEffectProcessor postEffectProcessor)
+//    {
+//        LitematicaRenderer.getInstance().runRenderWorldOverlay(positionMatrix, projectionMatrix, this.client, frameGraphBuilder, this.framebufferSet, frustum, camera, this.bufferBuilders, profiler);
+//
+//        if (postEffectProcessor != null)
+//        {
+//            this.width = i;
+//            this.height = j;
+//            this.postEffects = postEffectProcessor;
+//            this.postEffects.render(frameGraphBuilder, this.width, this.height, this.framebufferSet, null);
+//        }
+//    }
+
+    @Inject(method = "renderLayer",
+            at = @At("TAIL")
+//            at = @At(value = "INVOKE",
+//                     target = "Lnet/minecraft/util/profiler/ScopedProfiler;close()V")
+    )
     private void litematica_onRenderLayer(RenderLayer renderLayer, double x, double y, double z,
                                Matrix4f viewMatrix, Matrix4f posMatrix, CallbackInfo ci)
     {
@@ -110,7 +143,11 @@ public abstract class MixinWorldRenderer
         else if (renderLayer == RenderLayer.getTranslucent())
         {
             LitematicaRenderer.getInstance().piecewiseRenderTranslucent(viewMatrix, posMatrix, this.profiler);
-            LitematicaRenderer.getInstance().piecewiseRenderOverlay(viewMatrix, posMatrix, this.profiler);
+        }
+        else if (renderLayer == RenderLayer.getTripwire())
+        {
+            LitematicaRenderer.getInstance().piecewiseRenderTripwire(viewMatrix, posMatrix, this.profiler);
+//            LitematicaRenderer.getInstance().piecewiseRenderOverlay(viewMatrix, posMatrix, this.profiler);
         }
     }
 
@@ -118,24 +155,34 @@ public abstract class MixinWorldRenderer
             at = @At(value = "RETURN"))
     private void litematica_onPostRenderEntities(MatrixStack matrices, VertexConsumerProvider.Immediate immediate, Camera camera, RenderTickCounter tickCounter, List<Entity> entities, CallbackInfo ci)
     {
-        if (this.posMatrix != null &&
-            this.ticks != null)
+        if (this.profiler == null)
         {
-            if (this.profiler == null)
-            {
-                this.profiler = Profilers.get();
-            }
-
-            if (this.profiler instanceof ProfilerSystem ps && !((IMixinProfilerSystem) ps).litematica_isStarted())
-            {
-                this.profiler.startTick();
-            }
-
-            LitematicaRenderer.getInstance().piecewiseRenderEntities(this.posMatrix, this.ticks.getTickDelta(false), this.profiler);
-            this.posMatrix = null;
-            this.ticks = null;
-            //this.profiler = null;
+            this.profiler = Profilers.get();
         }
+
+        if (this.profiler instanceof ProfilerSystem ps && !((IMixinProfilerSystem) ps).litematica_isStarted())
+        {
+            this.profiler.startTick();
+        }
+
+        LitematicaRenderer.getInstance().piecewiseRenderEntities(matrices, immediate, tickCounter.getTickProgress(false), this.profiler);
+    }
+
+    @Inject(method = "renderBlockEntities",
+            at = @At(value = "RETURN"))
+    private void litematica_onPostRenderBlockEntities(MatrixStack matrices, VertexConsumerProvider.Immediate entityVertexConsumers, VertexConsumerProvider.Immediate effectVertexConsumers, Camera camera, float tickProgress, CallbackInfo ci)
+    {
+        if (this.profiler == null)
+        {
+            this.profiler = Profilers.get();
+        }
+
+        if (this.profiler instanceof ProfilerSystem ps && !((IMixinProfilerSystem) ps).litematica_isStarted())
+        {
+            this.profiler.startTick();
+        }
+
+        LitematicaRenderer.getInstance().piecewiseRenderBlockEntities(matrices, entityVertexConsumers, effectVertexConsumers, tickProgress, this.profiler);
     }
 
     /*

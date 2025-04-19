@@ -28,15 +28,16 @@ import net.minecraft.world.tick.OrderedTick;
 import net.minecraft.world.tick.WorldTickScheduler;
 
 import fi.dy.masa.malilib.util.IntBoundingBox;
-import fi.dy.masa.malilib.util.data.Constants;
 import fi.dy.masa.malilib.util.nbt.NbtUtils;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.config.Configs;
+import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic.EntityInfo;
 import fi.dy.masa.litematica.schematic.container.LitematicaBlockStateContainer;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import fi.dy.masa.litematica.schematic.placement.SubRegionPlacement;
+import fi.dy.masa.litematica.world.WorldSchematic;
 
 public class SchematicPlacingUtils
 {
@@ -44,12 +45,21 @@ public class SchematicPlacingUtils
                                                   ChunkPos chunkPos,
                                                   SchematicPlacement schematicPlacement,
                                                   ReplaceBehavior replace,
+                                                  PasteLayerBehavior layerBehavior,
                                                   boolean notifyNeighbors)
     {
         LitematicaSchematic schematic = schematicPlacement.getSchematic();
         Set<String> regionsTouchingChunk = schematicPlacement.getRegionsTouchingChunk(chunkPos.x, chunkPos.z);
         BlockPos origin = schematicPlacement.getOrigin();
         boolean allSuccess = true;
+
+        // Don't enable selective pasting while loading the schematic to the schematic world
+        // since this function has a dual purpose; this would cause things to fail to load.
+        if (world instanceof WorldSchematic &&
+            layerBehavior != PasteLayerBehavior.ALL)
+        {
+            layerBehavior = PasteLayerBehavior.ALL;
+        }
 
         try
         {
@@ -78,7 +88,7 @@ public class SchematicPlacingUtils
 
                     if (placeBlocksWithinChunk(world, chunkPos, regionName, container, blockEntityMap,
                                                origin, schematicPlacement, placement, scheduledBlockTicks,
-                                               scheduledFluidTicks, replace, notifyNeighbors) == false)
+                                               scheduledFluidTicks, replace, layerBehavior, notifyNeighbors) == false)
                     {
                         allSuccess = false;
                         Litematica.LOGGER.warn("Invalid/missing schematic data in schematic '{}' for sub-region '{}'", schematic.getMetadata().getName(), regionName);
@@ -89,7 +99,7 @@ public class SchematicPlacingUtils
                     if (schematicPlacement.ignoreEntities() == false &&
                         placement.ignoreEntities() == false && entityList != null)
                     {
-                        placeEntitiesToWorldWithinChunk(world, chunkPos, entityList, origin, schematicPlacement, placement);
+                        placeEntitiesToWorldWithinChunk(world, chunkPos, entityList, origin, schematicPlacement, placement, layerBehavior);
                     }
                 }
             }
@@ -110,7 +120,9 @@ public class SchematicPlacingUtils
                                                  SubRegionPlacement placement,
                                                  @Nullable Map<BlockPos, OrderedTick<Block>> scheduledBlockTicks,
                                                  @Nullable Map<BlockPos, OrderedTick<Fluid>> scheduledFluidTicks,
-                                                 ReplaceBehavior replace, boolean notifyNeighbors)
+                                                 ReplaceBehavior replace,
+                                                 PasteLayerBehavior layerBehavior,
+                                                 boolean notifyNeighbors)
     {
         IntBoundingBox bounds = schematicPlacement.getBoxWithinChunkForRegion(regionName, chunkPos.x, chunkPos.z);
         Vec3i regionSize = schematicPlacement.getSchematic().getAreaSizeAsVec3i(regionName);
@@ -204,6 +216,12 @@ public class SchematicPlacingUtils
 
                     BlockPos pos = PositionUtils.getTransformedPlacementPosition(posMutable, schematicPlacement, placement);
                     pos = pos.add(regionPosTransformed).add(origin);
+
+                    if (!shouldPasteBlock(pos, layerBehavior))
+                    {
+//                        Litematica.LOGGER.error("placeBlocksWithinChunk(): Skipping block at pos [{}]", pos.toShortString());
+                        continue;
+                    }
 
                     BlockState stateOld = world.getBlockState(pos);
 
@@ -347,7 +365,8 @@ public class SchematicPlacingUtils
                                                        List<EntityInfo> entityList,
                                                        BlockPos origin,
                                                        SchematicPlacement schematicPlacement,
-                                                       SubRegionPlacement placement)
+                                                       SubRegionPlacement placement,
+                                                       PasteLayerBehavior layerBehavior)
     {
         BlockPos regionPos = placement.getPos();
 
@@ -386,10 +405,16 @@ public class SchematicPlacingUtils
             double z = pos.z + offZ;
             float[] origRot = new float[2];
 
+            if (!shouldPasteEntity(new Vec3d(x, y, z), layerBehavior))
+            {
+//                Litematica.LOGGER.error("placeEntitiesToWorldWithinChunk(): Skipping Entity at pos [{}]", pos.toString());
+                continue;
+            }
+
             if (x >= minX && x < maxX && z >= minZ && z < maxZ)
             {
                 NbtCompound tag = info.nbt.copy();
-                String id = tag.getString("id");
+                String id = tag.getString("id", "");
 
                 // Avoid warning about invalid hanging position.
                 // Note that this position isn't technically correct, but it only needs to be within 16 blocks
@@ -404,7 +429,8 @@ public class SchematicPlacingUtils
                     if (p == null)
                     {
                         p = new Vec3d(x, y, z);
-                        NbtUtils.writeEntityPositionToTag(p, tag);
+//                        NbtUtils.writeEntityPositionToTag(p, tag);
+                        NbtUtils.putVec3dCodec(tag, p, "Pos");
                     }
 
                     tag.putInt("TileX", (int) p.x);
@@ -412,9 +438,9 @@ public class SchematicPlacingUtils
                     tag.putInt("TileZ", (int) p.z);
                 }
 
-                NbtList rotation = tag.getList("Rotation", Constants.NBT.TAG_FLOAT);
-                origRot[0] = rotation.getFloat(0);
-                origRot[1] = rotation.getFloat(1);
+                NbtList rotation = tag.getListOrEmpty("Rotation");
+                origRot[0] = rotation.getFloat(0, 0f);
+                origRot[1] = rotation.getFloat(1, 0f);
 
                 Entity entity = EntityUtils.createEntityAndPassengersFromNBT(tag, world);
 
@@ -483,5 +509,25 @@ public class SchematicPlacingUtils
 
         entity.refreshPositionAndAngles(x, y, z, rotationYaw, entity.getPitch());
         EntityUtils.setEntityRotations(entity, rotationYaw, entity.getPitch());
+    }
+
+    public static boolean shouldPasteBlock(BlockPos pos, PasteLayerBehavior layerBehavior)
+    {
+        if (layerBehavior == PasteLayerBehavior.ALL)
+        {
+            return true;
+        }
+
+        return DataManager.getRenderLayerRange().isPositionWithinRange(pos);
+    }
+
+    public static boolean shouldPasteEntity(Vec3d pos, PasteLayerBehavior layerBehavior)
+    {
+        if (layerBehavior == PasteLayerBehavior.ALL)
+        {
+            return true;
+        }
+
+        return DataManager.getRenderLayerRange().isPositionWithinRange((int) pos.getX(), (int) pos.getY(), (int) pos.getZ());
     }
 }

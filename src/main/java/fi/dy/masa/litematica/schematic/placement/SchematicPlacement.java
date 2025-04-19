@@ -1,29 +1,34 @@
 package fi.dy.masa.litematica.schematic.placement;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.nio.file.Path;
+import java.util.*;
 import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import fi.dy.masa.litematica.config.Configs;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
 import org.apache.commons.lang3.tuple.Pair;
 
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.structure.StructurePlacementData;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 
+import fi.dy.masa.malilib.gui.Message.MessageType;
+import fi.dy.masa.malilib.gui.interfaces.IMessageConsumer;
+import fi.dy.masa.malilib.interfaces.IStringConsumer;
+import fi.dy.masa.malilib.util.InfoUtils;
+import fi.dy.masa.malilib.util.IntBoundingBox;
+import fi.dy.masa.malilib.util.JsonUtils;
+import fi.dy.masa.malilib.util.LayerRange;
+import fi.dy.masa.malilib.util.data.Color4f;
+import fi.dy.masa.malilib.util.nbt.NbtUtils;
+import fi.dy.masa.malilib.util.position.PositionUtils.CoordinateType;
 import fi.dy.masa.litematica.Litematica;
+import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.data.SchematicHolder;
 import fi.dy.masa.litematica.materials.MaterialListBase;
@@ -35,14 +40,6 @@ import fi.dy.masa.litematica.schematic.verifier.SchematicVerifier;
 import fi.dy.masa.litematica.selection.Box;
 import fi.dy.masa.litematica.util.BlockInfoListType;
 import fi.dy.masa.litematica.util.PositionUtils;
-import fi.dy.masa.malilib.gui.Message.MessageType;
-import fi.dy.masa.malilib.gui.interfaces.IMessageConsumer;
-import fi.dy.masa.malilib.interfaces.IStringConsumer;
-import fi.dy.masa.malilib.util.Color4f;
-import fi.dy.masa.malilib.util.InfoUtils;
-import fi.dy.masa.malilib.util.IntBoundingBox;
-import fi.dy.masa.malilib.util.JsonUtils;
-import fi.dy.masa.malilib.util.PositionUtils.CoordinateType;
 
 public class SchematicPlacement
 {
@@ -53,7 +50,7 @@ public class SchematicPlacement
     private final Map<String, SubRegionPlacement> relativeSubRegionPlacements = new HashMap<>();
     private final int subRegionCount;
     private SchematicVerifier verifier;
-    private LitematicaSchematic schematic;
+    private final LitematicaSchematic schematic;
     private BlockPos origin;
     private String name;
     private BlockRotation rotation = BlockRotation.NONE;
@@ -72,7 +69,7 @@ public class SchematicPlacement
     @Nullable
     private Box enclosingBox;
     @Nullable
-    private File schematicFile;
+    private final Path schematicFile;
     @Nullable
     private String selectedSubRegionName;
     @Nullable
@@ -251,7 +248,7 @@ public class SchematicPlacement
     }
 
     @Nullable
-    public File getSchematicFile()
+    public Path getSchematicFile()
     {
         return this.schematicFile;
     }
@@ -887,7 +884,7 @@ public class SchematicPlacement
             arr.add(this.origin.getY());
             arr.add(this.origin.getZ());
 
-            obj.add("schematic", new JsonPrimitive(this.schematic.getFile().getAbsolutePath()));
+            obj.add("schematic", new JsonPrimitive(this.schematic.getFile().toAbsolutePath().toString()));
             obj.add("name", new JsonPrimitive(this.name));
             obj.add("origin", arr);
             obj.add("rotation", new JsonPrimitive(this.rotation.name()));
@@ -944,12 +941,12 @@ public class SchematicPlacement
             JsonUtils.hasString(obj, "mirror") &&
             JsonUtils.hasArray(obj, "placements"))
         {
-            File file = new File(obj.get("schematic").getAsString());
+            Path file = Path.of(obj.get("schematic").getAsString());
             LitematicaSchematic schematic = SchematicHolder.getInstance().getOrLoad(file);
 
             if (schematic == null)
             {
-                Litematica.LOGGER.warn("Failed to load schematic '{}'", file.getAbsolutePath());
+                Litematica.LOGGER.warn("Failed to load schematic '{}'", file.toAbsolutePath());
                 return null;
             }
 
@@ -957,7 +954,7 @@ public class SchematicPlacement
 
             if (posArr.size() != 3)
             {
-                Litematica.LOGGER.warn("Failed to load schematic placement for '{}', invalid origin position", file.getAbsolutePath());
+                Litematica.LOGGER.warn("Failed to load schematic placement for '{}', invalid origin position", file.toAbsolutePath());
                 return null;
             }
 
@@ -1058,28 +1055,37 @@ public class SchematicPlacement
     {
         NbtCompound compound = new NbtCompound();
         compound.putString("Name", name);
+
         if (withSchematic)
         {
             compound.put("Schematics", schematic.writeToNBT());
         }
-        compound.put("Origin", NbtHelper.fromBlockPos(origin));
+
+        //compound.put("Origin", NbtHelper.fromBlockPos(origin));
+        NbtUtils.writeBlockPosToArrayTag(origin, compound, "Origin");
         compound.putInt("Rotation", rotation.ordinal());
         compound.putInt("Mirror", mirror.ordinal());
         NbtCompound subs = new NbtCompound();
-        for (String name : relativeSubRegionPlacements.keySet()) {
+
+        for (String name : relativeSubRegionPlacements.keySet())
+        {
             NbtCompound sub = new NbtCompound();
             SubRegionPlacement subRegionPlacement = relativeSubRegionPlacements.get(name);
             subs.put(name, sub);
 
-            sub.put("Pos", NbtHelper.fromBlockPos(subRegionPlacement.getPos()));
+            //sub.put("Pos", NbtHelper.fromBlockPos(subRegionPlacement.getPos()));
+            NbtUtils.writeBlockPosToArrayTag(subRegionPlacement.getPos(), sub, "Pos");
             sub.putInt("Rotation", subRegionPlacement.getRotation().ordinal());
             sub.putInt("Mirror", subRegionPlacement.getMirror().ordinal());
             sub.putString("Name", subRegionPlacement.getName());
             sub.putBoolean("Enabled", subRegionPlacement.isEnabled());
             sub.putBoolean("IgnoreEntities", subRegionPlacement.ignoreEntities());
         }
+
         compound.put("SubRegions", subs);
         compound.putString("ReplaceMode", Configs.Generic.PASTE_REPLACE_BEHAVIOR.getStringValue());
+        compound.putString("PasteLayerBehavior", Configs.Generic.PASTE_LAYER_BEHAVIOR.getStringValue());
+        compound.put("RenderLayerRange", LayerRange.CODEC, DataManager.getRenderLayerRange());
         return compound;
     }
 }

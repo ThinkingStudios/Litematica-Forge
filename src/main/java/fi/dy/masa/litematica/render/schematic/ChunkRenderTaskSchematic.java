@@ -79,7 +79,7 @@ public class ChunkRenderTaskSchematic implements Comparable<ChunkRenderTaskSchem
             Litematica.LOGGER.error("setRegionRenderCacheBuilder() [Task] allocatorCache is null");
             return false;
         }
-        if (this.allocatorCache != null)
+        if (this.allocatorCache != null && !this.allocatorCache.isClear())
         {
             this.allocatorCache.closeAll();
         }

@@ -74,10 +74,10 @@ public class WallStateFixer implements SchematicConversionFixers.IStateFixer
                                                      VoxelShape shapeAbove)
     {
         return blockState
-                       .with(WallBlock.NORTH_SHAPE, this.getConnectionShape(canConnectNorth, shapeAbove, SHAPE_NORTH))
-                       .with(WallBlock.EAST_SHAPE,  this.getConnectionShape(canConnectEast, shapeAbove, SHAPE_EAST))
-                       .with(WallBlock.SOUTH_SHAPE, this.getConnectionShape(canConnectSouth, shapeAbove, SHAPE_SOUTH))
-                       .with(WallBlock.WEST_SHAPE,  this.getConnectionShape(canConnectWest, shapeAbove, SHAPE_WEST));
+                       .with(WallBlock.NORTH_WALL_SHAPE, this.getConnectionShape(canConnectNorth, shapeAbove, SHAPE_NORTH))
+                       .with(WallBlock.EAST_WALL_SHAPE,  this.getConnectionShape(canConnectEast, shapeAbove, SHAPE_EAST))
+                       .with(WallBlock.SOUTH_WALL_SHAPE, this.getConnectionShape(canConnectSouth, shapeAbove, SHAPE_SOUTH))
+                       .with(WallBlock.WEST_WALL_SHAPE,  this.getConnectionShape(canConnectWest, shapeAbove, SHAPE_WEST));
     }
 
     private boolean shouldConnectTo(BlockState state, boolean faceFullSquare, Direction side)
@@ -100,10 +100,10 @@ public class WallStateFixer implements SchematicConversionFixers.IStateFixer
         }
         else
         {
-            WallShape shapeNorth = blockState.get(WallBlock.NORTH_SHAPE);
-            WallShape shapeSouth = blockState.get(WallBlock.SOUTH_SHAPE);
-            WallShape shapeEast  = blockState.get(WallBlock.EAST_SHAPE);
-            WallShape shapeWest  = blockState.get(WallBlock.WEST_SHAPE);
+            WallShape shapeNorth = blockState.get(WallBlock.NORTH_WALL_SHAPE);
+            WallShape shapeSouth = blockState.get(WallBlock.SOUTH_WALL_SHAPE);
+            WallShape shapeEast  = blockState.get(WallBlock.EAST_WALL_SHAPE);
+            WallShape shapeWest  = blockState.get(WallBlock.WEST_WALL_SHAPE);
             boolean unconnectedNorth = shapeNorth == WallShape.NONE;
             boolean unconnectedSouth = shapeSouth == WallShape.NONE;
             boolean unconnectedEast  = shapeEast == WallShape.NONE;

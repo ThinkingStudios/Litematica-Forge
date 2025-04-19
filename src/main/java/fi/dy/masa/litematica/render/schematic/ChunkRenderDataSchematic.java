@@ -37,13 +37,14 @@ public class ChunkRenderDataSchematic implements AutoCloseable
     };
 
     private final List<BlockEntity> blockEntities = new ArrayList<>();
+    private final List<BlockEntity> noCullBlockEntities = new ArrayList<>();
     private final Set<RenderLayer> blockLayersUsed = new ObjectArraySet<>();
     private final Set<RenderLayer> blockLayersStarted = new ObjectArraySet<>();
     private final Set<OverlayRenderType> overlayLayersUsed = new ObjectArraySet<>();
     private final Set<OverlayRenderType> overlayLayersStarted = new ObjectArraySet<>();
     private final BuiltBufferCache builtBufferCache = new BuiltBufferCache();
     private final Map<OverlayRenderType, BuiltBuffer.SortState> overlaySortingData = new HashMap<>();
-    private BuiltBuffer.SortState transparentSortingData = null;
+    private final Map<RenderLayer, BuiltBuffer.SortState> transparentSortingData = new HashMap<>();
     private boolean overlayEmpty = true;
     private boolean empty = true;
     private long timeBuilt;
@@ -51,6 +52,21 @@ public class ChunkRenderDataSchematic implements AutoCloseable
     public boolean isEmpty()
     {
         return this.empty;
+    }
+
+    public int getStartedSize()
+    {
+        return this.blockLayersStarted.size() + this.overlayLayersStarted.size();
+    }
+
+    public int getUsedSize()
+    {
+        return this.blockLayersUsed.size() + this.overlayLayersUsed.size();
+    }
+
+    public int getSize()
+    {
+        return Math.max(this.getStartedSize(), this.getUsedSize());
     }
 
     public boolean isBlockLayerEmpty(RenderLayer layer)
@@ -117,9 +133,19 @@ public class ChunkRenderDataSchematic implements AutoCloseable
         return this.blockEntities;
     }
 
+    public List<BlockEntity> getNoCullBlockEntities()
+    {
+        return this.noCullBlockEntities;
+    }
+
     protected void addBlockEntity(BlockEntity be)
     {
         this.blockEntities.add(be);
+    }
+
+    protected void addNoCullBlockEntity(BlockEntity be)
+    {
+        this.noCullBlockEntities.add(be);
     }
 
     protected BuiltBufferCache getBuiltBufferCache()
@@ -132,9 +158,9 @@ public class ChunkRenderDataSchematic implements AutoCloseable
         this.builtBufferCache.closeAll();
     }
 
-    public boolean hasTransparentSortingData()
+    public boolean hasTransparentSortingDataForLayer(RenderLayer layer)
     {
-        return this.transparentSortingData != null;
+        return this.transparentSortingData.get(layer) != null;
     }
 
     public boolean hasTransparentSortingDataForOverlay(OverlayRenderType type)
@@ -142,9 +168,9 @@ public class ChunkRenderDataSchematic implements AutoCloseable
         return this.overlaySortingData.get(type) != null;
     }
 
-    protected void setTransparentSortingData(@Nonnull BuiltBuffer.SortState transparentSortingData)
+    protected void setTransparentSortingDataForLayer(RenderLayer layer, @Nonnull BuiltBuffer.SortState transparentSortingData)
     {
-        this.transparentSortingData = transparentSortingData;
+        this.transparentSortingData.put(layer, transparentSortingData);
     }
 
     protected void setTransparentSortingDataForOverlay(OverlayRenderType type, @Nonnull BuiltBuffer.SortState transparentSortingData)
@@ -152,9 +178,9 @@ public class ChunkRenderDataSchematic implements AutoCloseable
         this.overlaySortingData.put(type, transparentSortingData);
     }
 
-    protected BuiltBuffer.SortState getTransparentSortingData()
+    protected BuiltBuffer.SortState getTransparentSortingDataForLayer(RenderLayer layer)
     {
-        return this.transparentSortingData;
+        return this.transparentSortingData.get(layer);
     }
 
     @Nullable
@@ -178,12 +204,13 @@ public class ChunkRenderDataSchematic implements AutoCloseable
         this.closeBuiltBufferCache();
         this.timeBuilt = 0;
         this.overlaySortingData.clear();
-        this.transparentSortingData = null;
+        this.transparentSortingData.clear();
         this.blockLayersUsed.clear();
         this.overlayLayersUsed.clear();
         this.blockLayersStarted.clear();
         this.overlayLayersStarted.clear();
         this.blockEntities.clear();
+        this.noCullBlockEntities.clear();
         this.overlayEmpty = true;
         this.empty = true;
     }

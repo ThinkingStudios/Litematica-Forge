@@ -4,14 +4,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import fi.dy.masa.malilib.event.InitializationHandler;
 import fi.dy.masa.litematica.config.Configs;
-import org.thinkingstudio.mafglib.loader.entrypoints.ModInitializer;
 
-public class Litematica implements ModInitializer
+public class Litematica
 {
     public static final Logger LOGGER = LogManager.getLogger(Reference.MOD_ID);
 
-    @Override
-    public void onInitialize()
+    public static void onInitialize()
     {
         InitializationHandler.getInstance().registerInitializationHandler(new InitHandler());
     }

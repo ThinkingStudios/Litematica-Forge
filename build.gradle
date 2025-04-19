@@ -84,11 +84,11 @@ publisher {
 
     setCurseID("${libs.versions.id.curseforge.get()}")
     setModrinthID("${libs.versions.id.modrinth.get()}")
-    setVersionType("beta")
+    setVersionType("alpha")
     setChangelog(file("CHANGELOG.md").getText("UTF-8"))
     setVersion("${project.version}")
     setDisplayName("${project.version}")
-    setGameVersions("1.21.4")
+    setGameVersions("1.21.5")
     setLoaders(loom.platform.get().id())
     setCurseEnvironment("client")
     setArtifact(remapJar)

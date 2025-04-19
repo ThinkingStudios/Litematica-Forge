@@ -1,5 +1,0 @@
-{
-    "forgematica.incompat_check_screen.title": "Forgematica detects incompatible mods",
-    "forgematica.incompat_check_screen.text": "Forgematica has compatibility issues with these mods: %s",
-    "forgematica.incompat_check_screen.closeGameButton": "Close game"
-}

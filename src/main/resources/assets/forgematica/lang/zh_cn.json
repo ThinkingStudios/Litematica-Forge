@@ -1,8 +1,4 @@
 {
-  "forgematica.incompat_check_screen.title": "Forgematica 检测到了不兼容的Mod",
-  "forgematica.incompat_check_screen.text": "Forgematica 与这些Mod存在兼容性问题: %s",
-  "forgematica.incompat_check_screen.closeGameButton": "关闭游戏",
-  
   "addSelectionBox":"addSelectionBox | 添加选区",
   "Add a new selection box (position 1) here":"在当前位置添加一个新的选区（位置1）",
   "cloneSelection":"cloneSelection | 克隆选区",

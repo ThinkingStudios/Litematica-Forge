@@ -625,17 +625,17 @@ public class RenderUtils
             fz[index] = z + Float.intBitsToFloat(vertexData[index * vertexSize + 2]);
         }
 
-        buffer.vertex(fx[0], fy[0], fz[0]).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
-        buffer.vertex(fx[1], fy[1], fz[1]).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
+        buffer.vertex(fx[0], fy[0], fz[0]).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(fx[1], fy[1], fz[1]).color(color.r, color.g, color.b, color.a);
 
-        buffer.vertex(fx[1], fy[1], fz[1]).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
-        buffer.vertex(fx[2], fy[2], fz[2]).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
+        buffer.vertex(fx[1], fy[1], fz[1]).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(fx[2], fy[2], fz[2]).color(color.r, color.g, color.b, color.a);
 
-        buffer.vertex(fx[2], fy[2], fz[2]).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
-        buffer.vertex(fx[3], fy[3], fz[3]).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
+        buffer.vertex(fx[2], fy[2], fz[2]).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(fx[3], fy[3], fz[3]).color(color.r, color.g, color.b, color.a);
 
-        buffer.vertex(fx[3], fy[3], fz[3]).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
-        buffer.vertex(fx[0], fy[0], fz[0]).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
+        buffer.vertex(fx[3], fy[3], fz[3]).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(fx[0], fy[0], fz[0]).color(color.r, color.g, color.b, color.a);
     }
 
     public static void drawBlockModelOutlinesBatched(List<BlockModelPart> modelParts, BlockState state, BlockPos pos, Color4f color, double expand, BufferBuilder buffer, MatrixStack matricies)
@@ -833,7 +833,7 @@ public class RenderUtils
         }
     }
 
-    public static void drawBlockBoxEdgeBatchedLines(BlockPos pos, Direction.Axis axis, int cornerIndex, Color4f color, BufferBuilder buffer, MatrixStack mastrices)
+    public static void drawBlockBoxEdgeBatchedLines(BlockPos pos, Direction.Axis axis, int cornerIndex, Color4f color, BufferBuilder buffer)
     {
         Vec3i offset = PositionUtils.getEdgeNeighborOffsets(axis, cornerIndex)[cornerIndex];
 
@@ -844,11 +844,14 @@ public class RenderUtils
         double maxY = pos.getY() + offset.getY() + (axis == Direction.Axis.Y ? 1 : 0);
         double maxZ = pos.getZ() + offset.getZ() + (axis == Direction.Axis.Z ? 1 : 0);
 
-        MatrixStack.Entry e = mastrices.peek();
+        buffer.vertex((float) minX, (float) minY, (float) minZ).color(color.r, color.g, color.b, color.a);
+        buffer.vertex((float) maxX, (float) maxY, (float) maxZ).color(color.r, color.g, color.b, color.a);
+
+//        MatrixStack.Entry e = mastrices.peek();
 
         //System.out.printf("pos: %s, axis: %s, ind: %d\n", pos, axis, cornerIndex);
-        buffer.vertex(e, (float) minX, (float) minY, (float) minZ).color(color.r, color.g, color.b, color.a).normal(e,0.0f, 0.0f,0.0f);
-        buffer.vertex(e, (float) maxX, (float) maxY, (float) maxZ).color(color.r, color.g, color.b, color.a).normal(e,0.0f, 0.0f,0.0f);
+//        buffer.vertex(e, (float) minX, (float) minY, (float) minZ).color(color.r, color.g, color.b, color.a).normal(e,0.0f, 0.0f,0.0f);
+//        buffer.vertex(e, (float) maxX, (float) maxY, (float) maxZ).color(color.r, color.g, color.b, color.a).normal(e,0.0f, 0.0f,0.0f);
     }
 
     public static void drawBlockBoxEdgeBatchedDebugLines(BlockPos pos, Direction.Axis axis, int cornerIndex, Color4f color, BufferBuilder buffer)
@@ -863,8 +866,8 @@ public class RenderUtils
         double maxZ = pos.getZ() + offset.getZ() + (axis == Direction.Axis.Z ? 1 : 0);
 
         //System.out.printf("pos: %s, axis: %s, ind: %d\n", pos, axis, cornerIndex);
-        buffer.vertex((float) minX, (float) minY, (float) minZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
-        buffer.vertex((float) maxX, (float) maxY, (float) maxZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
+        buffer.vertex((float) minX, (float) minY, (float) minZ).color(color.r, color.g, color.b, color.a);
+        buffer.vertex((float) maxX, (float) maxY, (float) maxZ).color(color.r, color.g, color.b, color.a);
     }
 
     public static int renderInventoryOverlays(BlockInfoAlignment align, int offY, World worldSchematic, World worldClient, BlockPos pos, MinecraftClient mc, DrawContext drawContext)
@@ -1123,43 +1126,43 @@ public class RenderUtils
     public static void drawBoxAllEdgesBatchedDebugLines(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, Color4f color, BufferBuilder buffer)
     {
         // West side
-        buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
-        buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
+        buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a);
 
-        buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
-        buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
+        buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
 
-        buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
-        buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
+        buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a);
 
-        buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
-        buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
+        buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a);
 
         // East side
-        buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
-        buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
+        buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a);
 
-        buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
-        buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
+        buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a);
 
-        buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
-        buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
+        buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
 
-        buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
-        buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
+        buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a);
 
         // North side (don't repeat the vertical lines that are done by the east/west sides)
-        buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
-        buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
+        buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a);
 
-        buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
-        buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
+        buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a);
 
         // South side (don't repeat the vertical lines that are done by the east/west sides)
-        buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
-        buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
+        buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a);
 
-        buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
-        buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a).normal(0.0f, 0.0f, 0.0f);
+        buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
     }
 }

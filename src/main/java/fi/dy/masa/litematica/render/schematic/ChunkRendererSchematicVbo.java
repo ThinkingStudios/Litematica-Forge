@@ -14,6 +14,7 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
+import fi.dy.masa.litematica.util.IgnoreBlockRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -75,6 +76,7 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
     protected Color4f overlayColor;
     protected boolean hasOverlay = false;
     private boolean ignoreClientWorldFluids;
+    private IgnoreBlockRegistry ignoreBlockRegistry;
 
     protected ChunkCacheSchematic schematicWorldView;
     protected ChunkCacheSchematic clientWorldView;
@@ -901,7 +903,22 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
             // TODO --> Maybe someday Mojang will add something to replace isLiquid(), and isSolid()
             if (schematicHasAir)
             {
-                return (clientHasAir || (this.ignoreClientWorldFluids && stateClient.isLiquid())) ? OverlayType.NONE : OverlayType.EXTRA;
+                if (clientHasAir)
+                {
+                    return OverlayType.NONE;
+                }
+                else if (this.ignoreClientWorldFluids && stateClient.isLiquid())
+                {
+                    return OverlayType.NONE;
+                }
+                else if (this.ignoreBlockRegistry.hasBlock(stateClient.getBlock()))
+                {
+                    return OverlayType.NONE;
+                }
+                else
+                {
+                    return OverlayType.EXTRA;
+                }
             }
             else
             {
@@ -1299,7 +1316,7 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
 
         if (!chunkRenderData.isBlockLayerEmpty(layer))
         {
-            BuiltBuffer built;
+            BuiltBuffer meshData;
 
             if (chunkRenderData.getBuiltBufferCache().hasBuiltBufferByLayer(layer))
             {
@@ -1309,16 +1326,16 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
             if (this.builderCache.hasBufferByLayer(layer))
             {
                 BufferBuilder builder = this.builderCache.getBufferByLayer(layer, allocators);
-                built = builder.endNullable();
+                meshData = builder.endNullable();
 
-                if (built == null)
+                if (meshData == null)
                 {
                     chunkRenderData.setBlockLayerUnused(layer);
                     return;
                 }
                 else
                 {
-                    chunkRenderData.getBuiltBufferCache().storeBuiltBufferByLayer(layer, built);
+                    chunkRenderData.getBuiltBufferCache().storeBuiltBufferByLayer(layer, meshData);
                 }
             }
             else
@@ -1348,7 +1365,7 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
 
         if (!chunkRenderData.isOverlayTypeEmpty(type))
         {
-            BuiltBuffer built;
+            BuiltBuffer meshData;
 
             if (chunkRenderData.getBuiltBufferCache().hasBuiltBufferByType(type))
             {
@@ -1358,16 +1375,16 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
             if (this.builderCache.hasBufferByOverlay(type))
             {
                 BufferBuilder builder = this.builderCache.getBufferByOverlay(type, allocators);
-                built = builder.endNullable();
+                meshData = builder.endNullable();
 
-                if (built == null)
+                if (meshData == null)
                 {
                     chunkRenderData.setOverlayTypeUnused(type);
                     return;
                 }
                 else
                 {
-                    chunkRenderData.getBuiltBufferCache().storeBuiltBufferByType(type, built);
+                    chunkRenderData.getBuiltBufferCache().storeBuiltBufferByType(type, meshData);
                 }
             }
             else
@@ -1703,6 +1720,7 @@ public class ChunkRendererSchematicVbo implements AutoCloseable
         synchronized (this.boxes)
         {
             this.ignoreClientWorldFluids = Configs.Visuals.IGNORE_EXISTING_FLUIDS.getBooleanValue();
+            this.ignoreBlockRegistry = new IgnoreBlockRegistry();
             ClientWorld worldClient = MinecraftClient.getInstance().world;
             assert worldClient != null;
             this.schematicWorldView = new ChunkCacheSchematic(this.world, worldClient, this.position, 2);

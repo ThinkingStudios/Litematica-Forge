@@ -246,7 +246,7 @@ public class WidgetMaterialListEntry extends WidgetListEntrySortable<MaterialLis
             //mc.getRenderItem().renderItemOverlayIntoGUI(mc.fontRenderer, this.entry.getStack(), x1, y, null);
             //mc.getRenderItem().zLevel += 110;
 
-            RenderUtils.blend(false);
+//            RenderUtils.blend(false);
             RenderUtils.disableDiffuseLighting();
             drawContext.getMatrices().pop();
 

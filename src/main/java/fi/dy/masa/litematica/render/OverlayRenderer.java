@@ -145,15 +145,15 @@ public class OverlayRenderer
         if (renderAreas || renderPlacements || isProjectMode)
         {
             fi.dy.masa.malilib.render.RenderUtils.color(1f, 1f, 1f, 1f);
-            fi.dy.masa.malilib.render.RenderUtils.blend(true);
+//            fi.dy.masa.malilib.render.RenderUtils.blend(true);
 //            fi.dy.masa.malilib.render.RenderUtils.depthTest(true);
 //            fi.dy.masa.malilib.render.RenderUtils.depthMask(false);
 
             profiler.swap("render_areas");
             if (renderAreas)
             {
-                fi.dy.masa.malilib.render.RenderUtils.polygonOffset(true);
-                fi.dy.masa.malilib.render.RenderUtils.polygonOffset(-1.2f, -0.2f);
+//                fi.dy.masa.malilib.render.RenderUtils.polygonOffset(true);
+//                fi.dy.masa.malilib.render.RenderUtils.polygonOffset(-1.2f, -0.2f);
 
                 profiler.push("selection_boxes");
                 Box currentBox = currentSelection.getSelectedSubRegionBox();
@@ -177,11 +177,11 @@ public class OverlayRenderer
 
                     profiler.swap("block_outlines");
                     Color4f color = currentSelection.isOriginSelected() ? this.colorSelectedCorner : this.colorAreaOrigin;
-                    fi.dy.masa.malilib.render.RenderUtils.renderBlockOutline(origin, expand, lineWidthBlockBox, color);
+                    fi.dy.masa.malilib.render.RenderUtils.renderBlockOutline(origin, expand, lineWidthBlockBox, color, false);
                 }
 
-                fi.dy.masa.malilib.render.RenderUtils.polygonOffset(0f, 0f);
-                fi.dy.masa.malilib.render.RenderUtils.polygonOffset(false);
+//                fi.dy.masa.malilib.render.RenderUtils.polygonOffset(0f, 0f);
+//                fi.dy.masa.malilib.render.RenderUtils.polygonOffset(false);
                 profiler.pop();
             }
 
@@ -209,7 +209,7 @@ public class OverlayRenderer
                     profiler.swap("block_outlines");
 
                     Color4f color = schematicPlacement == currentPlacement && origin ? this.colorSelectedCorner : schematicPlacement.getBoxesBBColor();
-                    fi.dy.masa.malilib.render.RenderUtils.renderBlockOutline(schematicPlacement.getOrigin(), expand, lineWidthBlockBox, color);
+                    fi.dy.masa.malilib.render.RenderUtils.renderBlockOutline(schematicPlacement.getOrigin(), expand, lineWidthBlockBox, color, false);
 
                     profiler.swap("area_sides");
                     if (Configs.Visuals.RENDER_PLACEMENT_ENCLOSING_BOX.getBooleanValue())
@@ -241,11 +241,11 @@ public class OverlayRenderer
 
                 if (project != null)
                 {
-                    fi.dy.masa.malilib.render.RenderUtils.renderBlockOutline(project.getOrigin(), expand, 4f, this.colorOverlapping);
+                    fi.dy.masa.malilib.render.RenderUtils.renderBlockOutline(project.getOrigin(), expand, 4f, this.colorOverlapping, false);
                 }
             }
 
-            fi.dy.masa.malilib.render.RenderUtils.depthMask(true);
+//            fi.dy.masa.malilib.render.RenderUtils.depthMask(true);
         }
 
         profiler.pop();
@@ -344,25 +344,25 @@ public class OverlayRenderer
                     fi.dy.masa.malilib.render.RenderUtils.renderAreaSides(pos2, pos2, color, matrix4f);
                 }
 
-                fi.dy.masa.malilib.render.RenderUtils.renderBlockOutline(pos1, expand, lineWidthBlockBox, color1);
-                fi.dy.masa.malilib.render.RenderUtils.renderBlockOutline(pos2, expand, lineWidthBlockBox, color2);
+                fi.dy.masa.malilib.render.RenderUtils.renderBlockOutline(pos1, expand, lineWidthBlockBox, color1, false);
+                fi.dy.masa.malilib.render.RenderUtils.renderBlockOutline(pos2, expand, lineWidthBlockBox, color2, false);
             }
             else
             {
                 //RenderUtils.renderBlockOutlineOverlapping(pos1, expand, lineWidthBlockBox, color1, color2, this.colorOverlapping, matrix4f, this.mc);
-                fi.dy.masa.malilib.render.RenderUtils.renderBlockOutlineOverlapping(pos1, expand, lineWidthBlockBox, color1, color2, this.colorOverlapping, matrix4f);
+                fi.dy.masa.malilib.render.RenderUtils.renderBlockOutlineOverlapping(pos1, expand, lineWidthBlockBox, color1, color2, this.colorOverlapping, matrix4f, true);
             }
         }
         else
         {
             if (pos1 != null)
             {
-                fi.dy.masa.malilib.render.RenderUtils.renderBlockOutline(pos1, expand, lineWidthBlockBox, color1);
+                fi.dy.masa.malilib.render.RenderUtils.renderBlockOutline(pos1, expand, lineWidthBlockBox, color1, false);
             }
 
             if (pos2 != null)
             {
-                fi.dy.masa.malilib.render.RenderUtils.renderBlockOutline(pos2, expand, lineWidthBlockBox, color2);
+                fi.dy.masa.malilib.render.RenderUtils.renderBlockOutline(pos2, expand, lineWidthBlockBox, color2, false);
             }
         }
     }
@@ -397,19 +397,18 @@ public class OverlayRenderer
         profiler.push("batched_lines");
 //        fi.dy.masa.malilib.render.RenderUtils.depthTest(false);
 //        fi.dy.masa.malilib.render.RenderUtils.depthMask(false);
-
-        RenderSystem.lineWidth(2f);
+//        RenderSystem.lineWidth(2f);
 
         // VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR
-        RenderContext ctx = new RenderContext(MaLiLibPipelines.LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL);
+        RenderContext ctx = new RenderContext(MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL);
         BufferBuilder buffer = ctx.getBuilder();
-        MatrixStack matrices = new MatrixStack();
+//        MatrixStack matrices = new MatrixStack();
 
         MismatchRenderPos lookedEntry = null;
         MismatchRenderPos prevEntry = null;
         boolean connections = Configs.Visuals.RENDER_ERROR_MARKER_CONNECTIONS.getBooleanValue();
 
-        matrices.push();
+//        matrices.push();
 
         for (MismatchRenderPos entry : posList)
         {
@@ -418,7 +417,7 @@ public class OverlayRenderer
             if (entry.pos.equals(lookPos) == false)
             {
                 //RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(entry.pos, color, 0.002, buffer, this.mc);
-                fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(entry.pos, color, 0.002, buffer, matrices);
+                fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(entry.pos, color, 0.002, buffer);
             }
             else
             {
@@ -428,7 +427,7 @@ public class OverlayRenderer
             if (connections && prevEntry != null)
             {
                 //RenderUtils.drawConnectingLineBatchedLines(prevEntry.pos, entry.pos, false, color, buffer, this.mc);
-                fi.dy.masa.malilib.render.RenderUtils.drawConnectingLineBatchedLines(prevEntry.pos, entry.pos, false, color, buffer, matrices);
+                fi.dy.masa.malilib.render.RenderUtils.drawConnectingLineBatchedLines(prevEntry.pos, entry.pos, false, color, buffer);
             }
 
             prevEntry = entry;
@@ -439,39 +438,50 @@ public class OverlayRenderer
             if (connections && prevEntry != null)
             {
                 //RenderUtils.drawConnectingLineBatchedLines(prevEntry.pos, lookedEntry.pos, false, lookedEntry.type.getColor(), buffer, this.mc);
-                fi.dy.masa.malilib.render.RenderUtils.drawConnectingLineBatchedLines(prevEntry.pos, lookedEntry.pos, false, lookedEntry.type.getColor(), buffer, matrices);
+                fi.dy.masa.malilib.render.RenderUtils.drawConnectingLineBatchedLines(prevEntry.pos, lookedEntry.pos, false, lookedEntry.type.getColor(), buffer);
             }
 
-            matrices.pop();
+//            matrices.pop();
 
             try
             {
-                ctx.lineWidth(2f);
-                ctx.draw(buffer.endNullable(), true);
+                BuiltBuffer meshData = buffer.endNullable();
+
+                if (meshData != null)
+                {
+                    ctx.lineWidth(2f);
+                    ctx.draw(meshData, false, true);
+                    meshData.close();
+                }
+
                 ctx.reset();
             }
             catch (Exception ignored) { }
 
             profiler.swap("outlines");
 
-            /*
-            buffer = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
-             */
-            buffer = ctx.start(MaLiLibPipelines.LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL);
+            buffer = ctx.start(MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL);
 
-            matrices.push();
+//            matrices.push();
 
-            RenderSystem.lineWidth(6f);
+//            RenderSystem.lineWidth(6f);
             //RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(lookPos, lookedEntry.type.getColor(), 0.002, buffer, this.mc);
-            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(lookPos, lookedEntry.type.getColor(), 0.002, buffer, matrices);
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(lookPos, lookedEntry.type.getColor(), 0.002, buffer);
 
-            matrices.pop();
+//            matrices.pop();
         }
 
         try
         {
-            ctx.lineWidth(6f);
-            ctx.draw(buffer.endNullable(), true);
+            BuiltBuffer meshData = buffer.endNullable();
+
+            if (meshData != null)
+            {
+                ctx.lineWidth(6f);
+                ctx.draw(meshData, false, true);
+                meshData.close();
+            }
+
             ctx.reset();
         }
         catch (Exception ignored) { }
@@ -479,8 +489,8 @@ public class OverlayRenderer
         profiler.swap("sides");
         if (Configs.Visuals.RENDER_ERROR_MARKER_SIDES.getBooleanValue())
         {
-            fi.dy.masa.malilib.render.RenderUtils.blend(true);
-            fi.dy.masa.malilib.render.RenderUtils.culling(false);
+//            fi.dy.masa.malilib.render.RenderUtils.blend(true);
+//            fi.dy.masa.malilib.render.RenderUtils.culling(false);
 
             buffer = ctx.start(MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_NO_DEPTH_NO_CULL);
 
@@ -495,7 +505,14 @@ public class OverlayRenderer
 
             try
             {
-                ctx.draw(buffer.endNullable());
+                BuiltBuffer meshData = buffer.endNullable();
+
+                if (meshData != null)
+                {
+                    ctx.draw(meshData, false, false);
+                    meshData.close();
+                }
+
                 ctx.close();
             }
             catch (Exception ignored) { }
@@ -809,9 +826,9 @@ public class OverlayRenderer
 
 //            fi.dy.masa.malilib.render.RenderUtils.depthMask(false);
 //            fi.dy.masa.malilib.render.RenderUtils.culling(false);
-            fi.dy.masa.malilib.render.RenderUtils.blend(true);
-            fi.dy.masa.malilib.render.RenderUtils.polygonOffset(true);
-            fi.dy.masa.malilib.render.RenderUtils.polygonOffset(-0.8f, -1.8f);
+//            fi.dy.masa.malilib.render.RenderUtils.blend(true);
+//            fi.dy.masa.malilib.render.RenderUtils.polygonOffset(true);
+//            fi.dy.masa.malilib.render.RenderUtils.polygonOffset(-0.8f, -1.8f);
 
             if (direction)
             {
@@ -824,8 +841,8 @@ public class OverlayRenderer
                         entity, pos, trace.getSide(), color, matrix4f);
             }
 
-            fi.dy.masa.malilib.render.RenderUtils.polygonOffset(false);
-            fi.dy.masa.malilib.render.RenderUtils.blend(false);
+//            fi.dy.masa.malilib.render.RenderUtils.polygonOffset(false);
+//            fi.dy.masa.malilib.render.RenderUtils.blend(false);
 //            fi.dy.masa.malilib.render.RenderUtils.culling(true);
 //            fi.dy.masa.malilib.render.RenderUtils.depthMask(true);
         }

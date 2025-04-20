@@ -339,8 +339,7 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
             }
 
             //RenderUtils.disableDiffuseLighting();
-            //RenderSystem.disableBlend();
-            RenderUtils.blend(false);
+//            RenderUtils.blend(false);
         }
 
         super.render(mouseX, mouseY, selected, drawContext);
@@ -555,7 +554,7 @@ public class WidgetSchematicVerificationResult extends WidgetListEntrySortable<B
         RenderUtils.bindGuiOverlayTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, drawContext);
         mc.getTextureManager().getTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).setFilter(false, false);
 
-        RenderUtils.blend(true);
+//        RenderUtils.blend(true);
         RenderUtils.color(1f, 1f, 1f, 1f);
 
         matrixStack.push();

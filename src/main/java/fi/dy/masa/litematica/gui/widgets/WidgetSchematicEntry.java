@@ -99,8 +99,7 @@ public class WidgetSchematicEntry extends WidgetListEntryBase<LitematicaSchemati
         this.drawString(this.x + 20, this.y + 7, color, schematicName, drawContext);
 
         RenderUtils.color(1f, 1f, 1f, 1f);
-        //RenderSystem.disableBlend();
-        RenderUtils.blend(false);
+//        RenderUtils.blend(false);
 
         Path schematicFile = this.schematic.getFile();
         String fileName = schematicFile != null ? schematicFile.getFileName().toString() : null;

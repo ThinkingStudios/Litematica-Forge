@@ -1,2 +1,3 @@
 ## Change
-- sync `sakura-ryoko/litematica` 1.21.3-0.20.4
+- update mafglib
+- update NeoForge version to 21.3.73

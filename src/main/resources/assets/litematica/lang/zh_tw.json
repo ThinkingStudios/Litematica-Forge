@@ -396,6 +396,8 @@
     "litematica.config.visuals.comment.enableSchematicRendering": "該選項可以切換是否顯示原理圖和原理圖錯誤渲染器",
     "litematica.config.visuals.comment.ghostBlockAlpha": "當方塊繪製為半透明時，半透明方塊的透明度\n§6注意：§7您還需要單獨啟用§6 [方塊半透明化]§7！",
     "litematica.config.visuals.comment.ignoreExistingFluids": "啟用後，任何液體方塊將不會被視為 [額外方塊] 或 [錯誤方塊]，即使結構檔案中顯示的是空氣或其他方塊\n這讓您可以更加方便的在水下建造\n注意：您很可能還得同時啟用 §6[繪製重疊方塊]§r，以允許方塊在流體中繪製",
+    "litematica.config.visuals.comment.ignoreExistingBlocks": "Makes it so all blocks in ignorableExistingBlocks are ignored when building a schematic.",
+    "litematica.config.visuals.comment.ignorableExistingBlocks": "Lists of comma-seperated block-IDs and block-tag-IDs\nwhich are ignored when building\na schematic (e.g. minecraft:stone_slab,\nminecraft:smooth_stone_slab, #minecraft:wooden_slabs).\nInvalid IDs are ignored.",
     "litematica.config.visuals.comment.overlayReducedInnerSides": "如果啟用，可以使得投影內方塊接觸的側面不被顯示\n有兩個優點\n-1. 首先減少了投影的繪製工作量\n-2. 在投影內部時，內部的雜色會變淡\n\n§b譯註：雖然預設是關閉但建議開啟 - ZMDF",
     "litematica.config.visuals.comment.placementBoxSideAlpha": "子區域邊框側面的透明度",
     "litematica.config.visuals.comment.renderAOModernEnable": "啟用一個新的環境光遮蔽處理器，能夠修復陰影的顯示錯誤。\n但它也可能導致投影圖層出現來自相鄰圖層的陰影，這在你建造時可能會分散注意力",
@@ -437,6 +439,8 @@
     "litematica.config.visuals.name.enableSchematicRendering": "啟用投影繪製",
     "litematica.config.visuals.name.ghostBlockAlpha": "方塊透明度",
     "litematica.config.visuals.name.ignoreExistingFluids": "忽略投影內液體",
+    "litematica.config.visuals.name.ignoreExistingBlocks": "ignoreExistingBlocks",
+    "litematica.config.visuals.name.ignorableExistingBlocks": "ignorableExistingBlocks",
     "litematica.config.visuals.name.overlayReducedInnerSides": "減少內側面繪製",
     "litematica.config.visuals.name.placementBoxSideAlpha": "投影區域邊框側面透明度",
     "litematica.config.visuals.name.renderAOModernEnable": "啟用環境光遮蔽處理器",
@@ -966,5 +970,5 @@
     "litematica.tool_mode.name.replace_block": "取代方塊",
     "litematica.tool_mode.name.schematic_placement": "原理圖放置",
     "litematica.warning.area_editor.area_rendering_disabled": "注意：區域選擇框呈現目前被停用\n查看視覺效果 -> %s，或者快速鍵 -> %s ['%s']",
-    "modmenu.descriptionTranslation.litematica": "Modern mod schematic for LiteLoader, Rift, Fabric, etc."
+    "modmenu.descriptionTranslation.litematica": "A modern schematic mod for LiteLoader, Rift, Fabric etc."
 }

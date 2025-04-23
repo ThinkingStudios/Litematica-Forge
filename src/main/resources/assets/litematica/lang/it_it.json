@@ -396,6 +396,8 @@
     "litematica.config.visuals.comment.enableSchematicRendering": "Abilita il rendering dello schema e della sovrapposizione",
     "litematica.config.visuals.comment.ghostBlockAlpha": "Il valore alpha dei blocchi fantasma,\nquando vengono renderizzati come traslucidi.\n§6Nota: §7Devi anche abilitare separatamente il rendering traslucido,\nutilizzando l'opzione 'renderBlocksAsTranslucent'!",
     "litematica.config.visuals.comment.ignoreExistingFluids": "Se abilitato, tutti i blocchi di fluido vengono ignorati come \"blocchi extra\"\ne come \"blocchi sbagliati\", cioè dove lo schema ha aria o altri blocchi.\nFondamentalmente, questo rende la costruzione sotto acqua molto meno fastidiosa.\nNota: Probabilmente vorrai anche abilitare l'opzione 'renderCollidingSchematicBlocks'\nallo stesso tempo, per consentire ai blocchi di essere renderizzati all'interno dei fluidi.",
+    "litematica.config.visuals.comment.ignoreExistingBlocks": "Makes it so all blocks in ignorableExistingBlocks are ignored when building a schematic.",
+    "litematica.config.visuals.comment.ignorableExistingBlocks": "Lists of comma-seperated block-IDs and block-tag-IDs\nwhich are ignored when building\na schematic (e.g. minecraft:stone_slab,\nminecraft:smooth_stone_slab, #minecraft:wooden_slabs).\nInvalid IDs are ignored.",
     "litematica.config.visuals.comment.overlayReducedInnerSides": "Se abilitato, i lati interni adiacenti/toccanti\nper le sovrapposizioni dei blocchi vengono rimossi/non renderizzati",
     "litematica.config.visuals.comment.placementBoxSideAlpha": "Il valore alpha dei lati delle scatole di sottoregione",
     "litematica.config.visuals.comment.renderAOModernEnable": "Enables a new Ambient Occlusion Processor which should\nfix issues where shadows aren't being applied correctly,\nbut it can also cause Schematic Layers to have shadows\nfrom adjacent layers that can be distracting\nwhile your building.",
@@ -437,6 +439,8 @@
     "litematica.config.visuals.name.enableSchematicRendering": "abilitaRenderingSchematici",
     "litematica.config.visuals.name.ghostBlockAlpha": "alphaBloccoFantasma",
     "litematica.config.visuals.name.ignoreExistingFluids": "ignoraFluidiEsistenti",
+    "litematica.config.visuals.name.ignoreExistingBlocks": "ignoreExistingBlocks",
+    "litematica.config.visuals.name.ignorableExistingBlocks": "ignorableExistingBlocks",
     "litematica.config.visuals.name.overlayReducedInnerSides": "overlayLatiInterniRidotti",
     "litematica.config.visuals.name.placementBoxSideAlpha": "alphaLatiSceltePosizionamento",
     "litematica.config.visuals.name.renderAOModernEnable": "renderAOModernEnable",
@@ -966,5 +970,5 @@
     "litematica.tool_mode.name.replace_block": "Sostituisci blocco",
     "litematica.tool_mode.name.schematic_placement": "Posizionamento Schema",
     "litematica.warning.area_editor.area_rendering_disabled": "Nota: Il rendering delle scatole di selezione area è attualmente disabilitato\nVedi Aspetti -> %s, o Scorciatoie -> %s ['%s']",
-    "modmenu.descriptionTranslation.litematica": "Modern mod schematic for LiteLoader, Rift, Fabric, etc."
+    "modmenu.descriptionTranslation.litematica": "A modern schematic mod for LiteLoader, Rift, Fabric etc."
 }

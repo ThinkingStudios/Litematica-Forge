@@ -396,6 +396,8 @@
     "litematica.config.visuals.comment.enableSchematicRendering": "Activer le rendu du schéma et de la superposition",
     "litematica.config.visuals.comment.ghostBlockAlpha": "La valeur alpha des blocs fantômes,\nlors du rendu translucide.\n§6Remarque : §7Vous devez également activer le rendu translucide séparément,\nen utilisant l'option 'renderBlocksAsTranslucent' !",
     "litematica.config.visuals.comment.ignoreExistingFluids": "Si cette option est activée, tous les blocs de fluides sont ignorés en tant que « blocs supplémentaires »\net en tant que « mauvais blocs », c'est-à-dire lorsque le schéma contient de l'air ou d'autres blocs.\nEn gros, cela rend la construction de choses sous l'eau beaucoup moins ennuyeuse.\nRemarque : vous souhaiterez probablement également activer l'option 'renderCollidingSchematicBlocks'\nen même temps, pour permettre aux blocs d'être rendus à l'intérieur des fluides.",
+    "litematica.config.visuals.comment.ignoreExistingBlocks": "Makes it so all blocks in ignorableExistingBlocks are ignored when building a schematic.",
+    "litematica.config.visuals.comment.ignorableExistingBlocks": "Lists of comma-seperated block-IDs and block-tag-IDs\nwhich are ignored when building\na schematic (e.g. minecraft:stone_slab,\nminecraft:smooth_stone_slab, #minecraft:wooden_slabs).\nInvalid IDs are ignored.",
     "litematica.config.visuals.comment.overlayReducedInnerSides": "Si activé, alors les côtés intérieurs adjacents/touchant\npour les superpositions de blocs sont supprimés/non rendus",
     "litematica.config.visuals.comment.placementBoxSideAlpha": "La valeur alpha du côté de la sous-région",
     "litematica.config.visuals.comment.renderAOModernEnable": "Enables a new Ambient Occlusion Processor which should\nfix issues where shadows aren't being applied correctly,\nbut it can also cause Schematic Layers to have shadows\nfrom adjacent layers that can be distracting\nwhile your building.",
@@ -437,6 +439,8 @@
     "litematica.config.visuals.name.enableSchematicRendering": "activerSchematicRendering",
     "litematica.config.visuals.name.ghostBlockAlpha": "fantômeBlockAlpha",
     "litematica.config.visuals.name.ignoreExistingFluids": "ignorer les fluides existants",
+    "litematica.config.visuals.name.ignoreExistingBlocks": "ignoreExistingBlocks",
+    "litematica.config.visuals.name.ignorableExistingBlocks": "ignorableExistingBlocks",
     "litematica.config.visuals.name.overlayReducedInnerSides": "superpositionCôtés intérieurs réduits",
     "litematica.config.visuals.name.placementBoxSideAlpha": "placementBoxSideAlpha",
     "litematica.config.visuals.name.renderAOModernEnable": "renderAOModernEnable",
@@ -966,5 +970,5 @@
     "litematica.tool_mode.name.replace_block": "Remplacer le bloc",
     "litematica.tool_mode.name.schematic_placement": "Placement schématique",
     "litematica.warning.area_editor.area_rendering_disabled": "Remarque : le rendu des cases de sélection de zone est actuellement désactivé\nVoir Visuels -> %s, ou Raccourcis clavier -> %s ['%s']",
-    "modmenu.descriptionTranslation.litematica": "Modern mod schematic for LiteLoader, Rift, Fabric, etc."
+    "modmenu.descriptionTranslation.litematica": "A modern schematic mod for LiteLoader, Rift, Fabric etc."
 }

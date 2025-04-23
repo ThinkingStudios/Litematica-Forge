@@ -396,6 +396,8 @@
     "litematica.config.visuals.comment.enableSchematicRendering": "図面ブロックおよびオーバーレイの描画を有効化する",
     "litematica.config.visuals.comment.ghostBlockAlpha": "図面ブロックを半透明に描画する際の不透明度\n§6注意: §7別途，「図面ブロックを半透明に描画」を有効化する必要がある．",
     "litematica.config.visuals.comment.ignoreExistingFluids": "流体を「余分なブロック」や「間違ったブロック」としない．\nこれにより，水中での建築作業がはるかに快適になる．\n注意: 流体内にブロックを描画できるように\n「不一致の図面ブロックの描画」も有効にすることを推奨する．",
+    "litematica.config.visuals.comment.ignoreExistingBlocks": "Makes it so all blocks in ignorableExistingBlocks are ignored when building a schematic.",
+    "litematica.config.visuals.comment.ignorableExistingBlocks": "Lists of comma-seperated block-IDs and block-tag-IDs\nwhich are ignored when building\na schematic (e.g. minecraft:stone_slab,\nminecraft:smooth_stone_slab, #minecraft:wooden_slabs).\nInvalid IDs are ignored.",
     "litematica.config.visuals.comment.overlayReducedInnerSides": "オーバーレイの隣接面を描画しないようにする．",
     "litematica.config.visuals.comment.placementBoxSideAlpha": "子領域ボックスの面の不透明度",
     "litematica.config.visuals.comment.renderAOModernEnable": "新しいアンビエントオクルージョンプロセッサを有効にする．\nこれは影が正しく適用されない問題の修正を目的としている．\nただし，他の隣接するレイヤからの影を生じる可能性があり，\n建築中に気が散る場合がある．",
@@ -437,6 +439,8 @@
     "litematica.config.visuals.name.enableSchematicRendering": "図面の描画",
     "litematica.config.visuals.name.ghostBlockAlpha": "「ゴーストブロック」の半透明度",
     "litematica.config.visuals.name.ignoreExistingFluids": "既存の流体を無視",
+    "litematica.config.visuals.name.ignoreExistingBlocks": "ignoreExistingBlocks",
+    "litematica.config.visuals.name.ignorableExistingBlocks": "ignorableExistingBlocks",
     "litematica.config.visuals.name.overlayReducedInnerSides": "オーバーレイの内側の面を省略",
     "litematica.config.visuals.name.placementBoxSideAlpha": "図面配置ボックスの面の不透明度",
     "litematica.config.visuals.name.renderAOModernEnable": "新しいアンビエントオクルージョン",
@@ -966,5 +970,5 @@
     "litematica.tool_mode.name.replace_block": "置換",
     "litematica.tool_mode.name.schematic_placement": "図面配置",
     "litematica.warning.area_editor.area_rendering_disabled": "注意: 領域選択の描画が無効になっています．\n表示 -> %s または ショートカット -> %s ['%s'] を確認してください．",
-    "modmenu.descriptionTranslation.litematica": "Modern mod schematic for LiteLoader, Rift, Fabric, etc."
+    "modmenu.descriptionTranslation.litematica": "A modern schematic mod for LiteLoader, Rift, Fabric etc."
 }

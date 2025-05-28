@@ -28,11 +28,11 @@
         "world.MixinWorldChunk"
     ],
     "client": [
-        "IMixinKeyBinding",
         "MixinMinecraftClient",
         "MixinMinecraftClient_easyPlace",
         "entity.MixinAbstractSignEditScreen",
         "hud.MixinDebugHud",
+        "input.IMixinKeyBinding",
         "network.MixinClientCommonNetworkHandler",
         "network.MixinClientPlayerInteractionManager",
         "network.MixinClientPlayNetworkHandler",

@@ -871,7 +871,7 @@ public class WorldRendererSchematic
 
                 BlockModelRendererSchematic.enableCache();
                 result = renderType == BlockRenderType.MODEL &&
-                       this.blockModelRenderer.renderModel(world, parts, state, pos, matrixStack, bufferBuilderIn, seed);
+                        this.blockModelRenderer.renderModel(world, parts, state, pos, matrixStack, bufferBuilderIn, seed);
                 BlockModelRendererSchematic.disableCache();
 
                 //System.out.printf("renderBlock(): result [%s]\n", result);
@@ -1083,7 +1083,15 @@ public class WorldRendererSchematic
     public List<BlockModelPart> getModelParts(BlockPos pos, BlockState state, Random rand)
     {
         rand.setSeed(state.getRenderingSeed(pos));
-        return this.getModelForState(state).getParts(rand);
+        List<BlockModelPart> parts = this.getModelForState(state).getParts(rand);
+
+        if (parts.isEmpty())
+        {
+            parts = this.getModelForState(state.getBlock().getDefaultState()).getParts(rand);
+            Litematica.LOGGER.warn("getModelParts: Invalid Block State for block at [{}] with state [{}]; Resetting to default.", pos.toShortString(), state.toString());
+        }
+
+        return parts;
     }
 
     public void renderEntities(Camera camera, Frustum frustum, MatrixStack matrices, VertexConsumerProvider.Immediate immediate, float partialTicks, Profiler profiler)

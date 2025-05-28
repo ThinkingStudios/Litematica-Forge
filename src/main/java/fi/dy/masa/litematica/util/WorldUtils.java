@@ -335,7 +335,7 @@ public class WorldUtils
         newSchem.getMetadata().setTimeModifiedToNow();
 
         boolean result = newSchem.writeToFile(outputDir, outputFileName, override);
-        System.out.printf("Vanilla IMPORT DUMP (OUT-2) -->\n%s\n", newSchem.toString());
+//        System.out.printf("Vanilla IMPORT DUMP (OUT-2) -->\n%s\n", newSchem.toString());
 
         world.clearEntities();
         return result;

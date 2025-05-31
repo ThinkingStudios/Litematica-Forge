@@ -56,7 +56,7 @@ public class TaskScheduler
         if (MinecraftClient.getInstance().player == null) return;
         Profiler profiler = Profilers.get();
 
-        profiler.push(Reference.ID+"_run_tasks");
+        profiler.push(Reference.MOD_ID+"_run_tasks");
         synchronized (this)
         {
             if (this.tasks.isEmpty() == false)

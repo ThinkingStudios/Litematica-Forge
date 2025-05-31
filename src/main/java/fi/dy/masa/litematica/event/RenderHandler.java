@@ -52,7 +52,7 @@ public class RenderHandler implements IRenderer
     @Override
     public Supplier<String> getProfilerSectionSupplier()
     {
-        return () -> Reference.ID+"_render_handler";
+        return () -> Reference.MOD_ID+"_render_handler";
     }
 
     @Override

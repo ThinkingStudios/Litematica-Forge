@@ -787,7 +787,7 @@
     "litematica.gui.title.area_editor_simple": "Area Editor (Simple mode)",
     "litematica.gui.title.area_editor_sub_region": "Area Editor (sub-region)",
     "litematica.gui.title.area_selection_manager": "Area Selection Manager",
-    "litematica.gui.title.configs": "%s Configs - %s",
+    "litematica.gui.title.configs": "Litematica Configs - %s",
     "litematica.gui.title.configure_schematic_placement": "Configure Schematic placement",
     "litematica.gui.title.configure_schematic_sub_region": "Configure Placement Sub-Region",
     "litematica.gui.title.confirm_file_deletion": "Confirm file deletion",
@@ -955,5 +955,5 @@
     "litematica.tool_mode.name.replace_block": "Replace block",
     "litematica.tool_mode.name.schematic_placement": "Schematic Placement",
     "litematica.warning.area_editor.area_rendering_disabled": "Note: The Area Selection boxes rendering is currently disabled\nSee Visuals -> %s, or Hotkeys -> %s ['%s']",
-    "modmenu.descriptionTranslation.litematica": "Modern mod schematic for LiteLoader, Rift, Fabric, etc."
+    "modmenu.descriptionTranslation.litematica": "A modern schematic mod for LiteLoader, Rift, Fabric etc."
 }

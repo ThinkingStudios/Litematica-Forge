@@ -787,7 +787,7 @@
     "litematica.gui.title.area_editor_simple": "Éditeur de zone (mode Simple)",
     "litematica.gui.title.area_editor_sub_region": "Éditeur de zone (sous-région)",
     "litematica.gui.title.area_selection_manager": "Gestionnaire de sélection de zone",
-    "litematica.gui.title.configs": "Configurations de %s - %s",
+    "litematica.gui.title.configs": "Configurations de Litematica - %s",
     "litematica.gui.title.configure_schematic_placement": "Configurer l'emplacement Schématique",
     "litematica.gui.title.configure_schematic_sub_region": "Configurer la sous-région de placement",
     "litematica.gui.title.confirm_file_deletion": "Confirmer la suppression du fichier",
@@ -955,5 +955,5 @@
     "litematica.tool_mode.name.replace_block": "Remplacer le bloc",
     "litematica.tool_mode.name.schematic_placement": "Placement schématique",
     "litematica.warning.area_editor.area_rendering_disabled": "Remarque : le rendu des cases de sélection de zone est actuellement désactivé\nVoir Visuels -> %s, ou Raccourcis clavier -> %s ['%s']",
-    "modmenu.descriptionTranslation.litematica": "Modern mod schematic for LiteLoader, Rift, Fabric, etc."
+    "modmenu.descriptionTranslation.litematica": "A modern schematic mod for LiteLoader, Rift, Fabric etc."
 }

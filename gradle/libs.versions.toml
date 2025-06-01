@@ -13,6 +13,7 @@ archives-name="Forgematica"
 # Publish properties
 id-modrinth="dCKRaeBC"
 id-curseforge="912441"
+release_type="release"
 
 # Mod dependencies
 mafglib="0.3.3-mc1.21.1"

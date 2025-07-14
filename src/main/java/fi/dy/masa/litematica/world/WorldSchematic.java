@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import com.google.common.collect.ImmutableList;
+import net.neoforged.neoforge.entity.PartEntity;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.Block;
@@ -14,7 +15,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.DimensionEffects;
 import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.boss.dragon.EnderDragonPart;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
@@ -24,7 +24,6 @@ import net.minecraft.particle.ParticleEffect;
 import net.minecraft.recipe.BrewingRecipeRegistry;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -245,7 +244,7 @@ public class WorldSchematic extends World
     }
 
     @Override
-    public Collection<EnderDragonPart> getEnderDragonParts()
+    public Collection<PartEntity<?>> getEnderDragonParts()
     {
         return List.of();
     }
@@ -613,6 +612,30 @@ public class WorldSchematic extends World
     public FuelRegistry getFuelRegistry()
     {
         return null;
+    }
+
+    @Override
+    public void setDayTimeFraction(float f) {
+        if (this.mc.world != null) {
+            this.mc.world.setDayTimeFraction(f);
+        }
+    }
+
+    @Override
+    public float getDayTimeFraction() {
+        return 0;
+    }
+
+    @Override
+    public float getDayTimePerTick() {
+        return 0;
+    }
+
+    @Override
+    public void setDayTimePerTick(float f) {
+        if (this.mc.world != null) {
+            this.mc.world.setDayTimePerTick(f);
+        }
     }
 
     @Override

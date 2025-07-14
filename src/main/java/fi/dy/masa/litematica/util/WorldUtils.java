@@ -448,7 +448,7 @@ public class WorldUtils
         litematicaSchematic.placeToWorld(world, schematicPlacement, false); // TODO use a per-chunk version for a bit more speed
 
         StructureTemplate template = new StructureTemplate();
-        template.saveFromWorld(world, BlockPos.ORIGIN, size, ignoreEntities == false, Blocks.STRUCTURE_VOID);
+        template.saveFromWorld(world, BlockPos.ORIGIN, size, ignoreEntities == false, List.of(Blocks.STRUCTURE_VOID));
 
         world.clearEntities();
         return template;

@@ -3,25 +3,15 @@ package fi.dy.masa.litematica.materials;
 import java.util.IdentityHashMap;
 import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
-import net.minecraft.block.BedBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.CandleBlock;
-import net.minecraft.block.DoorBlock;
-import net.minecraft.block.FlowerPotBlock;
-import net.minecraft.block.FluidBlock;
-import net.minecraft.block.MultifaceGrowthBlock;
-import net.minecraft.block.SeaPickleBlock;
-import net.minecraft.block.SlabBlock;
-import net.minecraft.block.SnowBlock;
-import net.minecraft.block.TallPlantBlock;
-import net.minecraft.block.TurtleEggBlock;
+
+import net.minecraft.block.*;
 import net.minecraft.block.enums.BedPart;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.block.enums.SlabType;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.potion.Potions;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
@@ -122,7 +112,28 @@ public class MaterialCache
     public boolean requiresMultipleItems(BlockState state)
     {
         Block block = state.getBlock();
-        return block instanceof FlowerPotBlock && block != Blocks.FLOWER_POT;
+        if (block instanceof FlowerPotBlock && block != Blocks.FLOWER_POT)
+        {
+            return true;
+        }
+        // Block Entity Stuff
+//        else if (block instanceof LecternBlock && state.get(LecternBlock.HAS_BOOK))
+//        {
+//            return true;
+//        }
+//        else if (block instanceof ChiseledBookshelfBlock)
+//        {
+//            for (BooleanProperty prop : ChiseledBookshelfBlock.SLOT_OCCUPIED_PROPERTIES)
+//            {
+//                if (state.get(prop))
+//                {
+//                    return true;
+//                }
+//            }
+//
+//            return false;
+//        }
+        else return block instanceof AbstractCauldronBlock && block != Blocks.CAULDRON;
     }
 
     public ImmutableList<ItemStack> getItems(BlockState state)
@@ -137,6 +148,37 @@ public class MaterialCache
         if (block instanceof FlowerPotBlock && block != Blocks.FLOWER_POT)
         {
             return ImmutableList.of(new ItemStack(Blocks.FLOWER_POT), ((IMixinAbstractBlock) block).litematica_getPickStack(world, pos, state, false));
+        }
+//        else if (block instanceof LecternBlock && state.get(LecternBlock.HAS_BOOK))
+//        {
+//            return ImmutableList.of(new ItemStack(Blocks.LECTERN), ((IMixinAbstractBlock) block).litematica_getPickStack(world, pos, state, false));
+//        }
+//        else if (block instanceof ChiseledBookshelfBlock)
+//        {
+//            // Block Entity Stuff
+//        }
+        else if (block instanceof AbstractCauldronBlock && block != Blocks.CAULDRON)
+        {
+            if (block instanceof LavaCauldronBlock)
+            {
+                return ImmutableList.of(new ItemStack(Blocks.CAULDRON), new ItemStack(Items.LAVA_BUCKET));
+            }
+            else if (block == Blocks.POWDER_SNOW_CAULDRON)
+            {
+                return ImmutableList.of(new ItemStack(Blocks.CAULDRON), new ItemStack(Items.POWDER_SNOW_BUCKET));
+            }
+            else if (block == Blocks.WATER_CAULDRON)
+            {
+                final int level = state.get(LeveledCauldronBlock.LEVEL);
+
+                return switch (level)
+                {
+                    case 1 -> ImmutableList.of(new ItemStack(Blocks.CAULDRON), PotionContentsComponent.createStack(Items.POTION, Potions.WATER));
+                    case 2 -> ImmutableList.of(new ItemStack(Blocks.CAULDRON), PotionContentsComponent.createStack(Items.POTION, Potions.WATER), PotionContentsComponent.createStack(Items.POTION, Potions.WATER));
+                    case 3 -> ImmutableList.of(new ItemStack(Blocks.CAULDRON), new ItemStack(Items.WATER_BUCKET));
+                    default -> ImmutableList.of(new ItemStack(Blocks.CAULDRON));
+                };
+            }
         }
 
         return ImmutableList.of(this.getRequiredBuildItemForState(state, world, pos));

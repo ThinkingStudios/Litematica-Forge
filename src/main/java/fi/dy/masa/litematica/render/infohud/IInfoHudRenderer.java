@@ -10,13 +10,13 @@ public interface IInfoHudRenderer
 {
     /**
      * Return true if this renderer should render its text in the indicated phase
-     * @return
+     * @return ()
      */
     boolean getShouldRenderText(RenderPhase phase);
 
     /**
      * Return true if this renderer should render its custom content via render()
-     * @return
+     * @return ()
      */
     default boolean getShouldRenderCustom()
     {
@@ -25,7 +25,7 @@ public interface IInfoHudRenderer
 
     /**
      * Whether or not this renderer should also be rendered when GUIs are open
-     * @return
+     * @return ()
      */
     default boolean shouldRenderInGuis()
     {
@@ -34,7 +34,7 @@ public interface IInfoHudRenderer
 
     /**
      * Returns the text lines rendered by the InfoHud, if any
-     * @return
+     * @return ()
      */
     List<String> getText(RenderPhase phase);
 
@@ -44,7 +44,7 @@ public interface IInfoHudRenderer
      * @param alignment the screen position to render at
      * @return the required y height used up for the rendered content
      */
-    default int render(int xOffset, int yOffset, HudAlignment alignment, DrawContext drawContext)
+    default int render(DrawContext drawContext, int xOffset, int yOffset, HudAlignment alignment)
     {
         return 0;
     }

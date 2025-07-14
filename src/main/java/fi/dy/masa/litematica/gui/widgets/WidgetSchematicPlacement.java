@@ -72,35 +72,35 @@ public class WidgetSchematicPlacement extends WidgetListEntryBase<SchematicPlace
     }
 
     @Override
-    public void render(int mouseX, int mouseY, boolean selected, DrawContext drawContext)
+    public void render(DrawContext drawContext, int mouseX, int mouseY, boolean selected)
     {
-        RenderUtils.color(1f, 1f, 1f, 1f);
+//        RenderUtils.color(1f, 1f, 1f, 1f);
 
         boolean placementSelected = this.manager.getSelectedSchematicPlacement() == this.placement;
 
         // Draw a lighter background for the hovered and the selected entry
         if (selected || placementSelected || this.isMouseOver(mouseX, mouseY))
         {
-            RenderUtils.drawRect(this.x, this.y, this.width, this.height, 0xA0707070);
+            RenderUtils.drawRect(drawContext, this.x, this.y, this.width, this.height, 0xA0707070);
         }
         else if (this.isOdd)
         {
-            RenderUtils.drawRect(this.x, this.y, this.width, this.height, 0xA0101010);
+            RenderUtils.drawRect(drawContext, this.x, this.y, this.width, this.height, 0xA0101010);
         }
         // Draw a slightly lighter background for even entries
         else
         {
-            RenderUtils.drawRect(this.x, this.y, this.width, this.height, 0xA0303030);
+            RenderUtils.drawRect(drawContext, this.x, this.y, this.width, this.height, 0xA0303030);
         }
 
         if (placementSelected)
         {
-            RenderUtils.drawOutline(this.x, this.y, this.width, this.height, 0xFFE0E0E0);
+            RenderUtils.drawOutline(drawContext, this.x, this.y, this.width, this.height, 0xFFE0E0E0);
         }
 
         String name = this.placement.getName();
         String pre = this.placement.isEnabled() ? GuiBase.TXT_GREEN : GuiBase.TXT_RED;
-        this.drawString(this.x + 20, this.y + 7, 0xFFFFFFFF, pre + name, drawContext);
+        this.drawString(drawContext, this.x + 20, this.y + 7, 0xFFFFFFFF, pre + name);
 
         Icons icon;
 
@@ -113,40 +113,39 @@ public class WidgetSchematicPlacement extends WidgetListEntryBase<SchematicPlace
             icon = Icons.SCHEMATIC_TYPE_MEMORY;
         }
 
-        RenderUtils.color(1, 1, 1, 1);
-
-        this.parent.bindTexture(Icons.TEXTURE, drawContext);
-        icon.renderAt(this.x + 2, this.y + 5, this.zLevel, false, false, drawContext);
+//        RenderUtils.color(1, 1, 1, 1);
+//        this.parent.bindTexture(Icons.TEXTURE, drawContext);
+        icon.renderAt(drawContext, this.x + 2, this.y + 5, this.zLevel, false, false);
 
         if (this.placement.isRegionPlacementModified())
         {
             icon = Icons.NOTICE_EXCLAMATION_11;
-            icon.renderAt(this.buttonsStartX - 13, this.y + 6, this.zLevel, false, false, drawContext);
+            icon.renderAt(drawContext, this.buttonsStartX - 13, this.y + 6, this.zLevel, false, false);
         }
 
         if (this.placement.isLocked())
         {
             icon = Icons.LOCK_LOCKED;
-            icon.renderAt(this.buttonsStartX - 26, this.y + 6, this.zLevel, false, false, drawContext);
+            icon.renderAt(drawContext, this.buttonsStartX - 26, this.y + 6, this.zLevel, false, false);
         }
 
-        super.render(mouseX, mouseY, placementSelected, drawContext);
+        super.render(drawContext, mouseX, mouseY, placementSelected);
     }
 
     @Override
-    public void postRenderHovered(int mouseX, int mouseY, boolean selected, DrawContext drawContext)
+    public void postRenderHovered(DrawContext drawContext, int mouseX, int mouseY, boolean selected)
     {
         if (this.placement.isLocked() &&
             GuiBase.isMouseOver(mouseX, mouseY, this.x + this.buttonsStartX - 38, this.y + 6, 11, 11))
         {
             String str = StringUtils.translate("litematica.hud.schematic_placement.hover_info.placement_locked");
-            RenderUtils.drawHoverText(mouseX, mouseY, ImmutableList.of(str), drawContext);
+            RenderUtils.drawHoverText(drawContext, mouseX, mouseY, ImmutableList.of(str));
         }
         else if (this.placement.isRegionPlacementModified() &&
                  GuiBase.isMouseOver(mouseX, mouseY, this.x + this.buttonsStartX - 25, this.y + 6, 11, 11))
         {
             String str = StringUtils.translate("litematica.hud.schematic_placement.hover_info.placement_modified");
-            RenderUtils.drawHoverText(mouseX, mouseY, ImmutableList.of(str), drawContext);
+            RenderUtils.drawHoverText(drawContext, mouseX, mouseY, ImmutableList.of(str));
         }
         else if (GuiBase.isMouseOver(mouseX, mouseY, this.x, this.y, this.buttonsStartX - 18, this.height))
         {
@@ -164,7 +163,7 @@ public class WidgetSchematicPlacement extends WidgetListEntryBase<SchematicPlace
             String strSize = String.format("%d x %d x %d", size.getX(), size.getY(), size.getZ());
             text.add(StringUtils.translate("litematica.gui.label.schematic_placement.enclosing_size", strSize));
 
-            RenderUtils.drawHoverText(mouseX, mouseY, text, drawContext);
+            RenderUtils.drawHoverText(drawContext, mouseX, mouseY, text);
         }
     }
 

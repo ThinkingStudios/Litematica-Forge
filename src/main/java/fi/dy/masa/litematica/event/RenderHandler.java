@@ -8,7 +8,6 @@ import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.BufferBuilderStorage;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.Fog;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.util.profiler.Profiler;
 
@@ -16,6 +15,7 @@ import fi.dy.masa.malilib.interfaces.IRenderer;
 import fi.dy.masa.malilib.util.GuiUtils;
 import fi.dy.masa.litematica.Reference;
 import fi.dy.masa.litematica.config.Configs;
+import fi.dy.masa.litematica.config.Hotkeys;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.gui.GuiSchematicManager;
 import fi.dy.masa.litematica.render.LitematicaRenderer;
@@ -27,7 +27,7 @@ import fi.dy.masa.litematica.tool.ToolMode;
 public class RenderHandler implements IRenderer
 {
     @Override
-    public void onRenderWorldPreWeather(Framebuffer fb, Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, Fog fog, BufferBuilderStorage buffers, Profiler profiler)
+    public void onRenderWorldPreWeather(Framebuffer fb, Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, BufferBuilderStorage buffers, Profiler profiler)
     {
 //        MinecraftClient mc = MinecraftClient.getInstance();
 //
@@ -37,7 +37,7 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onRenderWorldLastAdvanced(Framebuffer fb, Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, Fog fog, BufferBuilderStorage buffers, Profiler profiler)
+    public void onRenderWorldLastAdvanced(Framebuffer fb, Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, BufferBuilderStorage buffers, Profiler profiler)
     {
         MinecraftClient mc = MinecraftClient.getInstance();
 
@@ -49,7 +49,7 @@ public class RenderHandler implements IRenderer
             if (Configs.InfoOverlays.VERIFIER_OVERLAY_ENABLED.getBooleanValue())
             {
                 profiler.swap("overlay_mismatches");
-                OverlayRenderer.getInstance().renderSchematicVerifierMismatches(posMatrix, profiler);
+                OverlayRenderer.getInstance().renderSchematicVerifierMismatches(posMatrix, profiler, Hotkeys.RENDER_OVERLAY_THROUGH_BLOCKS.getKeybind().isKeybindHeld());
             }
 
             if (DataManager.getToolMode() == ToolMode.REBUILD)
@@ -86,13 +86,13 @@ public class RenderHandler implements IRenderer
                 {
                     ToolHud.getInstance().renderHud(drawContext);
                     profiler.swap("overlay_hover_info");
-                    OverlayRenderer.getInstance().renderHoverInfo(mc, drawContext, profiler);
+                    OverlayRenderer.getInstance().renderHoverInfo(drawContext, mc, profiler);
                 }
 
                 if (GuiSchematicManager.hasPendingPreviewTask())
                 {
                     profiler.swap("overlay_preview_frame");
-                    OverlayRenderer.getInstance().renderPreviewFrame(mc, drawContext, profiler);
+                    OverlayRenderer.getInstance().renderPreviewFrame(drawContext, mc, profiler);
                 }
             }
 

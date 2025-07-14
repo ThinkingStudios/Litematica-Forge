@@ -268,7 +268,7 @@ public abstract class TaskProcessChunkMultiPhase extends TaskProcessChunkBase
 
     protected void sendCommand(String command, ClientPlayerEntity player)
     {
-        player.networkHandler.sendCommand(command);
+        player.networkHandler.sendChatCommand(command);
         ++this.sentCommandsThisTick;
     }
 

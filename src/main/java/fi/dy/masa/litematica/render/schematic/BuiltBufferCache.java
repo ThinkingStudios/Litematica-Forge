@@ -4,15 +4,23 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+
+import net.minecraft.client.render.BlockRenderLayer;
 import net.minecraft.client.render.BuiltBuffer;
 import net.minecraft.client.render.RenderLayer;
 
 public class BuiltBufferCache implements AutoCloseable
 {
+    private final ConcurrentHashMap<BlockRenderLayer, BuiltBuffer> blockBuffers = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<RenderLayer, BuiltBuffer> layerBuffers = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<OverlayRenderType, BuiltBuffer> overlayBuffers = new ConcurrentHashMap<>();
 
     protected BuiltBufferCache() { }
+
+    protected boolean hasBuiltBufferByBlockLayer(BlockRenderLayer layer)
+    {
+        return this.blockBuffers.containsKey(layer);
+    }
 
     protected boolean hasBuiltBufferByLayer(RenderLayer layer)
     {
@@ -22,6 +30,18 @@ public class BuiltBufferCache implements AutoCloseable
     protected boolean hasBuiltBufferByType(OverlayRenderType type)
     {
         return this.overlayBuffers.containsKey(type);
+    }
+
+    protected void storeBuiltBufferByBlockLayer(BlockRenderLayer layer, @Nonnull BuiltBuffer newBuffer)
+    {
+        if (this.hasBuiltBufferByBlockLayer(layer))
+        {
+            this.blockBuffers.get(layer).close();
+        }
+        synchronized (this.blockBuffers)
+        {
+            this.blockBuffers.put(layer, newBuffer);
+        }
     }
 
     protected void storeBuiltBufferByLayer(RenderLayer layer, @Nonnull BuiltBuffer newBuffer)
@@ -49,6 +69,12 @@ public class BuiltBufferCache implements AutoCloseable
     }
 
     @Nullable
+    protected BuiltBuffer getBuiltBufferByBlockLayer(BlockRenderLayer layer)
+    {
+        return this.blockBuffers.get(layer);
+    }
+
+    @Nullable
     protected BuiltBuffer getBuiltBufferByLayer(RenderLayer layer)
     {
         return this.layerBuffers.get(layer);
@@ -64,9 +90,14 @@ public class BuiltBufferCache implements AutoCloseable
     {
         ArrayList<BuiltBuffer> builtBuffers;
 
+        synchronized (this.blockBuffers)
+        {
+            builtBuffers = new ArrayList<>(this.blockBuffers.values());
+            this.blockBuffers.clear();
+        }
         synchronized (this.layerBuffers)
         {
-            builtBuffers = new ArrayList<>(this.layerBuffers.values());
+            builtBuffers.addAll(this.layerBuffers.values());
             this.layerBuffers.clear();
         }
         synchronized (this.overlayBuffers)

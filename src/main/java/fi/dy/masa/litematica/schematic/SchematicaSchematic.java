@@ -11,6 +11,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.StructureBlockMode;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.nbt.NbtCompound;
@@ -19,6 +20,7 @@ import net.minecraft.structure.StructurePlacementData;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
@@ -30,6 +32,7 @@ import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.data.Constants;
 import fi.dy.masa.malilib.util.data.Schema;
 import fi.dy.masa.malilib.util.nbt.NbtUtils;
+import fi.dy.masa.malilib.util.nbt.NbtView;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic.EntityInfo;
@@ -152,7 +155,8 @@ public class SchematicaSchematic
 
                                 try
                                 {
-                                    te.read(teNBT, world.getRegistryManager());
+                                    NbtView view = NbtView.getReader(teNBT, world.getRegistryManager());
+                                    te.read(view.getReader());
                                 }
                                 catch (Exception e)
                                 {
@@ -285,7 +289,8 @@ public class SchematicaSchematic
 
                                         try
                                         {
-                                            te.read(teNBT, world.getRegistryManager());
+                                            NbtView view = NbtView.getReader(teNBT, world.getRegistryManager());
+                                            te.read(view.getReader());
                                         }
                                         catch (Exception e)
                                         {
@@ -387,7 +392,7 @@ public class SchematicaSchematic
                     {
                         try
                         {
-                            NbtCompound nbt = te.createNbtWithId(world.getRegistryManager());
+                            NbtCompound nbt = te.createNbtWithIdentifyingData(world.getRegistryManager());
                             BlockPos pos = new BlockPos(relX, relY, relZ);
                             NbtUtils.writeBlockPosToTag(pos, nbt);
 
@@ -411,15 +416,20 @@ public class SchematicaSchematic
 
         for (Entity entity : entities)
         {
-            NbtCompound tag = new NbtCompound();
+            NbtView view = NbtView.getWriter(world.getRegistryManager());
+            entity.writeData(view.getWriter());
+            NbtCompound nbt = view.readNbt();
+            Identifier id = EntityType.getId(entity.getType());
 
-            if (entity.saveNbt(tag))
+            if (nbt != null && id != null)
             {
                 Vec3d pos = new Vec3d(entity.getX() - posStart.getX(), entity.getY() - posStart.getY(), entity.getZ() - posStart.getZ());
-//                NbtUtils.writeEntityPositionToTag(pos, tag);
-                NbtUtils.putVec3dCodec(tag, pos, "Pos");
 
-                this.entities.add(tag);
+                nbt.putString("id", id.toString());
+//                NbtUtils.writeEntityPositionToTag(pos, tag);
+                NbtUtils.putVec3dCodec(nbt, pos, "Pos");
+
+                this.entities.add(nbt);
             }
         }
     }

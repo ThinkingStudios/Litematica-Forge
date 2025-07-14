@@ -80,10 +80,9 @@ public enum Icons implements IGuiIcon, IFileBrowserIconProvider
     }
 
     @Override
-    public void renderAt(int x, int y, float zLevel, boolean enabled, boolean selected, DrawContext drawContext)
+    public void renderAt(DrawContext drawContext, int x, int y, float zLevel, boolean enabled, boolean selected)
     {
-        //RenderUtils.drawTexturedRect(x, y, this.u, this.v, this.w, this.h, zLevel);
-        RenderUtils.drawTexturedRectAndDraw(this.getTexture(), x, y, this.u, this.v, this.w, this.h, zLevel, drawContext);
+        RenderUtils.drawTexturedRect(drawContext, this.getTexture(), x, y, this.u, this.v, this.w, this.h, zLevel);
     }
 
     @Override

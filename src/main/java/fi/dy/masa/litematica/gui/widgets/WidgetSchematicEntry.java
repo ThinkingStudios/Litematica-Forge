@@ -74,36 +74,35 @@ public class WidgetSchematicEntry extends WidgetListEntryBase<LitematicaSchemati
     }
 
     @Override
-    public void render(int mouseX, int mouseY, boolean selected, DrawContext drawContext)
+    public void render(DrawContext drawContext, int mouseX, int mouseY, boolean selected)
     {
-        RenderUtils.color(1f, 1f, 1f, 1f);
+//        RenderUtils.color(1f, 1f, 1f, 1f);
 
         // Draw a lighter background for the hovered and the selected entry
         if (selected || this.isMouseOver(mouseX, mouseY))
         {
-            RenderUtils.drawRect(this.x, this.y, this.width, this.height, 0x70FFFFFF);
+            RenderUtils.drawRect(drawContext, this.x, this.y, this.width, this.height, 0x70FFFFFF);
         }
         else if (this.isOdd)
         {
-            RenderUtils.drawRect(this.x, this.y, this.width, this.height, 0x20FFFFFF);
+            RenderUtils.drawRect(drawContext, this.x, this.y, this.width, this.height, 0x20FFFFFF);
         }
         // Draw a slightly lighter background for even entries
         else
         {
-            RenderUtils.drawRect(this.x, this.y, this.width, this.height, 0x50FFFFFF);
+            RenderUtils.drawRect(drawContext, this.x, this.y, this.width, this.height, 0x50FFFFFF);
         }
 
         boolean modified = this.schematic.getMetadata().wasModifiedSinceSaved();
         String schematicName = this.schematic.getMetadata().getName();
         int color = modified ? 0xFFFF9010 : 0xFFFFFFFF;
-        this.drawString(this.x + 20, this.y + 7, color, schematicName, drawContext);
+        this.drawString(drawContext, this.x + 20, this.y + 7, color, schematicName);
 
-        RenderUtils.color(1f, 1f, 1f, 1f);
-//        RenderUtils.blend(false);
+//        RenderUtils.color(1f, 1f, 1f, 1f);
 
         Path schematicFile = this.schematic.getFile();
         String fileName = schematicFile != null ? schematicFile.getFileName().toString() : null;
-        this.parent.bindTexture(Icons.TEXTURE, drawContext);
+//        this.parent.bindTexture(Icons.TEXTURE, drawContext);
 
         Icons icon;
 
@@ -116,27 +115,27 @@ public class WidgetSchematicEntry extends WidgetListEntryBase<LitematicaSchemati
             icon = Icons.SCHEMATIC_TYPE_MEMORY;
         }
 
-        icon.renderAt(this.typeIconX, this.typeIconY, this.zLevel, false, false, drawContext);
+        icon.renderAt(drawContext, this.typeIconX, this.typeIconY, this.zLevel, false, false);
 
         if (modified)
         {
-            Icons.NOTICE_EXCLAMATION_11.renderAt(this.buttonsStartX - 13, this.y + 6, this.zLevel, false, false, drawContext);
+            Icons.NOTICE_EXCLAMATION_11.renderAt(drawContext, this.buttonsStartX - 13, this.y + 6, this.zLevel, false, false);
         }
 
-        this.drawSubWidgets(mouseX, mouseY, drawContext);
+        this.drawSubWidgets(drawContext, mouseX, mouseY);
     }
 
     @Override
-    public void postRenderHovered(int mouseX, int mouseY, boolean selected, DrawContext drawContext)
+    public void postRenderHovered(DrawContext drawContext, int mouseX, int mouseY, boolean selected)
     {
-        RenderUtils.color(1f, 1f, 1f, 1f);
+//        RenderUtils.color(1f, 1f, 1f, 1f);
 
         if (this.schematic.getMetadata().wasModifiedSinceSaved() &&
             GuiBase.isMouseOver(mouseX, mouseY, this.buttonsStartX - 13, this.y + 6, 11, 11))
         {
             String str = WidgetFileBrowserBase.DATE_FORMAT.format(new Date(this.schematic.getMetadata().getTimeModified()));
             List<String> strs = ImmutableList.of(StringUtils.translate("litematica.gui.label.loaded_schematic.modified_on", str));
-            RenderUtils.drawHoverText(mouseX, mouseY, strs, drawContext);
+            RenderUtils.drawHoverText(drawContext, mouseX, mouseY, strs);
         }
         else if (GuiBase.isMouseOver(mouseX, mouseY, this.x, this.y, this.buttonsStartX - 12, this.height))
         {
@@ -153,12 +152,12 @@ public class WidgetSchematicEntry extends WidgetListEntryBase<LitematicaSchemati
                 lines.add(StringUtils.translate("litematica.gui.label.schematic_placement.in_memory"));
             }
 
-            RenderUtils.drawHoverText(mouseX, mouseY, lines, drawContext);
+            RenderUtils.drawHoverText(drawContext, mouseX, mouseY, lines);
         }
 
-        RenderUtils.color(1f, 1f, 1f, 1f);
+//        RenderUtils.color(1f, 1f, 1f, 1f);
 
-        super.postRenderHovered(mouseX, mouseY, selected, drawContext);
+        super.postRenderHovered(drawContext, mouseX, mouseY, selected);
     }
 
     private static class ButtonListener implements IButtonActionListener

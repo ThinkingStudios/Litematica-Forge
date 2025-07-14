@@ -462,7 +462,7 @@ public class GuiAreaSelectionEditorNormal extends GuiListBase<String, WidgetSele
 
                 case CHANGE_SELECTION_MODE:
                     SelectionManager manager = DataManager.getSelectionManager();
-                    SelectionMode newMode = manager.getSelectionMode().cycle(true);
+                    SelectionMode newMode = (SelectionMode) manager.getSelectionMode().cycle(true);
 
                     if (newMode == SelectionMode.NORMAL && manager.hasNormalSelection() == false)
                     {

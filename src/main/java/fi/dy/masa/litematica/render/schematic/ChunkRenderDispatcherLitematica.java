@@ -15,8 +15,8 @@ import com.google.common.util.concurrent.ListenableFutureTask;
 import org.apache.logging.log4j.Logger;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.BlockRenderLayer;
 import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.util.BufferAllocator;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
@@ -390,7 +390,7 @@ public class ChunkRenderDispatcherLitematica
         return flag;
     }
 
-    protected ListenableFuture<Object> uploadChunkBlocks(final RenderLayer layer, final BufferAllocatorCache allocators, final ChunkRendererSchematicVbo renderChunk, final ChunkRenderDataSchematic chunkRenderData, final double distanceSq, boolean resortOnly, Profiler profiler)
+    protected ListenableFuture<Object> uploadChunkBlocks(final BlockRenderLayer layer, final BufferAllocatorCache allocators, final ChunkRendererSchematicVbo renderChunk, final ChunkRenderDataSchematic chunkRenderData, final double distanceSq, boolean resortOnly, Profiler profiler)
     {
 //        LOGGER.warn("[Dispatch] uploadChunkBlocks layer [{}]", ChunkRenderLayers.getFriendlyName(layer));
 
@@ -399,11 +399,11 @@ public class ChunkRenderDispatcherLitematica
         {
             try
             {
-                this.uploadVertexBufferByLayer(layer, allocators, renderChunk, chunkRenderData, renderChunk.createVertexSorter(this.getCameraPos(), renderChunk.getOrigin()), resortOnly, profiler);
+                this.uploadVertexBufferByBlockLayer(layer, allocators, renderChunk, chunkRenderData, renderChunk.createVertexSorter(this.getCameraPos(), renderChunk.getOrigin()), resortOnly, profiler);
             }
             catch (Exception e)
             {
-                LOGGER.warn("uploadChunkBlocks(): [Dispatch] Error uploading Vertex Buffer for layer [{}], Caught error: [{}]", ChunkRenderLayers.getFriendlyName(layer), e.toString());
+                LOGGER.warn("uploadChunkBlocks(): [Dispatch] Error uploading Vertex Buffer for layer [{}], Caught error: [{}]", layer.getName(), e.toString());
             }
 
             profiler.pop();
@@ -479,18 +479,18 @@ public class ChunkRenderDispatcherLitematica
         }
     }
 
-    private void uploadVertexBufferByLayer(RenderLayer layer, @Nonnull BufferAllocatorCache allocators, @Nonnull ChunkRendererSchematicVbo renderChunk, @Nonnull ChunkRenderDataSchematic compiledChunk, @Nonnull VertexSorter sorter, boolean resortOnly, Profiler profiler)
+    private void uploadVertexBufferByBlockLayer(BlockRenderLayer layer, @Nonnull BufferAllocatorCache allocators, @Nonnull ChunkRendererSchematicVbo renderChunk, @Nonnull ChunkRenderDataSchematic compiledChunk, @Nonnull VertexSorter sorter, boolean resortOnly, Profiler profiler)
             throws InterruptedException
     {
-//        LOGGER.warn("[Dispatch] uploadVertexBufferByLayer layer [{}]", ChunkRenderLayers.getFriendlyName(layer));
+//        LOGGER.warn("[Dispatch] uploadVertexBufferByBlockLayer layer [{}]", ChunkRenderLayers.getFriendlyName(layer));
 
-        profiler.push("upload_vbo_layer_"+layer.toString());
-        BufferAllocator allocator = allocators.getBufferByLayer(layer);
-        BuiltBuffer builtBuffer = compiledChunk.getBuiltBufferCache().getBuiltBufferByLayer(layer);
+        profiler.push("upload_vbo_layer_"+layer.getName());
+        BufferAllocator allocator = allocators.getBufferByBlockLayer(layer);
+        BuiltBuffer builtBuffer = compiledChunk.getBuiltBufferCache().getBuiltBufferByBlockLayer(layer);
 
         if (allocator == null)
         {
-            allocators.closeByLayer(layer);
+            allocators.closeByBlockLayer(layer);
             compiledChunk.setBlockLayerUnused(layer);
             profiler.pop();
             throw new InterruptedException("BufferAllocators are invalid");
@@ -508,9 +508,9 @@ public class ChunkRenderDispatcherLitematica
             renderChunk.uploadBuffersByLayer(layer, builtBuffer);
         }
 
-        if (layer == RenderLayer.getTranslucent() && Configs.Visuals.RENDER_ENABLE_TRANSLUCENT_RESORTING.getBooleanValue())
+        if (layer == BlockRenderLayer.TRANSLUCENT && Configs.Visuals.RENDER_ENABLE_TRANSLUCENT_RESORTING.getBooleanValue())
         {
-            BuiltBuffer.SortState sorting = compiledChunk.getTransparentSortingDataForLayer(layer);
+            BuiltBuffer.SortState sorting = compiledChunk.getTransparentSortingDataForBlockLayer(layer);
 
             if (sorting == null)
             {
@@ -522,14 +522,14 @@ public class ChunkRenderDispatcherLitematica
                     throw new InterruptedException("Sort State failed to sortQuads()");
                 }
 
-                compiledChunk.setTransparentSortingDataForLayer(layer, sorting);
+                compiledChunk.setTransparentSortingDataForBlockLayer(layer, sorting);
             }
 
             BufferAllocator.CloseableBuffer result = sorting.sortAndStore(allocator, sorter);
 
             if (result != null)
             {
-                renderChunk.uploadIndexByLayer(layer, result);
+                renderChunk.uploadIndexByBlockLayer(layer, result);
                 result.close();
             }
         }

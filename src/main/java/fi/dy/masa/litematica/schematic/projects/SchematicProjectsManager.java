@@ -2,12 +2,14 @@ package fi.dy.masa.litematica.schematic.projects;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.math.BlockPos;
 
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.gui.Message.MessageType;
@@ -21,10 +23,15 @@ import fi.dy.masa.litematica.gui.GuiSchematicProjectsBrowser;
 public class SchematicProjectsManager
 {
     //private static final Pattern PATTERN_NAME_NUMBER = Pattern.compile("(.*)([0-9]+)$");
-    private final MinecraftClient mc = MinecraftClient.getInstance();
-
+    private final MinecraftClient mc;
     @Nullable
     private SchematicProject currentProject;
+
+    public SchematicProjectsManager()
+    {
+        this.mc = MinecraftClient.getInstance();
+        this.currentProject = null;
+    }
 
     public void openSchematicProjectsGui()
     {
@@ -63,9 +70,16 @@ public class SchematicProjectsManager
     {
         this.closeCurrentProject();
 
+        BlockPos origin = BlockPos.ORIGIN;
+
+        if (this.mc.player != null)
+        {
+            origin = fi.dy.masa.malilib.util.position.PositionUtils.getEntityBlockPos(this.mc.player);
+        }
+
         this.currentProject = new SchematicProject(dir, dir.resolve(projectName + ".json"));
         this.currentProject.setName(projectName);
-        this.currentProject.setOrigin(fi.dy.masa.malilib.util.position.PositionUtils.getEntityBlockPos(this.mc.player));
+        this.currentProject.setOrigin(origin);
         this.currentProject.saveToFile();
     }
 
@@ -81,6 +95,7 @@ public class SchematicProjectsManager
             return false;
         }
 
+        this.currentProject.checkSelectionModeConfig();
         return true;
     }
 
@@ -93,7 +108,12 @@ public class SchematicProjectsManager
 
             if (el != null && el.isJsonObject())
             {
-                return SchematicProject.fromJson(el.getAsJsonObject(), projectFile, createPlacement);
+                SchematicProject project = SchematicProject.fromJson(el.getAsJsonObject(), projectFile, createPlacement);
+                if (project != null)
+                {
+                    project.checkSelectionModeConfig();
+                }
+                return project;
             }
         }
 
@@ -214,8 +234,13 @@ public class SchematicProjectsManager
     {
         if (JsonUtils.hasString(obj, "current_project"))
         {
-            Path file = Path.of(JsonUtils.getString(obj, "current_project"));
+            Path file = Path.of(Objects.requireNonNull(JsonUtils.getString(obj, "current_project")));
             this.currentProject = this.loadProjectFromFile(file, true);
+
+            if (this.currentProject != null)
+            {
+                this.currentProject.checkSelectionModeConfig();
+            }
         }
     }
 }

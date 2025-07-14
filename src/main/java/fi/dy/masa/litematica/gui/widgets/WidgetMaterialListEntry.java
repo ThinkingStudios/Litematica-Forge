@@ -2,9 +2,9 @@ package fi.dy.masa.litematica.gui.widgets;
 
 import java.util.List;
 import javax.annotation.Nullable;
+import org.joml.Matrix3x2fStack;
 
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 
 import fi.dy.masa.malilib.gui.GuiBase;
@@ -128,15 +128,15 @@ public class WidgetMaterialListEntry extends WidgetListEntrySortable<MaterialLis
         int x3 = x2 + maxCountLength1 + 20;
         int x4 = x3 + maxCountLength2 + 20;
 
-        switch (column)
+        return switch (column)
         {
-            case 0: return x1;
-            case 1: return x2;
-            case 2: return x3;
-            case 3: return x4;
-            case 4: return x4 + maxCountLength3 + 20;
-            default: return x1;
-        }
+            case 0 -> x1;
+            case 1 -> x2;
+            case 2 -> x3;
+            case 3 -> x4;
+            case 4 -> x4 + maxCountLength3 + 20;
+            default -> x1;
+        };
     }
 
     @Override
@@ -179,21 +179,21 @@ public class WidgetMaterialListEntry extends WidgetListEntrySortable<MaterialLis
     }
 
     @Override
-    public void render(int mouseX, int mouseY, boolean selected, DrawContext drawContext)
+    public void render(DrawContext drawContext, int mouseX, int mouseY, boolean selected)
     {
         // Draw a lighter background for the hovered and the selected entry
         if (this.header1 == null && (selected || this.isMouseOver(mouseX, mouseY)))
         {
-            RenderUtils.drawRect(this.x, this.y, this.width, this.height, 0xA0707070);
+            RenderUtils.drawRect(drawContext, this.x, this.y, this.width, this.height, 0xA0707070);
         }
         else if (this.isOdd)
         {
-            RenderUtils.drawRect(this.x, this.y, this.width, this.height, 0xA0101010);
+            RenderUtils.drawRect(drawContext, this.x, this.y, this.width, this.height, 0xA0101010);
         }
         // Draw a slightly lighter background for even entries
         else
         {
-            RenderUtils.drawRect(this.x, this.y, this.width, this.height, 0xA0303030);
+            RenderUtils.drawRect(drawContext, this.x, this.y, this.width, this.height, 0xA0303030);
         }
 
         int x1 = this.getColumnPosX(0);
@@ -207,12 +207,12 @@ public class WidgetMaterialListEntry extends WidgetListEntrySortable<MaterialLis
         {
             if (this.listWidget.getSearchBarWidget().isSearchOpen() == false)
             {
-                this.drawString(x1, y, color, this.header1, drawContext);
-                this.drawString(x2, y, color, this.header2, drawContext);
-                this.drawString(x3, y, color, this.header3, drawContext);
-                this.drawString(x4, y, color, this.header4, drawContext);
+                this.drawString(drawContext, x1, y, color, this.header1);
+                this.drawString(drawContext, x2, y, color, this.header2);
+                this.drawString(drawContext, x3, y, color, this.header3);
+                this.drawString(drawContext, x4, y, color, this.header4);
 
-                this.renderColumnHeader(mouseX, mouseY, Icons.ARROW_DOWN, Icons.ARROW_UP, drawContext);
+                this.renderColumnHeader(drawContext, mouseX, mouseY, Icons.ARROW_DOWN, Icons.ARROW_UP);
             }
         }
         else if (this.entry != null)
@@ -225,43 +225,42 @@ public class WidgetMaterialListEntry extends WidgetListEntrySortable<MaterialLis
             String gold = GuiBase.TXT_GOLD;
             String red = GuiBase.TXT_RED;
             String pre;
-            this.drawString(x1 + 20, y, color, this.entry.getStack().getName().getString(), drawContext);
+            this.drawString(drawContext, x1 + 20, y, color, this.entry.getStack().getName().getString());
 
-            this.drawString(x2, y, color, String.valueOf(countTotal), drawContext);
+            this.drawString(drawContext, x2, y, color, String.valueOf(countTotal));
 
             pre = countMissing == 0 ? green : (countAvailable >= countMissing ? gold : red);
-            this.drawString(x3, y, color, pre + String.valueOf(countMissing), drawContext);
+            this.drawString(drawContext, x3, y, color, pre + String.valueOf(countMissing));
 
             pre = countAvailable >= countMissing ? green : red;
-            this.drawString(x4, y, color, pre + String.valueOf(countAvailable), drawContext);
+            this.drawString(drawContext, x4, y, color, pre + String.valueOf(countAvailable));
 
-            drawContext.getMatrices().push();
+//            drawContext.getMatrices().push();
             //TODO: RenderSystem.disableLighting();
-            RenderUtils.enableDiffuseLightingGui3D();
+//            RenderUtils.enableDiffuseLightingGui3D();
 
             //mc.getRenderItem().zLevel -= 110;
             y = this.y + 3;
-            RenderUtils.drawRect(x1, y, 16, 16, 0x20FFFFFF); // light background for the item
+            RenderUtils.drawRect(drawContext, x1, y, 16, 16, 0x20FFFFFF); // light background for the item
             drawContext.drawItem(this.entry.getStack(), x1, y);
             //mc.getRenderItem().renderItemOverlayIntoGUI(mc.fontRenderer, this.entry.getStack(), x1, y, null);
             //mc.getRenderItem().zLevel += 110;
 
-//            RenderUtils.blend(false);
-            RenderUtils.disableDiffuseLighting();
-            drawContext.getMatrices().pop();
+//            RenderUtils.disableDiffuseLighting();
+//            drawContext.getMatrices().pop();
 
-            super.render(mouseX, mouseY, selected, drawContext);
+            super.render(drawContext, mouseX, mouseY, selected);
         }
     }
 
     @Override
-    public void postRenderHovered(int mouseX, int mouseY, boolean selected, DrawContext drawContext)
+    public void postRenderHovered(DrawContext drawContext, int mouseX, int mouseY, boolean selected)
     {
         if (this.entry != null)
         {
-            MatrixStack matrixStack = drawContext.getMatrices();
-            matrixStack.push();
-            matrixStack.translate(0, 0, 200);
+            Matrix3x2fStack matrixStack = drawContext.getMatrices();
+//            matrixStack.push();
+            matrixStack.translate(0, 0);    // , 200
 
             String header1 = GuiBase.TXT_BOLD + StringUtils.translate(HEADERS[0]);
             String header2 = GuiBase.TXT_BOLD + StringUtils.translate(HEADERS[1]);
@@ -291,36 +290,35 @@ public class WidgetMaterialListEntry extends WidgetListEntrySortable<MaterialLis
             int x2 = x1 + w1 + 20;
 
             // Draw a Background Mask to hide Button Widgets behind it (Hack-around)
-            fi.dy.masa.litematica.render.RenderUtils.renderBackgroundMask(x + 1, y + 1, totalWidth - 2, 58, drawContext);
-            RenderUtils.drawOutlinedBox(x, y, totalWidth, 60, 0xFF000000, GuiBase.COLOR_HORIZONTAL_BAR);
+            fi.dy.masa.litematica.render.RenderUtils.renderBackgroundMask(drawContext, x + 1, y + 1, totalWidth - 2, 58);
+            RenderUtils.drawOutlinedBox(drawContext, x, y, totalWidth, 60, 0xFF000000, GuiBase.COLOR_HORIZONTAL_BAR);
             y += 6;
             int y1 = y;
             y += 4;
 
-            this.drawString(x1     , y, 0xFFFFFFFF, header1  , drawContext);
-            this.drawString(x2 + 20, y, 0xFFFFFFFF, stackName, drawContext);
+            this.drawString(drawContext, x1     , y, 0xFFFFFFFF, header1);
+            this.drawString(drawContext, x2 + 20, y, 0xFFFFFFFF, stackName);
             y += 16;
 
-            this.drawString(x1, y, 0xFFFFFFFF, header2      , drawContext);
-            this.drawString(x2, y, 0xFFFFFFFF, strCountTotal, drawContext);
+            this.drawString(drawContext, x1, y, 0xFFFFFFFF, header2);
+            this.drawString(drawContext, x2, y, 0xFFFFFFFF, strCountTotal);
             y += 16;
 
-            this.drawString(x1, y, 0xFFFFFFFF, header3        , drawContext);
-            this.drawString(x2, y, 0xFFFFFFFF, strCountMissing, drawContext);
+            this.drawString(drawContext, x1, y, 0xFFFFFFFF, header3);
+            this.drawString(drawContext, x2, y, 0xFFFFFFFF, strCountMissing);
 
-            RenderUtils.drawRect(x2, y1, 16, 16, 0x20FFFFFF); // light background for the item
+            RenderUtils.drawRect(drawContext, x2, y1, 16, 16, 0x20FFFFFF); // light background for the item
 
             //TODO: RenderSystem.disableLighting();
-            RenderUtils.enableDiffuseLightingGui3D();
+//            RenderUtils.enableDiffuseLightingGui3D();
 
             //mc.getRenderItem().zLevel += 100;
             drawContext.drawItem(stack, x2, y1);
             //mc.getRenderItem().renderItemOverlayIntoGUI(mc.fontRenderer, stack, x1, y, null);
             //mc.getRenderItem().zLevel -= 100;
-            //RenderSystem.disableBlend();
 
-            RenderUtils.disableDiffuseLighting();
-            matrixStack.pop();
+//            RenderUtils.disableDiffuseLighting();
+//            matrixStack.pop();
         }
     }
 

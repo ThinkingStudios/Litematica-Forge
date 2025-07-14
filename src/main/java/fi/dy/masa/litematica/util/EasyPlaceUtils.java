@@ -222,13 +222,16 @@ public class EasyPlaceUtils
         }
         double reach = mc.player.getBlockInteractionRange();
         Entity entity = mc.getCameraEntity();
-
         if (entity == null || world == null)
         {
             return null;
         }
-
         HitResult traceVanilla = fi.dy.masa.malilib.util.game.RayTraceUtils.getRayTraceFromEntity(world, entity, RaycastContext.FluidHandling.NONE, false, reach);
+
+        if (traceVanilla == null)
+        {
+            return null;
+        }
 
         if (traceVanilla.getType() == HitResult.Type.BLOCK)
         {
@@ -641,13 +644,18 @@ public class EasyPlaceUtils
         Entity entity = mc.getCameraEntity();
         World world = mc.world;
 
-        if (world == null || mc.player == null || entity == null)
+        if (world == null || entity == null || mc.player == null)
         {
             return false;
         }
 
         double reach = mc.player.getBlockInteractionRange();
         HitResult trace = fi.dy.masa.malilib.util.game.RayTraceUtils.getRayTraceFromEntity(world, entity, RaycastContext.FluidHandling.NONE, false, reach);
+
+        if (trace == null)
+        {
+            return false;
+        }
 
         if (trace.getType() == HitResult.Type.BLOCK)
         {

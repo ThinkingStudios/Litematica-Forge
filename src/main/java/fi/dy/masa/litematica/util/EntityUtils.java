@@ -1,12 +1,12 @@
 package fi.dy.masa.litematica.util;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
-import org.jetbrains.annotations.ApiStatus;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.ApiStatus;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.*;
@@ -16,7 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Uuids;
@@ -27,6 +27,7 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.util.InventoryUtils;
+import fi.dy.masa.malilib.util.nbt.NbtView;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.data.DataManager;
@@ -82,9 +83,9 @@ public class EntityUtils
     /**
      * Checks if the requested item is currently in the player's hand such that it would be used for using/placing.
      * This means, that it must either be in the main hand, or the main hand must be empty and the item is in the offhand.
-     * @param player
-     * @param stack
-     * @return
+     * @param player ()
+     * @param stack ()
+     * @return ()
      */
     @Nullable
     public static Hand getUsedHandForItem(PlayerEntity player, ItemStack stack)
@@ -153,11 +154,13 @@ public class EntityUtils
     }
 
     private static boolean entityDebugRandom;
+    private static boolean entityDebugRandom2;
 
     public static void initEntityUtils()
     {
         Random rand = Random.create();
         entityDebugRandom = rand.nextBoolean();
+        entityDebugRandom2 = rand.nextBoolean();
     }
 
     public static Pair<String, String> getEntityDebug()
@@ -170,37 +173,57 @@ public class EntityUtils
 
         switch (name)
         {
+            case "sakuraryoko" ->
+            {
+                return Pair.of("Sakuramatica", "The Sakura Goddess Herself.");
+            }
             case "docm77" ->
             {
                 return Pair.of("Goatmatica", "Grind. Optimize. Automate. Thrive.");
             }
-            case "xisuma" ->
+            case "xisuma", "xisumavoid" ->
             {
-                return Pair.of("Xisumatica", "Check out Soulside Eclipse on Spotify.");
+                return entityDebugRandom2 ? Pair.of("Xisumatica", "Chief architect & humble leader.") : Pair.of("Xisumatica", "Check out Soulside Eclipse on Spotify.");
             }
             case "rendog" ->
             {
-                return Pair.of("Dogmatica", "Gigacorp's most famous employee.");
+                return entityDebugRandom2 ? Pair.of("Dogmatica", "Gigacorp's most famous employee.") : Pair.of("Renmatica", "Docm77's single ladies' favorite magnet.");
             }
             case "geminitay" ->
             {
-                return Pair.of("Slaymatica", "Hermitcraft's chief remover of heads.");
+                return entityDebugRandom2 ? Pair.of("Slaymatica", "God's favorite Princess.") : Pair.of("Slaymatica", "Hermitcraft's chief remover of heads.");
             }
             case "pearlescentmoon" ->
             {
-                return Pair.of("Pearlmatica", "The queen of aussie ping.");
+                return entityDebugRandom2 ? Pair.of("Pearlmatica", "The queen of aussie ping.") : Pair.of("", "");
             }
             case "falsesymmetry" ->
             {
-                return Pair.of("Falsematica", "Promoter of Sand and Cactus sales.");
+                return entityDebugRandom2 ? Pair.of("Queenmatica", "The Queen of Hearts, Heads, and Body Parts.") : Pair.of("Falsematica", "Promoter of Sand and Cactus sales.");
             }
             case "tangotek" ->
             {
-                return Pair.of("Tangomatica", "The Dungeon Master.");
+                return entityDebugRandom2 ? Pair.of("Tangomatica", "The Dungeon Master.") : Pair.of("Tangomatica", "Master of the thingificator.");
+            }
+            case "ethoslab" ->
+            {
+                return entityDebugRandom2 ? Pair.of("Slabmatica", "The Canadian legend.") : Pair.of("", "");
+            }
+            case "ijevin" ->
+            {
+                return entityDebugRandom2 ? Pair.of("iJevinatica", "iJevin's favorite mod suite (thank you!)") : Pair.of("", "");
+            }
+            case "cubfan135" ->
+            {
+                return entityDebugRandom2 ? Pair.of("Cubmatica", "Ladies and gentlemen; Beautiful, absolutely beautiful.") : Pair.of("Cubmatica", "Definitely not the Ore Snatcher.");
+            }
+            case "smajor1995" ->
+            {
+                return entityDebugRandom2 ? Pair.of("Scottmatica", "The most friendly and soothing voice in the game.") : Pair.of("", "");
             }
             case "shubbleyt" ->
             {
-                return Pair.of("Starmatica", "Red Mushroom blocks are soo underrated.");
+                return entityDebugRandom2 ? Pair.of("Starmatica", "Red Mushroom blocks are soo underrated.") : Pair.of("", "");
             }
             default ->
             {
@@ -222,7 +245,8 @@ public class EntityUtils
     {
         try
         {
-            Optional<Entity> optional = EntityType.getEntityFromNbt(nbt, world, SpawnReason.LOAD);
+            NbtView view = NbtView.getReader(nbt, world.getRegistryManager());
+            Optional<Entity> optional = EntityType.getEntityFromData(view.getReader(), world, SpawnReason.LOAD);
 
             if (optional.isPresent())
             {
@@ -244,9 +268,9 @@ public class EntityUtils
 
     /**
      * Note: This does NOT spawn any of the entities in the world!
-     * @param nbt
-     * @param world
-     * @return
+     * @param nbt ()
+     * @param world ()
+     * @return ()
      */
     @Nullable
     public static Entity createEntityAndPassengersFromNBT(NbtCompound nbt, World world)
@@ -358,9 +382,9 @@ public class EntityUtils
             entity.setUuid(nbt.get("UUID", Uuids.CODEC, entity.getRegistryManager().getOps(NbtOps.INSTANCE)).orElse(UUID.randomUUID()));
         }
 
-        if (nbt.contains("CustomName")) {
-            String string = nbt.getString("CustomName", "");
-            entity.setCustomName(Text.Serialization.fromJson(string, entity.getRegistryManager()));
+        if (nbt.contains("CustomName"))
+        {
+            nbt.get("CustomName", TextCodecs.CODEC).ifPresent(entity::setCustomName);
         }
 
         entity.setCustomNameVisible(nbt.getBoolean("CustomNameVisible", false));
@@ -384,7 +408,8 @@ public class EntityUtils
         }
         else
         {
-            ((IMixinEntity) entity).litematica_readCustomDataFromNbt(nbt);
+            NbtView view = NbtView.getReader(nbt, entity.getRegistryManager());
+            ((IMixinEntity) entity).litematica_readCustomData(view.getReader());
         }
     }
 
@@ -395,7 +420,8 @@ public class EntityUtils
         if (mc.world == null) return;
         assert entity instanceof Leashable;
         Leashable leashable = (Leashable) entity;
-        ((IMixinEntity) entity).litematica_readCustomDataFromNbt(nbt);
+        NbtView view = NbtView.getReader(nbt, mc.world.getRegistryManager());
+        ((IMixinEntity) entity).litematica_readCustomData(view.getReader());
         if (leashable.getLeashData() != null && leashable.getLeashData().unresolvedLeashData != null)
         {
             leashable.getLeashData().unresolvedLeashData

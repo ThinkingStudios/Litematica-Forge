@@ -4,10 +4,13 @@ import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.block.entity.BlockEntity;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.entity.EquipmentDropChances;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
@@ -16,6 +19,7 @@ import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
@@ -23,7 +27,7 @@ import net.minecraft.util.Uuids;
 import net.minecraft.util.math.BlockPos;
 
 import fi.dy.masa.malilib.util.InventoryUtils;
-import fi.dy.masa.malilib.util.log.AnsiLogger;
+import fi.dy.masa.malilib.util.nbt.NbtBlockUtils;
 import fi.dy.masa.malilib.util.nbt.NbtUtils;
 import fi.dy.masa.litematica.Litematica;
 
@@ -1084,7 +1088,7 @@ public class SchematicDowngradeConverter
         return newEnchants;
     }
 
-    private static String processCustomNameTag(NbtCompound nameTag, String key, @Nonnull DynamicRegistryManager registryManager)
+    private static String processCustomNameTag(NbtCompound nameTag, String key, @Nonnull DynamicRegistryManager registry)
     {
         // Sometimes this is missing the 'text' designation ?
 
@@ -1096,9 +1100,35 @@ public class SchematicDowngradeConverter
 
          */
 
-        Text oldName = BlockEntity.tryParseCustomName(nameTag.get(key), registryManager);
+        MutableText oldName = (MutableText) NbtBlockUtils.getCustomNameFromNbt(nameTag, registry, key);
+        return legacyTextDeserializer(oldName, registry);
+    }
 
-        return Text.Serialization.toJsonString(oldName, registryManager);
+    private static String legacyTextDeserializer(MutableText oldText, @Nonnull DynamicRegistryManager registry)
+    {
+        try
+        {
+            JsonElement element = TextCodecs.CODEC.encodeStart(registry.getOps(JsonOps.INSTANCE), oldText).getOrThrow();
+            return new GsonBuilder().disableHtmlEscaping().create().toJson(element);
+        }
+        catch (Exception err)
+        {
+            Litematica.LOGGER.error("legacyTextDeserializer: Failed to convert MutableText to JSON; (falling back to just 'getString'); {}", err.getLocalizedMessage());
+            return oldText.getString();
+        }
+    }
+
+    private static @Nullable MutableText legacyTextSerializer(String json, @Nonnull DynamicRegistryManager registry)
+    {
+        try
+        {
+            return (MutableText) TextCodecs.CODEC.parse(registry.getOps(JsonOps.INSTANCE), JsonParser.parseString(json)).getOrThrow();
+        }
+        catch (Exception err)
+        {
+            Litematica.LOGGER.error("legacyTextSerializer: Failed to convert JSON to MutableText; {}", err.getLocalizedMessage());
+            return null;
+        }
     }
 
     private static NbtElement processBlockState(NbtElement bsTag)
@@ -1217,7 +1247,7 @@ public class SchematicDowngradeConverter
         return newBook;
     }
 
-    private static NbtCompound processWritableBookContent(NbtCompound bookNbt, int minecraftDataVersion, DynamicRegistryManager registryManager)
+    private static NbtCompound processWritableBookContent(NbtCompound bookNbt, int minecraftDataVersion, @Nonnull DynamicRegistryManager registry)
     {
         NbtCompound newBook = new NbtCompound();
         NbtList newPages = new NbtList();
@@ -1233,8 +1263,10 @@ public class SchematicDowngradeConverter
 
                 try
                 {
-                    MutableText oldText = Text.Serialization.fromJson(oldPage, registryManager);
-                    String newPage = Text.Serialization.toJsonString(oldText, registryManager);
+                    MutableText oldText = legacyTextSerializer(oldPage, registry);
+//                    MutableText oldText = Text.Serialization.fromJson(oldPage, registry);
+//                    String newPage = Text.Serialization.toJsonString(oldText, registry);
+                    String newPage = legacyTextDeserializer(oldText, registry);
                     newPages.add(i, NbtString.of(newPage));
                 }
                 catch (Exception e)
@@ -1251,7 +1283,7 @@ public class SchematicDowngradeConverter
         return newBook;
     }
 
-    private static NbtCompound processWrittenBookContent(NbtCompound bookNbt, int minecraftDataVersion, DynamicRegistryManager registryManager)
+    private static NbtCompound processWrittenBookContent(NbtCompound bookNbt, int minecraftDataVersion, @Nonnull DynamicRegistryManager registry)
     {
         NbtCompound newBook = new NbtCompound();
         NbtCompound filtered = new NbtCompound();
@@ -1289,8 +1321,10 @@ public class SchematicDowngradeConverter
                     String filterPage = page.getString("filtered", "");
                     try
                     {
-                        MutableText filteredText = Text.Serialization.fromJson(filterPage, registryManager);
-                        String newFilterPage = Text.Serialization.toJsonString(filteredText, registryManager);
+                        MutableText filteredText = legacyTextSerializer(filterPage, registry);
+//                        MutableText filteredText = Text.Serialization.fromJson(filterPage, registry);
+//                        String newFilterPage = Text.Serialization.toJsonString(filteredText, registry);
+                        String newFilterPage = legacyTextDeserializer(filteredText, registry);
                         filtered.putString(filterPage, newFilterPage);
                         // This seems like A terrible idea
                     }
@@ -1301,8 +1335,10 @@ public class SchematicDowngradeConverter
                 }
                 try
                 {
-                    MutableText oldText = Text.Serialization.fromJson(oldPage, registryManager);
-                    String newPage = Text.Serialization.toJsonString(oldText, registryManager);
+                    MutableText oldText = legacyTextSerializer(oldPage, registry);
+//                    MutableText oldText = Text.Serialization.fromJson(oldPage, registry);
+//                    String newPage = Text.Serialization.toJsonString(oldText, registry);
+                    String newPage = legacyTextDeserializer(oldText, registry);
                     newPages.add(i, NbtString.of(newPage));
                 }
                 catch (Exception e)
@@ -1397,7 +1433,7 @@ public class SchematicDowngradeConverter
         };
     }
 
-    private static NbtElement processSkullProfile(NbtElement oldProfile, NbtCompound dispNbt, int minecraftDataVersion, @Nonnull DynamicRegistryManager registryManager)
+    private static NbtElement processSkullProfile(NbtElement oldProfile, NbtCompound dispNbt, int minecraftDataVersion, @Nonnull DynamicRegistryManager registry)
     {
         NbtCompound profile = (NbtCompound) oldProfile;
         NbtCompound newProfile = new NbtCompound();
@@ -1405,14 +1441,15 @@ public class SchematicDowngradeConverter
         String customName2 = dispNbt.getString("CustomName", "");   // Only if invoked without it being stored in a Chest
         String name = profile.getString("name", "");                // The regular Skull Owner Name
         //UUID uuid = profile.getUuid("id");
-        UUID uuid = profile.get("id", Uuids.CODEC, registryManager.getOps(NbtOps.INSTANCE)).orElse(Util.NIL_UUID);
+        UUID uuid = profile.get("id", Uuids.CODEC, registry.getOps(NbtOps.INSTANCE)).orElse(Util.NIL_UUID);
 
 //        LOGGER.debug("processSkullProfile(): oldNBT [{}]", profile.toString());
         if (name.isEmpty() && !customName1.isEmpty())
         {
             try
             {
-                Text disp = Text.Serialization.fromJson(customName1, registryManager);
+//                Text disp = Text.Serialization.fromJson(customName1, registry);
+                MutableText disp = legacyTextSerializer(customName1, registry);
 
                 if (disp != null)
                 {
@@ -1436,7 +1473,8 @@ public class SchematicDowngradeConverter
         {
             try
             {
-                Text disp = Text.Serialization.fromJson(customName2, registryManager);
+//                Text disp = Text.Serialization.fromJson(customName2, registry);
+                MutableText disp = legacyTextSerializer(customName2, registry);
 
                 if (disp != null)
                 {

@@ -2,6 +2,7 @@ package fi.dy.masa.litematica.materials;
 
 import java.util.Collections;
 import java.util.List;
+import org.joml.Matrix3x2fStack;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -9,7 +10,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.util.math.BlockPos;
@@ -74,7 +74,7 @@ public class MaterialListHudRenderer implements IInfoHudRenderer
     }
 
     @Override
-    public int render(int xOffset, int yOffset, HudAlignment alignment, DrawContext drawContext)
+    public int render(DrawContext drawContext, int xOffset, int yOffset, HudAlignment alignment)
     {
         MinecraftClient mc = MinecraftClient.getInstance();
         long currentTime = System.currentTimeMillis();
@@ -152,13 +152,12 @@ public class MaterialListHudRenderer implements IInfoHudRenderer
         posY = RenderUtils.getHudPosY(posY, yOffset, contentHeight, scale, alignment);
         posY += RenderUtils.getHudOffsetForPotions(alignment, scale, mc.player);
 
-        MatrixStack matrixStack = drawContext.getMatrices();
+        Matrix3x2fStack matrixStack = drawContext.getMatrices();
 
         if (scale != 1d)
         {
-            matrixStack.push();
-            matrixStack.scale((float) scale, (float) scale, (float) scale);
-            //RenderSystem.applyModelViewMatrix();
+            matrixStack.pushMatrix();
+            matrixStack.scale((float) scale, (float) scale);
         }
 
         if (useBackground)
@@ -173,8 +172,6 @@ public class MaterialListHudRenderer implements IInfoHudRenderer
 
         int x = posX;
         int y = posY + 12;
-
-//        RenderUtils.blend(true);
 
         for (int i = 0; i < size; ++i)
         {
@@ -209,8 +206,7 @@ public class MaterialListHudRenderer implements IInfoHudRenderer
 
         if (scale != 1d)
         {
-            matrixStack.pop();
-            //RenderSystem.applyModelViewMatrix();
+            matrixStack.popMatrix();
         }
 
         return contentHeight + 4;
@@ -243,7 +239,7 @@ public class MaterialListHudRenderer implements IInfoHudRenderer
         }
     }
 
-    public static void renderLookedAtBlockInInventory(HandledScreen<?> gui, MinecraftClient mc)
+    public static void renderLookedAtBlockInInventory(DrawContext drawContext, HandledScreen<?> gui, MinecraftClient mc)
     {
         if (Configs.Generic.HIGHLIGHT_BLOCK_IN_INV.getBooleanValue())
         {
@@ -261,12 +257,12 @@ public class MaterialListHudRenderer implements IInfoHudRenderer
                 }
 
                 Color4f color = Configs.Colors.HIGHTLIGHT_BLOCK_IN_INV_COLOR.getColor();
-                highlightSlotsWithItem(lastLookedAtBlocksItem, gui, color, mc);
+                highlightSlotsWithItem(drawContext, lastLookedAtBlocksItem, gui, color, mc);
             }
         }
     }
 
-    public static void highlightSlotsWithItem(ItemStack referenceItem, HandledScreen<?> gui, Color4f color, MinecraftClient mc)
+    public static void highlightSlotsWithItem(DrawContext drawContext, ItemStack referenceItem, HandledScreen<?> gui, Color4f color, MinecraftClient mc)
     {
         List<Slot> slots = gui.getScreenHandler().slots;
 
@@ -281,19 +277,19 @@ public class MaterialListHudRenderer implements IInfoHudRenderer
                  InventoryUtils.doesShulkerBoxContainItem(slot.getStack(), referenceItem) ||
                  InventoryUtils.doesBundleContainItem(slot.getStack(), referenceItem)))
             {
-                renderOutlinedBox(guiX + slot.x, guiY + slot.y, 16, 16, color.intValue, color.intValue | 0xFF000000, 1f);
+                renderOutlinedBox(drawContext, guiX + slot.x, guiY + slot.y, 16, 16, color.intValue, color.intValue | 0xFF000000, 1f);
             }
         }
 
-        RenderUtils.color(1f, 1f, 1f, 1f);
+//        RenderUtils.color(1f, 1f, 1f, 1f);
     }
 
-    public static void renderOutlinedBox(int x, int y, int width, int height, int colorBg, int colorBorder, float zLevel)
+    public static void renderOutlinedBox(DrawContext drawContext, int x, int y, int width, int height, int colorBg, int colorBorder, float zLevel)
     {
         // Draw the background
-        RenderUtils.drawRect(x + 1, y + 1, width - 2, height - 2, colorBg, zLevel);
+        RenderUtils.drawRect(drawContext, x + 1, y + 1, width - 2, height - 2, colorBg);    // zLevel
 
         // Draw the border
-        RenderUtils.drawOutline(x, y, width, height, 1, colorBorder, zLevel);
+        RenderUtils.drawOutline(drawContext, x, y, width, height, 1, colorBorder);    // zLevel
     }
 }

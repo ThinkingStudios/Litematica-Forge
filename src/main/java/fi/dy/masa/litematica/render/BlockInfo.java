@@ -61,16 +61,16 @@ public class BlockInfo
         this.useBackgroundMask = toggle;
     }
 
-    public void render(int x, int y, MinecraftClient mc, DrawContext drawContext)
+    public void render(DrawContext drawContext, int x, int y, MinecraftClient mc)
     {
         if (this.state != null)
         {
             if (this.useBackgroundMask)
             {
-                fi.dy.masa.litematica.render.RenderUtils.renderBackgroundMask(x + 1, y + 1, this.totalWidth - 1, this.totalHeight - 1, drawContext);
+                fi.dy.masa.litematica.render.RenderUtils.renderBackgroundMask(drawContext, x + 1, y + 1, this.totalWidth - 1, this.totalHeight - 1);
             }
 
-            RenderUtils.drawOutlinedBox(x, y, this.totalWidth, this.totalHeight, 0xFF000000, GuiBase.COLOR_HORIZONTAL_BAR);
+            RenderUtils.drawOutlinedBox(drawContext, x, y, this.totalWidth, this.totalHeight, 0xFF000000, GuiBase.COLOR_HORIZONTAL_BAR);
 
             TextRenderer textRenderer = mc.textRenderer;
             int x1 = x + 10;
@@ -80,16 +80,15 @@ public class BlockInfo
 
             y += 12;
 
-            RenderUtils.enableDiffuseLightingGui3D();
+//            RenderUtils.enableDiffuseLightingGui3D();
 
             //mc.getRenderItem().zLevel += 100;
-            RenderUtils.drawRect(x1, y, 16, 16, 0x20FFFFFF); // light background for the item
+            RenderUtils.drawRect(drawContext, x1, y, 16, 16, 0x20FFFFFF); // light background for the item
             drawContext.drawItem(this.stack, x1, y);
             drawContext.drawStackOverlay(textRenderer, this.stack, x1, y);
             //mc.getRenderItem().zLevel -= 100;
 
-            //RenderSystem.disableBlend();
-            RenderUtils.disableDiffuseLighting();
+//            RenderUtils.disableDiffuseLighting();
 
             drawContext.drawText(textRenderer, this.stackName, x1 + 20, y + 4, 0xFFFFFFFF, false);
 
@@ -97,7 +96,7 @@ public class BlockInfo
             drawContext.drawText(textRenderer, this.blockRegistryname, x1, y, 0xFF4060FF, false);
             y += textRenderer.fontHeight + 4;
 
-            RenderUtils.renderText(x1, y, 0xFFB0B0B0, this.props, drawContext);
+            RenderUtils.renderText(drawContext, x1, y, 0xFFB0B0B0, this.props);
         }
     }
 }

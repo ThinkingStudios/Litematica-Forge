@@ -37,15 +37,15 @@ public class SchematicProject
     private final List<SchematicVersion> versions = new ArrayList<>();
     private final Path directory;
     private Path projectFile;
-    private BlockPos origin = BlockPos.ORIGIN;
-    private String projectName = "unnamed";
-    private AreaSelection selection = new AreaSelection();
-    private AreaSelection lastSeenArea = new AreaSelection();
-    private AreaSelectionSimple selectionSimple = new AreaSelectionSimple(true);
-    private SelectionMode selectionMode = SelectionMode.SIMPLE;
-    private int currentVersionId = -1;
-    private int lastCheckedOutVersion = -1;
-    private int lastPastedVersion = -1;
+    private BlockPos origin;
+    private String projectName;
+    private AreaSelection selection;
+    private AreaSelection lastSeenArea;
+    private AreaSelectionSimple selectionSimple;
+    private SelectionMode selectionMode;
+    private int currentVersionId;
+    private int lastCheckedOutVersion;
+    private int lastPastedVersion;
     private boolean saveInProgress;
     private boolean dirty;
     @Nullable
@@ -55,6 +55,17 @@ public class SchematicProject
     {
         this.directory = directory;
         this.projectFile = projectFile;
+
+        this.origin = BlockPos.ORIGIN;
+        this.projectName = "unnamed";
+        this.selection = new AreaSelection();
+        this.lastSeenArea = new AreaSelection();
+        this.selectionSimple = new AreaSelectionSimple(true);
+        this.selectionMode = (SelectionMode) Configs.InfoOverlays.DEFAULT_SELECTION_MODE.getOptionListValue();
+        this.currentVersionId = -1;
+        this.lastCheckedOutVersion = -1;
+        this.lastPastedVersion = -1;
+        this.dirty = true;
     }
 
     public Path getDirectory()
@@ -170,9 +181,17 @@ public class SchematicProject
         return this.selectionMode;
     }
 
+    public void checkSelectionModeConfig()
+    {
+        if (this.dirty)
+        {
+            this.selectionMode = (SelectionMode) Configs.InfoOverlays.DEFAULT_SELECTION_MODE.getOptionListValue();
+        }
+    }
+
     public void switchSelectionMode()
     {
-        this.selectionMode = this.selectionMode.cycle(true);
+        this.selectionMode = (SelectionMode) this.selectionMode.cycle(true);
         this.dirty = true;
     }
 
@@ -520,7 +539,11 @@ public class SchematicProject
 
             if (JsonUtils.hasString(obj, "selection_mode"))
             {
-                project.selectionMode = SelectionMode.fromString(JsonUtils.getString(obj, "selection_mode"));
+                project.selectionMode = SelectionMode.fromStringStatic(JsonUtils.getString(obj, "selection_mode"));
+            }
+            else
+            {
+                project.selectionMode = (SelectionMode) Configs.InfoOverlays.DEFAULT_SELECTION_MODE.getOptionListValue();
             }
 
             if (JsonUtils.hasArray(obj, "versions"))

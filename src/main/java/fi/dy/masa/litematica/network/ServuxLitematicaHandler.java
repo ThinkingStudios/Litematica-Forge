@@ -23,10 +23,11 @@ import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.data.EntitiesDataStorage;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+//import net.neoforged.api.distmarker.Dist;
+//import net.neoforged.api.distmarker.OnlyIn;
 
-@OnlyIn(Dist.CLIENT)
+// TODO: NeoForge removed @OnlyIn, why?
+//@OnlyIn(Dist.CLIENT)
 public abstract class ServuxLitematicaHandler<T extends CustomPayload> implements IPluginClientPlayHandler<T>
 {
     private final static ServuxLitematicaHandler<ServuxLitematicaPacket.Payload> INSTANCE = new ServuxLitematicaHandler<>()

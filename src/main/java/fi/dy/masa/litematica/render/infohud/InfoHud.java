@@ -78,7 +78,7 @@ public class InfoHud
 
             if (this.lineList.isEmpty() == false)
             {
-                int ySize = fi.dy.masa.malilib.render.RenderUtils.renderText(xOffset, yOffset, scale, 0xFFFFFFFF, 0x80000000, this.getHudAlignment(), true, true, this.lineList, drawContext);
+                int ySize = fi.dy.masa.malilib.render.RenderUtils.renderText(drawContext, xOffset, yOffset, scale, 0xFFFFFFFF, 0x80000000, this.getHudAlignment(), true, true, this.lineList);
                 yOffset += (int) Math.ceil(ySize * scale);
             }
 
@@ -89,7 +89,7 @@ public class InfoHud
                     if (renderer.getShouldRenderCustom() && (isGui == false || renderer.shouldRenderInGuis()))
                     {
                         // FIXME: This is technically wrong, the yOffset should be separate per hud alignment
-                        yOffset += renderer.render(xOffset, yOffset, this.getHudAlignment(), drawContext);
+                        yOffset += renderer.render(drawContext, xOffset, yOffset, this.getHudAlignment());
                     }
                 }
             }

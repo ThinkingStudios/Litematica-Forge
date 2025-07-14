@@ -1,9 +1,6 @@
 package fi.dy.masa.litematica.selection;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -13,6 +10,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.PrimitiveCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
@@ -30,13 +30,75 @@ import fi.dy.masa.litematica.util.PositionUtils.Corner;
 
 public class AreaSelection
 {
-    protected final Map<String, Box> subRegionBoxes = new HashMap<>();
-    protected String name = "Unnamed";
+    public static final Codec<SubRegionBox> SUB_REGION_BOX_CODEC = RecordCodecBuilder.create(
+            inst ->
+                    inst.group(
+                            PrimitiveCodec.STRING.fieldOf("name").forGetter(get -> get.name),
+                            Box.CODEC.fieldOf("box").forGetter(get -> get.box)
+                    ).apply(inst, SubRegionBox::new)
+    );
+    public static final Codec<AreaSelection> CODEC = RecordCodecBuilder.create(
+            inst ->
+                    inst.group(
+                            PrimitiveCodec.STRING.fieldOf("name").forGetter(get -> get.name),
+                            Codec.list(SUB_REGION_BOX_CODEC).fieldOf("sub_region_boxes").forGetter(AreaSelection::boxesToList),
+                            PrimitiveCodec.BOOL.fieldOf("origin_selected").forGetter(get -> get.originSelected),
+                            BlockPos.CODEC.fieldOf("calculated_origin").forGetter(get -> get.calculatedOrigin),
+                            BlockPos.CODEC.optionalFieldOf("explicit_origin", null).forGetter(get -> get.explicitOrigin),
+                            PrimitiveCodec.STRING.optionalFieldOf("current_box", null).forGetter(get -> get.currentBox)
+                    ).apply(inst, AreaSelection::new)
+    );
+
+    protected final Map<String, Box> subRegionBoxes;
+    protected String name;
     protected boolean originSelected;
-    protected BlockPos calculatedOrigin = BlockPos.ORIGIN;
-    protected boolean calculatedOriginDirty = true;
-    @Nullable protected BlockPos explicitOrigin = null;
+    protected BlockPos calculatedOrigin;
+    protected boolean calculatedOriginDirty;
+    @Nullable protected BlockPos explicitOrigin;
     @Nullable protected String currentBox;
+
+    public AreaSelection()
+    {
+        this.subRegionBoxes = new HashMap<>();
+        this.name = "Unnamed";
+        this.calculatedOrigin = BlockPos.ORIGIN;
+        this.calculatedOriginDirty = true;
+        this.explicitOrigin = null;
+    }
+
+    private AreaSelection(String name, List<SubRegionBox> boxes, boolean originSelected, BlockPos calcOrigin, @Nullable BlockPos explicitOrigin, @Nullable String currentBox)
+    {
+        this.subRegionBoxes = new HashMap<>();
+        this.name = name;
+        this.originSelected = originSelected;
+        this.calculatedOrigin = calcOrigin;
+        this.calculatedOriginDirty = true;
+        this.explicitOrigin = explicitOrigin;
+        this.currentBox = currentBox;
+
+        for (SubRegionBox subBox : boxes)
+        {
+            this.subRegionBoxes.put(subBox.name(), subBox.box());
+        }
+    }
+
+    public record SubRegionBox(String name, Box box) {}
+
+    private List<SubRegionBox> boxesToList()
+    {
+        if (this.subRegionBoxes.isEmpty())
+        {
+            return List.of();
+        }
+
+        List<SubRegionBox> list = new ArrayList<>();
+        this.subRegionBoxes.forEach(
+                (name, box) ->
+                        list.add(new SubRegionBox(name, box))
+        );
+
+        return list;
+    }
 
     public static AreaSelection fromPlacement(SchematicPlacement placement)
     {
@@ -102,7 +164,7 @@ public class AreaSelection
      * Returns the effective origin point. This is the explicit origin point, if one has been set,
      * otherwise it's an automatically calculated origin point, located at the minimum corner
      * of all the boxes.
-     * @return
+     * @return ()
      */
     public BlockPos getEffectiveOrigin()
     {
@@ -123,7 +185,7 @@ public class AreaSelection
 
     /**
      * Get the explicitly defined origin point, if any.
-     * @return
+     * @return ()
      */
     @Nullable
     public BlockPos getExplicitOrigin()
@@ -229,8 +291,8 @@ public class AreaSelection
 
     /**
      * Adds the given SelectionBox, if either replace is true, or there isn't yet a box by the same name.
-     * @param box
-     * @param replace
+     * @param box ()
+     * @param replace ()
      * @return true if the box was successfully added, false if replace was false and there was already a box with the same name
      */
     public boolean addSubRegionBox(Box box, boolean replace)

@@ -144,17 +144,11 @@ public class OverlayRenderer
 
         if (renderAreas || renderPlacements || isProjectMode)
         {
-            fi.dy.masa.malilib.render.RenderUtils.color(1f, 1f, 1f, 1f);
-//            fi.dy.masa.malilib.render.RenderUtils.blend(true);
-//            fi.dy.masa.malilib.render.RenderUtils.depthTest(true);
-//            fi.dy.masa.malilib.render.RenderUtils.depthMask(false);
+//            fi.dy.masa.malilib.render.RenderUtils.color(1f, 1f, 1f, 1f);
 
             profiler.swap("render_areas");
             if (renderAreas)
             {
-//                fi.dy.masa.malilib.render.RenderUtils.polygonOffset(true);
-//                fi.dy.masa.malilib.render.RenderUtils.polygonOffset(-1.2f, -0.2f);
-
                 profiler.push("selection_boxes");
                 Box currentBox = currentSelection.getSelectedSubRegionBox();
 
@@ -172,7 +166,7 @@ public class OverlayRenderer
                     if (currentSelection.isOriginSelected())
                     {
                         Color4f colorTmp = Color4f.fromColor(this.colorAreaOrigin, 0.4f);
-                        fi.dy.masa.malilib.render.RenderUtils.renderAreaSides(origin, origin, colorTmp, matrix4f);
+                        fi.dy.masa.malilib.render.RenderUtils.renderAreaSides(origin, origin, colorTmp, matrix4f, false);
                     }
 
                     profiler.swap("block_outlines");
@@ -180,8 +174,6 @@ public class OverlayRenderer
                     fi.dy.masa.malilib.render.RenderUtils.renderBlockOutline(origin, expand, lineWidthBlockBox, color, false);
                 }
 
-//                fi.dy.masa.malilib.render.RenderUtils.polygonOffset(0f, 0f);
-//                fi.dy.masa.malilib.render.RenderUtils.polygonOffset(false);
                 profiler.pop();
             }
 
@@ -224,7 +216,7 @@ public class OverlayRenderer
                             {
                                 float alpha = (float) Configs.Visuals.PLACEMENT_BOX_SIDE_ALPHA.getDoubleValue();
                                 color = new Color4f(color.r, color.g, color.b, alpha);
-                                fi.dy.masa.malilib.render.RenderUtils.renderAreaSides(box.getPos1(), box.getPos2(), color, matrix4f);
+                                fi.dy.masa.malilib.render.RenderUtils.renderAreaSides(box.getPos1(), box.getPos2(), color, matrix4f, false);
                             }
                         }
                     }
@@ -244,15 +236,14 @@ public class OverlayRenderer
                     fi.dy.masa.malilib.render.RenderUtils.renderBlockOutline(project.getOrigin(), expand, 4f, this.colorOverlapping, false);
                 }
             }
-
-//            fi.dy.masa.malilib.render.RenderUtils.depthMask(true);
         }
 
         profiler.pop();
     }
 
     public void renderSelectionBox(Box box, BoxType boxType, float expand,
-            float lineWidthBlockBox, float lineWidthArea, @Nullable SchematicPlacement placement, Matrix4f matrix4f)
+                                   float lineWidthBlockBox, float lineWidthArea, @Nullable SchematicPlacement placement,
+                                   Matrix4f matrix4f)
     {
         BlockPos pos1 = box.getPos1();
         BlockPos pos2 = box.getPos2();
@@ -330,18 +321,18 @@ public class OverlayRenderer
                      ((boxType == BoxType.PLACEMENT_SELECTED || boxType == BoxType.PLACEMENT_UNSELECTED) &&
                        Configs.Visuals.RENDER_PLACEMENT_BOX_SIDES.getBooleanValue()))
                 {
-                    fi.dy.masa.malilib.render.RenderUtils.renderAreaSides(pos1, pos2, sideColor, matrix4f);
+                    fi.dy.masa.malilib.render.RenderUtils.renderAreaSides(pos1, pos2, sideColor, matrix4f, false);
                 }
 
                 if (box.getSelectedCorner() == Corner.CORNER_1)
                 {
                     Color4f color = Color4f.fromColor(this.colorPos1, 0.4f);
-                    fi.dy.masa.malilib.render.RenderUtils.renderAreaSides(pos1, pos1, color, matrix4f);
+                    fi.dy.masa.malilib.render.RenderUtils.renderAreaSides(pos1, pos1, color, matrix4f, false);
                 }
                 else if (box.getSelectedCorner() == Corner.CORNER_2)
                 {
                     Color4f color = Color4f.fromColor(this.colorPos2, 0.4f);
-                    fi.dy.masa.malilib.render.RenderUtils.renderAreaSides(pos2, pos2, color, matrix4f);
+                    fi.dy.masa.malilib.render.RenderUtils.renderAreaSides(pos2, pos2, color, matrix4f, false);
                 }
 
                 fi.dy.masa.malilib.render.RenderUtils.renderBlockOutline(pos1, expand, lineWidthBlockBox, color1, false);
@@ -349,7 +340,6 @@ public class OverlayRenderer
             }
             else
             {
-                //RenderUtils.renderBlockOutlineOverlapping(pos1, expand, lineWidthBlockBox, color1, color2, this.colorOverlapping, matrix4f, this.mc);
                 fi.dy.masa.malilib.render.RenderUtils.renderBlockOutlineOverlapping(pos1, expand, lineWidthBlockBox, color1, color2, this.colorOverlapping, matrix4f, false);
             }
         }
@@ -367,7 +357,7 @@ public class OverlayRenderer
         }
     }
 
-    public void renderSchematicVerifierMismatches(Matrix4f matrix4f, Profiler profiler)
+    public void renderSchematicVerifierMismatches(Matrix4f matrix4f, Profiler profiler, boolean renderThrough)
     {
         profiler.push("render_mismatches");
 
@@ -385,30 +375,23 @@ public class OverlayRenderer
                 List<BlockPos> posList = verifier.getSelectedMismatchBlockPositionsForRender();
                 BlockHitResult trace = RayTraceUtils.traceToPositions(posList, entity, 128);
                 BlockPos posLook = trace != null && trace.getType() == HitResult.Type.BLOCK ? trace.getBlockPos() : null;
-                this.renderSchematicMismatches(list, posLook, matrix4f, profiler);
+                this.renderSchematicMismatches(list, posLook, matrix4f, profiler, renderThrough);
             }
         }
 
         profiler.pop();
     }
 
-    private void renderSchematicMismatches(List<MismatchRenderPos> posList, @Nullable BlockPos lookPos, Matrix4f matrix4f, Profiler profiler)
+    private void renderSchematicMismatches(List<MismatchRenderPos> posList, @Nullable BlockPos lookPos,
+                                           Matrix4f matrix4f, Profiler profiler, boolean renderThrough)
     {
         profiler.push("batched_lines");
-//        fi.dy.masa.malilib.render.RenderUtils.depthTest(false);
-//        fi.dy.masa.malilib.render.RenderUtils.depthMask(false);
-//        RenderSystem.lineWidth(2f);
-
-        // VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR
-        RenderContext ctx = new RenderContext(MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL);
+        RenderContext ctx = new RenderContext(() -> "litematica:schematic_mistaches/batched_lines", renderThrough ? MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL : MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
         BufferBuilder buffer = ctx.getBuilder();
-//        MatrixStack matrices = new MatrixStack();
 
         MismatchRenderPos lookedEntry = null;
         MismatchRenderPos prevEntry = null;
         boolean connections = Configs.Visuals.RENDER_ERROR_MARKER_CONNECTIONS.getBooleanValue();
-
-//        matrices.push();
 
         for (MismatchRenderPos entry : posList)
         {
@@ -416,7 +399,6 @@ public class OverlayRenderer
 
             if (entry.pos.equals(lookPos) == false)
             {
-                //RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(entry.pos, color, 0.002, buffer, this.mc);
                 fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(entry.pos, color, 0.002, buffer);
             }
             else
@@ -426,7 +408,6 @@ public class OverlayRenderer
 
             if (connections && prevEntry != null)
             {
-                //RenderUtils.drawConnectingLineBatchedLines(prevEntry.pos, entry.pos, false, color, buffer, this.mc);
                 fi.dy.masa.malilib.render.RenderUtils.drawConnectingLineBatchedLines(prevEntry.pos, entry.pos, false, color, buffer);
             }
 
@@ -437,11 +418,8 @@ public class OverlayRenderer
         {
             if (connections && prevEntry != null)
             {
-                //RenderUtils.drawConnectingLineBatchedLines(prevEntry.pos, lookedEntry.pos, false, lookedEntry.type.getColor(), buffer, this.mc);
                 fi.dy.masa.malilib.render.RenderUtils.drawConnectingLineBatchedLines(prevEntry.pos, lookedEntry.pos, false, lookedEntry.type.getColor(), buffer);
             }
-
-//            matrices.pop();
 
             try
             {
@@ -460,15 +438,9 @@ public class OverlayRenderer
 
             profiler.swap("outlines");
 
-            buffer = ctx.start(MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL);
+            buffer = ctx.start(() -> "litematica:schematic_mistaches/outlines", renderThrough ? MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL : MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
 
-//            matrices.push();
-
-//            RenderSystem.lineWidth(6f);
-            //RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(lookPos, lookedEntry.type.getColor(), 0.002, buffer, this.mc);
             fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(lookPos, lookedEntry.type.getColor(), 0.002, buffer);
-
-//            matrices.pop();
         }
 
         try
@@ -489,10 +461,7 @@ public class OverlayRenderer
         profiler.swap("sides");
         if (Configs.Visuals.RENDER_ERROR_MARKER_SIDES.getBooleanValue())
         {
-//            fi.dy.masa.malilib.render.RenderUtils.blend(true);
-//            fi.dy.masa.malilib.render.RenderUtils.culling(false);
-
-            buffer = ctx.start(MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_NO_DEPTH_NO_CULL);
+            buffer = ctx.start(() -> "litematica:schematic_mistaches/side_quads", renderThrough ? MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_LEQUAL_DEPTH);
 
             float alpha = (float) Configs.InfoOverlays.VERIFIER_ERROR_HILIGHT_ALPHA.getDoubleValue();
 
@@ -516,17 +485,12 @@ public class OverlayRenderer
                 ctx.close();
             }
             catch (Exception ignored) { }
-
-//            fi.dy.masa.malilib.render.RenderUtils.blend(false);
         }
 
-//        fi.dy.masa.malilib.render.RenderUtils.culling(true);
-//        fi.dy.masa.malilib.render.RenderUtils.depthMask(true);
-//        fi.dy.masa.malilib.render.RenderUtils.depthTest(true);
         profiler.pop();
     }
 
-    public void renderHoverInfo(MinecraftClient mc, DrawContext drawContext, Profiler profiler)
+    public void renderHoverInfo(DrawContext drawContext, MinecraftClient mc, Profiler profiler)
     {
         profiler.push("render_hover_info");
 
@@ -538,7 +502,7 @@ public class OverlayRenderer
             profiler.swap("render_verifier_overlay");
             if (infoOverlayKeyActive && Configs.InfoOverlays.VERIFIER_OVERLAY_ENABLED.getBooleanValue())
             {
-                verifierOverlayRendered = this.renderVerifierOverlay(mc, drawContext);
+                verifierOverlayRendered = this.renderVerifierOverlay(drawContext, mc);
             }
 
             boolean renderBlockInfoLines = Configs.InfoOverlays.BLOCK_INFO_LINES_ENABLED.getBooleanValue();
@@ -560,13 +524,13 @@ public class OverlayRenderer
                 profiler.swap("render_block_lines");
                 if (renderBlockInfoLines)
                 {
-                    this.renderBlockInfoLines(traceWrapper, mc, drawContext);
+                    this.renderBlockInfoLines(drawContext, traceWrapper, mc);
                 }
 
                 profiler.swap("render_block_overlay");
                 if (renderBlockInfoOverlay)
                 {
-                    this.renderBlockInfoOverlay(traceWrapper, mc, drawContext);
+                    this.renderBlockInfoOverlay(drawContext, traceWrapper, mc);
                 }
             }
         }
@@ -574,7 +538,7 @@ public class OverlayRenderer
         profiler.pop();
     }
 
-    private void renderBlockInfoLines(RayTraceWrapper traceWrapper, MinecraftClient mc, DrawContext drawContext)
+    private void renderBlockInfoLines(DrawContext drawContext, RayTraceWrapper traceWrapper, MinecraftClient mc)
     {
         long currentTime = System.currentTimeMillis();
 
@@ -594,10 +558,10 @@ public class OverlayRenderer
         boolean useBackground = true;
         boolean useShadow = false;
 
-        fi.dy.masa.malilib.render.RenderUtils.renderText(x, y, fontScale, textColor, bgColor, alignment, useBackground, useShadow, this.blockInfoLines, drawContext);
+        fi.dy.masa.malilib.render.RenderUtils.renderText(drawContext, x, y, fontScale, textColor, bgColor, alignment, useBackground, useShadow, this.blockInfoLines);
     }
 
-    private boolean renderVerifierOverlay(MinecraftClient mc, DrawContext drawContext)
+    private boolean renderVerifierOverlay(DrawContext drawContext, MinecraftClient mc)
     {
         SchematicPlacement placement = DataManager.getSchematicPlacementManager().getSelectedSchematicPlacement();
 
@@ -625,9 +589,9 @@ public class OverlayRenderer
                     BlockMismatchInfo info = new BlockMismatchInfo(mismatch.stateExpected, mismatch.stateFound);
                     BlockInfoAlignment align = (BlockInfoAlignment) Configs.InfoOverlays.BLOCK_INFO_OVERLAY_ALIGNMENT.getOptionListValue();
                     int offY = Configs.InfoOverlays.BLOCK_INFO_OVERLAY_OFFSET_Y.getIntegerValue();
-                    int invHeight = RenderUtils.renderInventoryOverlays(align, offY, worldSchematic, mc.world, pos, mc, drawContext);
+                    int invHeight = RenderUtils.renderInventoryOverlays(drawContext, align, offY, worldSchematic, mc.world, pos, mc);
                     this.getOverlayPosition(align, info.getTotalWidth(), info.getTotalHeight(), offY, invHeight, mc);
-                    info.render(this.blockInfoX, this.blockInfoY, mc, drawContext);
+                    info.render(drawContext, this.blockInfoX, this.blockInfoY, mc);
                     return true;
                 }
             }
@@ -636,7 +600,7 @@ public class OverlayRenderer
         return false;
     }
 
-    private void renderBlockInfoOverlay(RayTraceWrapper traceWrapper, MinecraftClient mc, DrawContext drawContext)
+    private void renderBlockInfoOverlay(DrawContext drawContext, RayTraceWrapper traceWrapper, MinecraftClient mc)
     {
         BlockState air = Blocks.AIR.getDefaultState();
         BlockState voidAir = Blocks.VOID_AIR.getDefaultState();
@@ -661,15 +625,15 @@ public class OverlayRenderer
 
         if (hasInvClient && hasInvSchematic)
         {
-            invHeight = RenderUtils.renderInventoryOverlays(align, offY, worldSchematic, worldClient, pos, mc, drawContext);
+            invHeight = RenderUtils.renderInventoryOverlays(drawContext, align, offY, worldSchematic, worldClient, pos, mc);
         }
         else if (hasInvClient)
         {
-            invHeight = RenderUtils.renderInventoryOverlay(align, LeftRight.RIGHT, offY, worldClient, pos, mc, drawContext);
+            invHeight = RenderUtils.renderInventoryOverlay(drawContext, align, LeftRight.RIGHT, offY, worldClient, pos, mc);
         }
         else if (hasInvSchematic)
         {
-            invHeight = RenderUtils.renderInventoryOverlay(align, LeftRight.LEFT, offY, worldSchematic, pos, mc, drawContext);
+            invHeight = RenderUtils.renderInventoryOverlay(drawContext, align, LeftRight.LEFT, offY, worldSchematic, pos, mc);
         }
 
         // Not just a missing block
@@ -678,21 +642,21 @@ public class OverlayRenderer
             BlockMismatchInfo info = new BlockMismatchInfo(stateSchematic, stateClient);
             this.getOverlayPosition(align, info.getTotalWidth(), info.getTotalHeight(), offY, invHeight, mc);
             info.toggleUseBackgroundMask(true);
-            info.render(this.blockInfoX, this.blockInfoY, mc, drawContext);
+            info.render(drawContext, this.blockInfoX, this.blockInfoY, mc);
         }
         else if (traceWrapper.getHitType() == RayTraceWrapper.HitType.VANILLA_BLOCK)
         {
             BlockInfo info = new BlockInfo(stateClient, "litematica.gui.label.block_info.state_client");
             this.getOverlayPosition(align, info.getTotalWidth(), info.getTotalHeight(), offY, invHeight, mc);
             info.toggleUseBackgroundMask(true);
-            info.render(this.blockInfoX, this.blockInfoY, mc, drawContext);
+            info.render(drawContext, this.blockInfoX, this.blockInfoY, mc);
         }
         else if (traceWrapper.getHitType() == RayTraceWrapper.HitType.SCHEMATIC_BLOCK)
         {
             BlockInfo info = new BlockInfo(stateSchematic, "litematica.gui.label.block_info.state_schematic");
             this.getOverlayPosition(align, info.getTotalWidth(), info.getTotalHeight(), offY, invHeight, mc);
             info.toggleUseBackgroundMask(true);
-            info.render(this.blockInfoX, this.blockInfoY, mc, drawContext);
+            info.render(drawContext, this.blockInfoX, this.blockInfoY, mc);
         }
     }
 
@@ -824,12 +788,6 @@ public class OverlayRenderer
             BlockHitResult trace = traceWrapper.getBlockHitResult();
             BlockPos pos = trace.getBlockPos();
 
-//            fi.dy.masa.malilib.render.RenderUtils.depthMask(false);
-//            fi.dy.masa.malilib.render.RenderUtils.culling(false);
-//            fi.dy.masa.malilib.render.RenderUtils.blend(true);
-//            fi.dy.masa.malilib.render.RenderUtils.polygonOffset(true);
-//            fi.dy.masa.malilib.render.RenderUtils.polygonOffset(-0.8f, -1.8f);
-
             if (direction)
             {
                 fi.dy.masa.malilib.render.RenderUtils.renderBlockTargetingOverlay(
@@ -840,17 +798,12 @@ public class OverlayRenderer
                 fi.dy.masa.malilib.render.RenderUtils.renderBlockTargetingOverlaySimple(
                         entity, pos, trace.getSide(), color, matrix4f);
             }
-
-//            fi.dy.masa.malilib.render.RenderUtils.polygonOffset(false);
-//            fi.dy.masa.malilib.render.RenderUtils.blend(false);
-//            fi.dy.masa.malilib.render.RenderUtils.culling(true);
-//            fi.dy.masa.malilib.render.RenderUtils.depthMask(true);
         }
 
         profiler.pop();
     }
 
-    public void renderPreviewFrame(MinecraftClient mc, DrawContext drawContext, Profiler profiler)
+    public void renderPreviewFrame(DrawContext drawContext, MinecraftClient mc, Profiler profiler)
     {
         profiler.push("render_preview_frame");
         int width = GuiUtils.getScaledWindowWidth();
@@ -859,7 +812,7 @@ public class OverlayRenderer
         int y = height >= width ? (height - width) / 2 : 0;
         int longerSide = Math.min(width, height);
 
-        fi.dy.masa.malilib.render.RenderUtils.drawOutline(x, y, longerSide, longerSide, 2, 0xFFFFFFFF);
+        fi.dy.masa.malilib.render.RenderUtils.drawOutline(drawContext, x, y, longerSide, longerSide, 2, 0xFFFFFFFF);
         profiler.pop();
     }
 

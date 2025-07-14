@@ -39,14 +39,14 @@ public class WidgetListSchematicVersions extends WidgetListBase<SchematicVersion
     public void drawContents(DrawContext drawContext, int mouseX, int mouseY, float partialTicks)
     {
         // Draw an outline around the entire entry list
-        RenderUtils.drawOutlinedBox(this.posX, this.posY, this.browserWidth, this.browserHeight, 0xB0000000, COLOR_HORIZONTAL_BAR);
+        RenderUtils.drawOutlinedBox(drawContext, this.posX, this.posY, this.browserWidth, this.browserHeight, 0xB0000000, COLOR_HORIZONTAL_BAR);
 
         super.drawContents(drawContext, mouseX, mouseY, partialTicks);
 
-        this.drawAdditionalContents(mouseX, mouseY, drawContext);
+        this.drawAdditionalContents(drawContext, mouseX, mouseY);
     }
 
-    protected void drawAdditionalContents(int mouseX, int mouseY, DrawContext drawContext)
+    protected void drawAdditionalContents(DrawContext drawContext, int mouseX, int mouseY)
     {
         int x = this.posX + this.totalWidth - this.infoWidth + 4;
         int y = this.posY + 4;
@@ -56,7 +56,7 @@ public class WidgetListSchematicVersions extends WidgetListBase<SchematicVersion
         String r = GuiBase.TXT_RST;
         int color = 0xFFB0B0B0;
 
-        RenderUtils.drawOutlinedBox(x - 4, y - 4, this.infoWidth, infoHeight, 0xA0000000, COLOR_HORIZONTAL_BAR);
+        RenderUtils.drawOutlinedBox(drawContext, x - 4, y - 4, this.infoWidth, infoHeight, 0xA0000000, COLOR_HORIZONTAL_BAR);
 
         str = StringUtils.translate("litematica.gui.label.schematic_projects.project");
         this.drawString(drawContext, str, x, y, color);

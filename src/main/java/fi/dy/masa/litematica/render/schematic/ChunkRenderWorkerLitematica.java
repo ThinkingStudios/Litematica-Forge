@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.BlockRenderLayer;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.crash.CrashReport;
@@ -251,7 +252,7 @@ public class ChunkRenderWorkerLitematica implements Runnable
                 //LOGGER.warn("[LW] (REBUILD_CHUNK) --> Schedule Uploads");
 
                 //if (GuiBase.isCtrlDown()) System.out.printf("pre uploadChunk()\n");
-                for (RenderLayer layer : ChunkRenderLayers.LAYERS)
+                for (BlockRenderLayer layer : ChunkRenderLayers.BLOCK_RENDER_LAYERS)
                 {
                     if (chunkRenderData.isBlockLayerEmpty(layer) == false)
                     {
@@ -274,13 +275,13 @@ public class ChunkRenderWorkerLitematica implements Runnable
             else if (taskType == ChunkRenderTaskSchematic.Type.RESORT_TRANSPARENCY)
             {
                 //LOGGER.warn("[LW] (RESORT_TRANSPARENCY) --> Schedule Uploads");
-                RenderLayer layer = RenderLayer.getTranslucent();
+                BlockRenderLayer layer = BlockRenderLayer.TRANSLUCENT;
 
                 if (chunkRenderData.isBlockLayerEmpty(layer) == false)
                 {
                     //System.out.printf("RESORT_TRANSPARENCY pre uploadChunkBlocks(%s)\n", layer.toString());
 //                    System.out.printf("REBUILD_CHUNK pre uploadChunkBlocks(%s)\n", ChunkRenderLayers.getFriendlyName(layer));
-                    futuresList.add(this.chunkRenderDispatcher.uploadChunkBlocks(RenderLayer.getTranslucent(), allocators, renderChunk, chunkRenderData, task.getDistanceSq(), true, profiler));
+                    futuresList.add(this.chunkRenderDispatcher.uploadChunkBlocks(BlockRenderLayer.TRANSLUCENT, allocators, renderChunk, chunkRenderData, task.getDistanceSq(), true, profiler));
                 }
                 if (chunkRenderData.isOverlayTypeEmpty(OverlayRenderType.QUAD) == false)
                 {

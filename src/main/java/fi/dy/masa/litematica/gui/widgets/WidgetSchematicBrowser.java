@@ -8,8 +8,8 @@ import javax.annotation.Nullable;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.util.Identifier;
@@ -78,18 +78,18 @@ public class WidgetSchematicBrowser extends WidgetFileBrowserBase
     }
 
     @Override
-    protected void drawAdditionalContents(int mouseX, int mouseY, DrawContext drawContext)
+    protected void drawAdditionalContents(DrawContext drawContext, int mouseX, int mouseY)
     {
-        this.drawSelectedSchematicInfo(this.getLastSelectedEntry(), drawContext);
+        this.drawSelectedSchematicInfo(drawContext, this.getLastSelectedEntry());
     }
 
-    protected void drawSelectedSchematicInfo(@Nullable DirectoryEntry entry, DrawContext drawContext)
+    protected void drawSelectedSchematicInfo(DrawContext drawContext, @Nullable DirectoryEntry entry)
     {
         int x = this.posX + this.totalWidth - this.infoWidth;
         int y = this.posY;
         int height = Math.min(this.infoHeight, this.parent.getMaxInfoHeight());
 
-        RenderUtils.drawOutlinedBox(x, y, this.infoWidth, height, 0xA0000000, COLOR_HORIZONTAL_BAR);
+        RenderUtils.drawOutlinedBox(drawContext, x, y, this.infoWidth, height, 0xA0000000, COLOR_HORIZONTAL_BAR);
 
         if (entry == null)
         {
@@ -112,7 +112,7 @@ public class WidgetSchematicBrowser extends WidgetFileBrowserBase
 
         if (meta != null)
         {
-            RenderUtils.color(1f, 1f, 1f, 1f);
+//            RenderUtils.color(1f, 1f, 1f, 1f);
 
             x += 3;
             y += 3;
@@ -250,16 +250,16 @@ public class WidgetSchematicBrowser extends WidgetFileBrowserBase
                 int iconSize = pair.getRight().getImage().getWidth();
                 boolean needsScaling = height < this.infoHeight;
 
-                RenderUtils.color(1f, 1f, 1f, 1f);
+//                RenderUtils.color(1f, 1f, 1f, 1f);
 
                 if (needsScaling)
                 {
                     iconSize = height - y + this.posY - 6;
                 }
 
-                RenderUtils.drawOutlinedBox(x + 4, y, iconSize, iconSize, 0xA0000000, COLOR_HORIZONTAL_BAR);
+                RenderUtils.drawOutlinedBox(drawContext, x + 4, y, iconSize, iconSize, 0xA0000000, COLOR_HORIZONTAL_BAR);
 
-                drawContext.drawTexture(RenderLayer::getGuiTextured, pair.getLeft(), x + 4, y, 0.0F, 0.0F, iconSize, iconSize, iconSize, iconSize);
+                drawContext.drawTexture(RenderPipelines.GUI_TEXTURED, pair.getLeft(), x + 4, y, 0.0F, 0.0F, iconSize, iconSize, iconSize, iconSize);
             }
         }
     }

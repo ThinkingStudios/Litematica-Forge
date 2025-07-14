@@ -3,11 +3,26 @@ package fi.dy.masa.litematica.schematic.projects;
 import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.PrimitiveCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+
 import fi.dy.masa.malilib.util.JsonUtils;
 import net.minecraft.util.math.BlockPos;
 
 public class SchematicVersion
 {
+    public static final Codec<SchematicVersion> CODEC = RecordCodecBuilder.create(
+            inst ->
+                    inst.group(
+                            PrimitiveCodec.STRING.fieldOf("name").forGetter(get -> get.name),
+                            PrimitiveCodec.STRING.fieldOf("file_name").forGetter(get -> get.fileName),
+                            BlockPos.CODEC.fieldOf("area_offset").forGetter(get -> get.areaOffset),
+                            PrimitiveCodec.INT.fieldOf("version").forGetter(get -> get.version),
+                            PrimitiveCodec.LONG.fieldOf("time_stamp").forGetter(get -> get.timeStamp)
+                    ).apply(inst, SchematicVersion::new)
+    );
     private final String name;
     private final String fileName;
     private final BlockPos areaOffset;

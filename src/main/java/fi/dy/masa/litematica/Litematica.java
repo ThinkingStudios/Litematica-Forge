@@ -1,5 +1,6 @@
 package fi.dy.masa.litematica;
 
+import fi.dy.masa.litematica.compat.sodium.SodiumCompat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import fi.dy.masa.malilib.event.InitializationHandler;

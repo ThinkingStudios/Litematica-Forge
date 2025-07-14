@@ -341,6 +341,7 @@ public class InventoryUtils
                 if (pair != null)
                 {
                     nbt = pair.getRight();
+                    be = pair.getLeft();
                 }
             }
 

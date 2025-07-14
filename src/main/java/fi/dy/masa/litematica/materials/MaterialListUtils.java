@@ -14,6 +14,7 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.BundleItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Vec3i;
 
@@ -60,7 +61,7 @@ public class MaterialListUtils
 
         MinecraftClient mc = MinecraftClient.getInstance();
 
-        return getMaterialList(countsTotal, countsTotal, new Object2IntOpenHashMap<>(), mc.player);
+        return getMaterialList(countsTotal, countsTotal.clone(), new Object2IntOpenHashMap<>(), mc.player);
     }
 
     public static List<MaterialListEntry> getMaterialList(
@@ -71,7 +72,7 @@ public class MaterialListUtils
     {
         List<MaterialListEntry> list = new ArrayList<>();
 
-        if (player != null && !countsTotal.isEmpty())
+        if (!countsTotal.isEmpty())
         {
             MaterialCache cache = MaterialCache.getInstance();
             Object2IntOpenHashMap<ItemType> itemTypesTotal = new Object2IntOpenHashMap<>();
@@ -82,15 +83,29 @@ public class MaterialListUtils
             convertStatesToStacks(countsMissing, itemTypesMissing, cache);
             convertStatesToStacks(countsMismatch, itemTypesMismatch, cache);
 
-            Object2IntOpenHashMap<ItemType> playerInvItems = getInventoryItemCounts(player.getInventory());
-
-            for (ItemType type : itemTypesTotal.keySet())
+            if (player != null)
             {
-                list.add(new MaterialListEntry(type.getStack().copy(),
-                        itemTypesTotal.getInt(type),
-                        itemTypesMissing.getInt(type),
-                        itemTypesMismatch.getInt(type),
-                        playerInvItems.getInt(type)));
+                Object2IntOpenHashMap<ItemType> playerInvItems = getInventoryItemCounts(player.getInventory());
+
+                for (ItemType type : itemTypesTotal.keySet())
+                {
+                    list.add(new MaterialListEntry(type.getStack().copy(),
+                                                   itemTypesTotal.getInt(type),
+                                                   itemTypesMissing.getInt(type),
+                                                   itemTypesMismatch.getInt(type),
+                                                   playerInvItems.getInt(type)));
+                }
+            }
+            else
+            {
+                for (ItemType type : itemTypesTotal.keySet())
+                {
+                    list.add(new MaterialListEntry(type.getStack().copy(),
+                                                   itemTypesTotal.getInt(type),
+                                                   itemTypesMissing.getInt(type),
+                                                   itemTypesMismatch.getInt(type),
+                                                   0));
+                }
             }
         }
 
@@ -195,6 +210,17 @@ public class MaterialListUtils
         {
             if (boxStack.isEmpty() == false)
             {
+                // Copy Nested Bundles
+                if (boxStack.getItem() instanceof BundleItem && InventoryUtils.bundleHasItems(boxStack))
+                {
+                    Object2IntOpenHashMap<ItemType> bundleMap = getBundleItemCounts(boxStack);
+
+                    if (!bundleMap.isEmpty())
+                    {
+                        bundleMap.forEach(map::addTo);
+                    }
+                }
+
                 map.addTo(new ItemType(boxStack, false, false), boxStack.getCount());
             }
         }
@@ -211,6 +237,17 @@ public class MaterialListUtils
         {
             if (bundleStack.isEmpty() == false)
             {
+                // Copy Nested Bundles
+                if (bundleStack.getItem() instanceof BundleItem && InventoryUtils.bundleHasItems(bundleStack))
+                {
+                    Object2IntOpenHashMap<ItemType> bundleMap = getBundleItemCounts(bundleStack);
+
+                    if (!bundleMap.isEmpty())
+                    {
+                        bundleMap.forEach(map::addTo);
+                    }
+                }
+
                 map.addTo(new ItemType(bundleStack, false, false), bundleStack.getCount());
             }
         }

@@ -30,29 +30,29 @@ public class WidgetTaskEntry extends WidgetListEntryBase<ITask>
     }
 
     @Override
-    public void render(int mouseX, int mouseY, boolean selected, DrawContext drawContext)
+    public void render(DrawContext drawContext, int mouseX, int mouseY, boolean selected)
     {
-        RenderUtils.color(1f, 1f, 1f, 1f);
+//        RenderUtils.color(1f, 1f, 1f, 1f);
 
         // Draw a lighter background for the hovered and the selected entry
         if (selected || this.isMouseOver(mouseX, mouseY))
         {
-            RenderUtils.drawRect(this.x, this.y, this.width, this.height, 0x70FFFFFF);
+            RenderUtils.drawRect(drawContext, this.x, this.y, this.width, this.height, 0x70FFFFFF);
         }
         else if (this.isOdd)
         {
-            RenderUtils.drawRect(this.x, this.y, this.width, this.height, 0x20FFFFFF);
+            RenderUtils.drawRect(drawContext, this.x, this.y, this.width, this.height, 0x20FFFFFF);
         }
         // Draw a slightly lighter background for even entries
         else
         {
-            RenderUtils.drawRect(this.x, this.y, this.width, this.height, 0x50FFFFFF);
+            RenderUtils.drawRect(drawContext, this.x, this.y, this.width, this.height, 0x50FFFFFF);
         }
 
         String name = this.getEntry().getDisplayName();
-        this.drawString(this.x + 4, this.y + 7, 0xFFFFFFFF, name, drawContext);
+        this.drawString(drawContext, this.x + 4, this.y + 7, 0xFFFFFFFF, name);
 
-        this.drawSubWidgets(mouseX, mouseY, drawContext);
+        this.drawSubWidgets(drawContext, mouseX, mouseY);
     }
 
     private static class ButtonListener implements IButtonActionListener
@@ -84,7 +84,7 @@ public class WidgetTaskEntry extends WidgetListEntryBase<ITask>
 
         public enum Type
         {
-            REMOVE;
+            REMOVE
         }
     }
 }

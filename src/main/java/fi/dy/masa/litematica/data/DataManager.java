@@ -23,7 +23,6 @@ import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.Reference;
 import fi.dy.masa.litematica.config.Configs;
-import fi.dy.masa.litematica.schematic.transmit.SchematicBufferManager;
 import fi.dy.masa.litematica.gui.GuiConfigs.ConfigGuiTab;
 import fi.dy.masa.litematica.materials.MaterialListBase;
 import fi.dy.masa.litematica.materials.MaterialListHudRenderer;
@@ -31,6 +30,7 @@ import fi.dy.masa.litematica.render.infohud.InfoHud;
 import fi.dy.masa.litematica.scheduler.TaskScheduler;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacementManager;
 import fi.dy.masa.litematica.schematic.projects.SchematicProjectsManager;
+import fi.dy.masa.litematica.schematic.transmit.SchematicBufferManager;
 import fi.dy.masa.litematica.schematic.verifier.SchematicVerifier;
 import fi.dy.masa.litematica.selection.AreaSelectionSimple;
 import fi.dy.masa.litematica.selection.SelectionManager;
@@ -45,6 +45,7 @@ public class DataManager implements IDirectoryCache
 
     private static final Map<String, Path> LAST_DIRECTORIES = new HashMap<>();
     private static final ArrayList<ToBooleanFunction<Text>> CHAT_LISTENERS = new ArrayList<>();
+    public static final Identifier CARPET_HELLO = Identifier.of("carpet", "hello");
 
     private static ItemStack toolItem = new ItemStack(Items.STICK);
     private ItemStack toolItemComponents = null;
@@ -55,7 +56,6 @@ public class DataManager implements IDirectoryCache
     private static long clientTickStart;
     private boolean hasIntegratedServer = false;
 
-    public static Identifier CARPET_HELLO = Identifier.of("carpet", "hello");
     private final SelectionManager selectionManager = new SelectionManager();
     private final SchematicPlacementManager schematicPlacementManager = new SchematicPlacementManager();
     private final SchematicProjectsManager schematicProjectsManager = new SchematicProjectsManager();

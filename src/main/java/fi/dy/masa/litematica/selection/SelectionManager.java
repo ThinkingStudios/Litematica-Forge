@@ -40,14 +40,24 @@ import fi.dy.masa.litematica.util.RayTraceUtils.RayTraceWrapper.HitType;
 
 public class SelectionManager
 {
-    private final MinecraftClient mc = MinecraftClient.getInstance();
-    private final Map<String, AreaSelection> selections = new HashMap<>();
-    private final Map<String, AreaSelection> readOnlySelections = new HashMap<>();
+    private final MinecraftClient mc;
+    private final Map<String, AreaSelection> selections;
+    private final Map<String, AreaSelection> readOnlySelections;
     @Nullable
     private String currentSelectionId;
     @Nullable
     private GrabbedElement grabbedElement;
-    private SelectionMode mode = SelectionMode.SIMPLE;
+    private SelectionMode mode;
+    private boolean modeDirty;
+
+    public SelectionManager()
+    {
+        this.mc = MinecraftClient.getInstance();
+        this.selections = new HashMap<>();
+        this.readOnlySelections = new HashMap<>();
+        this.mode = (SelectionMode) Configs.InfoOverlays.DEFAULT_SELECTION_MODE.getOptionListValue();
+        this.modeDirty = true;
+    }
 
     public SelectionMode getSelectionMode()
     {
@@ -58,6 +68,15 @@ public class SelectionManager
         }
 
         return this.mode;
+    }
+
+    public void checkSelectionModeConfig()
+    {
+        if (this.modeDirty)
+        {
+            this.mode = (SelectionMode) Configs.InfoOverlays.DEFAULT_SELECTION_MODE.getOptionListValue();
+            this.modeDirty = false;
+        }
     }
 
     public void switchSelectionMode()
@@ -77,7 +96,7 @@ public class SelectionManager
         }
         else
         {
-            this.mode = this.mode.cycle(true);
+            this.mode = (SelectionMode) this.mode.cycle(true);
         }
     }
 
@@ -130,7 +149,7 @@ public class SelectionManager
         return this.getNormalSelection(selectionId);
     }
 
-    protected AreaSelectionSimple getSimpleSelection()
+    public AreaSelectionSimple getSimpleSelection()
     {
         return DataManager.getSimpleArea();
     }
@@ -329,7 +348,11 @@ public class SelectionManager
 
         AreaSelection selection = new AreaSelection();
         selection.setName(name);
-        BlockPos pos = fi.dy.masa.malilib.util.position.PositionUtils.getEntityBlockPos(this.mc.player);
+        BlockPos pos = BlockPos.ORIGIN;
+        if (this.mc.player != null)
+        {
+            pos = fi.dy.masa.malilib.util.position.PositionUtils.getEntityBlockPos(this.mc.player);
+        }
         selection.createNewSubRegionBox(pos, name);
 
         this.selections.put(selectionId, selection);
@@ -762,7 +785,12 @@ public class SelectionManager
 
         if (JsonUtils.hasString(obj, "mode"))
         {
-            this.mode = SelectionMode.fromString(obj.get("mode").getAsString());
+            this.mode = SelectionMode.fromStringStatic(obj.get("mode").getAsString());
+            this.modeDirty = false;
+        }
+        else
+        {
+            this.mode = (SelectionMode) Configs.InfoOverlays.DEFAULT_SELECTION_MODE.getOptionListValue();
         }
     }
 

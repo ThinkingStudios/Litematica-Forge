@@ -4,8 +4,10 @@ import javax.annotation.Nullable;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import fi.dy.masa.malilib.util.JsonUtils;
+
 import net.minecraft.util.math.BlockPos;
+
+import fi.dy.masa.malilib.util.JsonUtils;
 
 public class AreaSelectionSimple extends AreaSelection
 {

@@ -5,9 +5,10 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import net.minecraft.util.StringIdentifiable;
 
+import fi.dy.masa.malilib.config.IConfigOptionListEntry;
 import fi.dy.masa.malilib.util.StringUtils;
 
-public enum SelectionMode implements StringIdentifiable
+public enum SelectionMode implements IConfigOptionListEntry, StringIdentifiable
 {
     NORMAL  ("normal", "litematica.gui.label.area_selection.mode.normal"),
     SIMPLE  ("simple", "litematica.gui.label.area_selection.mode.simple");
@@ -34,12 +35,19 @@ public enum SelectionMode implements StringIdentifiable
         return this.translationKey;
     }
 
+    @Override
+    public String getStringValue()
+    {
+        return this.configString;
+    }
+
     public String getDisplayName()
     {
         return StringUtils.translate(this.translationKey);
     }
 
-    public SelectionMode cycle(boolean forward)
+    @Override
+    public IConfigOptionListEntry cycle(boolean forward)
     {
         int id = this.ordinal();
 
@@ -61,7 +69,13 @@ public enum SelectionMode implements StringIdentifiable
         return values()[id % values().length];
     }
 
-    public static SelectionMode fromString(String name)
+    @Override
+    public SelectionMode fromString(String name)
+    {
+        return fromStringStatic(name);
+    }
+
+    public static SelectionMode fromStringStatic(String name)
     {
         for (SelectionMode mode : SelectionMode.values())
         {

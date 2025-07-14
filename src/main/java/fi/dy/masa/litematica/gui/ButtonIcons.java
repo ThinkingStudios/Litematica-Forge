@@ -59,7 +59,7 @@ public enum ButtonIcons implements IGuiIcon
     }
 
     @Override
-    public void renderAt(int x, int y, float zLevel, boolean enabled, boolean selected, DrawContext drawContext)
+    public void renderAt(DrawContext drawContext, int x, int y, float zLevel, boolean enabled, boolean selected)
     {
         int u = this.u;
 
@@ -73,9 +73,7 @@ public enum ButtonIcons implements IGuiIcon
             u += this.w;
         }
 
-        //RenderUtils.drawTexturedRect(x, y, u, this.v, this.w, this.h, zLevel);
-        RenderUtils.drawTexturedRect(this.getTexture(), x, y, u, this.v, this.w, this.h, zLevel, drawContext);
-        RenderUtils.forceDraw(drawContext);
+        RenderUtils.drawTexturedRect(drawContext, this.getTexture(), x, y, u, this.v, this.w, this.h, zLevel);
     }
 
     @Override

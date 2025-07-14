@@ -26,38 +26,38 @@ public class WidgetSchematicVersion extends WidgetListEntryBase<SchematicVersion
     }
 
     @Override
-    public void render(int mouseX, int mouseY, boolean selected, DrawContext drawContext)
+    public void render(DrawContext drawContext, int mouseX, int mouseY, boolean selected)
     {
-        RenderUtils.color(1f, 1f, 1f, 1f);
+//        RenderUtils.color(1f, 1f, 1f, 1f);
 
         boolean versionSelected = this.project.getCurrentVersion() == this.entry;
 
         // Draw a lighter background for the hovered and the selected entry
         if (selected || versionSelected || this.isMouseOver(mouseX, mouseY))
         {
-            RenderUtils.drawRect(this.x, this.y, this.width, this.height, 0xA0707070);
+            RenderUtils.drawRect(drawContext, this.x, this.y, this.width, this.height, 0xA0707070);
         }
         else if (this.isOdd)
         {
-            RenderUtils.drawRect(this.x, this.y, this.width, this.height, 0xA0101010);
+            RenderUtils.drawRect(drawContext, this.x, this.y, this.width, this.height, 0xA0101010);
         }
         // Draw a slightly lighter background for even entries
         else
         {
-            RenderUtils.drawRect(this.x, this.y, this.width, this.height, 0xA0303030);
+            RenderUtils.drawRect(drawContext, this.x, this.y, this.width, this.height, 0xA0303030);
         }
 
         if (versionSelected)
         {
-            RenderUtils.drawOutline(this.x, this.y, this.width, this.height, 0xFFE0E0E0);
+            RenderUtils.drawOutline(drawContext, this.x, this.y, this.width, this.height, 0xFFE0E0E0);
         }
 
         String str = StringUtils.translate("litematica.gui.label.schematic_projects.version_entry", this.entry.getVersion(), this.entry.getName());
-        this.drawString(this.x + 4, this.y + 4, 0xFFFFFFFF, str, drawContext);
+        this.drawString(drawContext, this.x + 4, this.y + 4, 0xFFFFFFFF, str);
     }
 
     @Override
-    public void postRenderHovered(int mouseX, int mouseY, boolean selected, DrawContext drawContext)
+    public void postRenderHovered(DrawContext drawContext, int mouseX, int mouseY, boolean selected)
     {
         List<String> text = new ArrayList<>();
         /*
@@ -73,6 +73,6 @@ public class WidgetSchematicVersion extends WidgetListEntryBase<SchematicVersion
         text.add(StringUtils.translate("litematica.gui.label.schematic_placement.enclosing_size", strSize));
         */
 
-        RenderUtils.drawHoverText(mouseX, mouseY, text, drawContext);
+        RenderUtils.drawHoverText(drawContext, mouseX, mouseY, text);
     }
 }

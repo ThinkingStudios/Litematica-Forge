@@ -26,9 +26,9 @@ import fi.dy.masa.litematica.util.*;
 
 public class Configs implements IConfigHandler
 {
-    private static final String CONFIG_FILE_NAME = Reference.MOD_ID + ".json";
+    private static final String CONFIG_FILE_NAME = Reference.PORT_ID + ".json";
 
-    private static final String GENERIC_KEY = Reference.ID+".config.generic";
+    private static final String GENERIC_KEY = Reference.MOD_ID+".config.generic";
     public static class Generic
     {
         public static final ConfigOptionList    EASY_PLACE_PROTOCOL         = new ConfigOptionList("easyPlaceProtocolVersion", EasyPlaceProtocol.AUTO).apply(GENERIC_KEY);
@@ -196,7 +196,7 @@ public class Configs implements IConfigHandler
         );
     }
 
-    private static final String VISUALS_KEY = Reference.ID+".config.visuals";
+    private static final String VISUALS_KEY = Reference.MOD_ID+".config.visuals";
     public static class Visuals
     {
         public static final ConfigBoolean       ENABLE_AREA_SELECTION_RENDERING     = new ConfigBoolean("enableAreaSelectionBoxesRendering", true).apply(VISUALS_KEY);
@@ -217,6 +217,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       RENDER_AO_MODERN_ENABLE             = new ConfigBoolean("renderAOModernEnable", false).apply(VISUALS_KEY);
         public static final ConfigBoolean       RENDER_AREA_SELECTION_BOX_SIDES     = new ConfigBoolean("renderAreaSelectionBoxSides", true).apply(VISUALS_KEY);
         public static final ConfigBoolean       RENDER_BLOCKS_AS_TRANSLUCENT        = new ConfigBoolean("renderBlocksAsTranslucent", false).apply(VISUALS_KEY);
+        public static final ConfigBoolean       RENDER_ENABLE_TRANSLUCENT_RESORTING = new ConfigBoolean("renderEnableTranslucentResorting",  true).apply(VISUALS_KEY);
         public static final ConfigBoolean       RENDER_COLLIDING_SCHEMATIC_BLOCKS   = new ConfigBoolean("renderCollidingSchematicBlocks", false).apply(VISUALS_KEY);
         public static final ConfigBoolean       RENDER_ERROR_MARKER_CONNECTIONS     = new ConfigBoolean("renderErrorMarkerConnections", false).apply(VISUALS_KEY);
         public static final ConfigBoolean       RENDER_ERROR_MARKER_SIDES           = new ConfigBoolean("renderErrorMarkerSides", true).apply(VISUALS_KEY);
@@ -226,7 +227,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       RENDER_PLACEMENT_ENCLOSING_BOX_SIDES= new ConfigBoolean("renderPlacementEnclosingBoxSides", false).apply(VISUALS_KEY);
         public static final ConfigBoolean       RENDER_TRANSLUCENT_INNER_SIDES      = new ConfigBoolean("renderTranslucentBlockInnerSides", false).apply(VISUALS_KEY);
         public static final ConfigBoolean       SCHEMATIC_OVERLAY_ENABLE_OUTLINES   = new ConfigBoolean("schematicOverlayEnableOutlines",  true).apply(VISUALS_KEY);
-        public static final ConfigBoolean       SCHEMATIC_OVERLAY_ENABLE_RESORTING  = new ConfigBoolean("schematicOverlayEnableResorting",  true).apply(VISUALS_KEY);
+        public static final ConfigBoolean       SCHEMATIC_OVERLAY_ENABLE_RESORTING  = new ConfigBoolean("schematicOverlayEnableResorting", false).apply(VISUALS_KEY);
         public static final ConfigBoolean       SCHEMATIC_OVERLAY_ENABLE_SIDES      = new ConfigBoolean("schematicOverlayEnableSides",     true).apply(VISUALS_KEY);
         public static final ConfigBoolean       SCHEMATIC_OVERLAY_MODEL_OUTLINE     = new ConfigBoolean("schematicOverlayModelOutline",    true).apply(VISUALS_KEY);
         public static final ConfigBoolean       SCHEMATIC_OVERLAY_MODEL_SIDES       = new ConfigBoolean("schematicOverlayModelSides",      true).apply(VISUALS_KEY);
@@ -258,6 +259,7 @@ public class Configs implements IConfigHandler
                 RENDER_AO_MODERN_ENABLE,
                 RENDER_AREA_SELECTION_BOX_SIDES,
                 RENDER_BLOCKS_AS_TRANSLUCENT,
+                RENDER_ENABLE_TRANSLUCENT_RESORTING,
                 RENDER_COLLIDING_SCHEMATIC_BLOCKS,
                 RENDER_ERROR_MARKER_CONNECTIONS,
                 RENDER_ERROR_MARKER_SIDES,
@@ -286,7 +288,7 @@ public class Configs implements IConfigHandler
         );
     }
 
-    private static final String INFO_OVERLAYS_KEY = Reference.ID+".config.info_overlays";
+    private static final String INFO_OVERLAYS_KEY = Reference.MOD_ID+".config.info_overlays";
     public static class InfoOverlays
     {
         public static final ConfigOptionList    BLOCK_INFO_LINES_ALIGNMENT          = new ConfigOptionList("blockInfoLinesAlignment", HudAlignment.TOP_RIGHT).apply(INFO_OVERLAYS_KEY);
@@ -349,7 +351,7 @@ public class Configs implements IConfigHandler
         );
     }
 
-    private static final String COLORS_KEY = Reference.ID+".config.colors";
+    private static final String COLORS_KEY = Reference.MOD_ID+".config.colors";
     public static class Colors
     {
         public static final ConfigColor AREA_SELECTION_BOX_SIDE_COLOR       = new ConfigColor("areaSelectionBoxSideColor",          "#30FFFFFF").apply(COLORS_KEY);

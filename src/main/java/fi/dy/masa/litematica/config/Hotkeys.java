@@ -8,12 +8,13 @@ import fi.dy.masa.litematica.Reference;
 
 public class Hotkeys
 {
-    private static final String HOTKEYS_KEY = Reference.ID+".config.hotkeys";
+    private static final String HOTKEYS_KEY = Reference.MOD_ID+".config.hotkeys";
 
     public static final ConfigHotkey ADD_SELECTION_BOX                  = new ConfigHotkey("addSelectionBox",                   "M,A").apply(HOTKEYS_KEY);
     public static final ConfigHotkey CLONE_SELECTION                    = new ConfigHotkey("cloneSelection",                    "").apply(HOTKEYS_KEY);
     public static final ConfigHotkey DELETE_SELECTION_BOX               = new ConfigHotkey("deleteSelectionBox",                "").apply(HOTKEYS_KEY);
     public static final ConfigHotkey EASY_PLACE_ACTIVATION              = new ConfigHotkey("easyPlaceUseKey",                   "BUTTON_2", KeybindSettings.PRESS_ALLOWEXTRA).apply(HOTKEYS_KEY);
+    public static final ConfigHotkey EASY_PLACE_FIRST                   = new ConfigHotkey("easyPlaceFirst",                    "").apply(HOTKEYS_KEY);
     public static final ConfigHotkey EASY_PLACE_TOGGLE                  = new ConfigHotkey("easyPlaceToggle",                   "").apply(HOTKEYS_KEY);
     public static final ConfigHotkey EXECUTE_OPERATION                  = new ConfigHotkey("executeOperation",                  "").apply(HOTKEYS_KEY);
     public static final ConfigHotkey INVERT_GHOST_BLOCK_RENDER_STATE    = new ConfigHotkey("invertGhostBlockRenderState",       "").apply(HOTKEYS_KEY);
@@ -92,6 +93,7 @@ public class Hotkeys
             CLONE_SELECTION,
             DELETE_SELECTION_BOX,
             EASY_PLACE_ACTIVATION,
+            EASY_PLACE_FIRST,
             EASY_PLACE_TOGGLE,
             EXECUTE_OPERATION,
             INVERT_GHOST_BLOCK_RENDER_STATE,

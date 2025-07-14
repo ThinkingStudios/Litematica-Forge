@@ -24,15 +24,15 @@ public class SubRegionPlacement
 {
     public static final Codec<SubRegionPlacement> CODEC = RecordCodecBuilder.create(
             inst -> inst.group(
-                    PrimitiveCodec.STRING.fieldOf("name").forGetter(get -> get.name),
-                    BlockPos.CODEC.fieldOf("defaultPos").forGetter(get -> get.defaultPos),
-                    BlockPos.CODEC.fieldOf("pos").forGetter(get -> get.pos),
-                    BlockRotation.CODEC.fieldOf("rotation").forGetter(get -> get.rotation),
-                    BlockMirror.CODEC.fieldOf("mirror").forGetter(get -> get.mirror),
-                    PrimitiveCodec.BOOL.fieldOf("enabled").forGetter(get -> get.enabled),
-                    PrimitiveCodec.BOOL.fieldOf("renderingEnabled").forGetter(get -> get.renderingEnabled),
-                    PrimitiveCodec.BOOL.fieldOf("ignoreEntities").forGetter(get -> get.ignoreEntities),
-                    PrimitiveCodec.INT.fieldOf("coordinateLockMask").forGetter(get -> get.coordinateLockMask)
+                    PrimitiveCodec.STRING.fieldOf("Name").forGetter(get -> get.name),
+                    BlockPos.CODEC.fieldOf("DefaultPos").forGetter(get -> get.defaultPos),
+                    BlockPos.CODEC.fieldOf("Pos").forGetter(get -> get.pos),
+                    BlockRotation.CODEC.fieldOf("Rotation").forGetter(get -> get.rotation),
+                    BlockMirror.CODEC.fieldOf("Mirror").forGetter(get -> get.mirror),
+                    PrimitiveCodec.BOOL.fieldOf("Enabled").forGetter(get -> get.enabled),
+                    PrimitiveCodec.BOOL.fieldOf("RenderingEnabled").forGetter(get -> get.renderingEnabled),
+                    PrimitiveCodec.BOOL.fieldOf("IgnoreEntities").forGetter(get -> get.ignoreEntities),
+                    PrimitiveCodec.INT.fieldOf("CoordinateLockMask").forGetter(get -> get.coordinateLockMask)
             ).apply(inst, SubRegionPlacement::new)
     );
     public static final PacketCodec<ByteBuf, BlockMirror> BLOCK_MIRROR_PACKET_CODEC = PacketCodecs.STRING.xmap(BlockMirror::valueOf, BlockMirror::asString);

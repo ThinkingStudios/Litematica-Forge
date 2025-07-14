@@ -29,6 +29,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.*;
@@ -52,6 +54,7 @@ import fi.dy.masa.litematica.Reference;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.network.ServuxLitematicaHandler;
 import fi.dy.masa.litematica.network.ServuxLitematicaPacket;
+import fi.dy.masa.litematica.schematic.LitematicaSchematic;
 import fi.dy.masa.litematica.util.EntityUtils;
 import fi.dy.masa.litematica.util.PositionUtils;
 import fi.dy.masa.litematica.util.WorldUtils;
@@ -67,7 +70,7 @@ public class EntitiesDataStorage implements IClientTickHandler, IDataSyncer
     }
 
     private final static ServuxLitematicaHandler<ServuxLitematicaPacket.Payload> HANDLER = ServuxLitematicaHandler.getInstance();
-    private final static MinecraftClient mc = MinecraftClient.getInstance();
+    private final MinecraftClient mc;
     //private int uptimeTicks = 0;
     private boolean servuxServer = false;
     private boolean hasInValidServux = false;
@@ -114,13 +117,16 @@ public class EntitiesDataStorage implements IClientTickHandler, IDataSyncer
     {
         if (this.clientWorld == null)
         {
-            clientWorld = mc.world;
+            this.clientWorld = this.mc.world;
         }
 
-        return clientWorld;
+        return this.clientWorld;
     }
 
-    private EntitiesDataStorage() { }
+    private EntitiesDataStorage()
+    {
+        this.mc = MinecraftClient.getInstance();
+    }
 
     @Override
     public void onClientTick(MinecraftClient mc)
@@ -203,11 +209,11 @@ public class EntitiesDataStorage implements IClientTickHandler, IDataSyncer
         return ServuxLitematicaHandler.CHANNEL_ID;
     }
 
-    private static ClientPlayNetworkHandler getVanillaHandler()
+    private ClientPlayNetworkHandler getVanillaHandler()
     {
-        if (mc.player != null)
+        if (this.mc.player != null)
         {
-            return mc.player.networkHandler;
+            return this.mc.player.networkHandler;
         }
 
         return null;
@@ -554,14 +560,7 @@ public class EntitiesDataStorage implements IClientTickHandler, IDataSyncer
         // Don't cache/request a BE for the Schematic World
         if (world instanceof WorldSchematic)
         {
-            BlockEntity be = world.getWorldChunk(pos).getBlockEntity(pos);
-
-            if (be != null)
-            {
-                NbtCompound nbt = be.createNbtWithIdentifyingData(world.getRegistryManager());
-
-                return Pair.of(be, nbt);
-            }
+            return this.refreshBlockEntityFromWorld(world, pos);
         }
         if (this.blockEntityCache.containsKey(pos))
         {
@@ -577,6 +576,11 @@ public class EntitiesDataStorage implements IClientTickHandler, IDataSyncer
                 }
             }
 
+            if (world instanceof ServerWorld)
+            {
+                return this.refreshBlockEntityFromWorld(world, pos);
+            }
+
             return this.blockEntityCache.get(pos).getRight();
         }
         else if (world.getBlockState(pos).getBlock() instanceof BlockEntityProvider)
@@ -589,6 +593,16 @@ public class EntitiesDataStorage implements IClientTickHandler, IDataSyncer
                 this.pendingBlockEntitiesQueue.add(pos);
             }
 
+            return this.refreshBlockEntityFromWorld(world, pos);
+        }
+
+        return null;
+    }
+
+    private @Nullable Pair<BlockEntity, NbtCompound> refreshBlockEntityFromWorld(World world, BlockPos pos)
+    {
+        if (world != null && world.getBlockState(pos).hasBlockEntity())
+        {
             BlockEntity be = world.getWorldChunk(pos).getBlockEntity(pos);
 
             if (be != null)
@@ -596,9 +610,12 @@ public class EntitiesDataStorage implements IClientTickHandler, IDataSyncer
                 NbtCompound nbt = be.createNbtWithIdentifyingData(world.getRegistryManager());
                 Pair<BlockEntity, NbtCompound> pair = Pair.of(be, nbt);
 
-                synchronized (this.blockEntityCache)
+                if (!(world instanceof WorldSchematic))
                 {
-                    this.blockEntityCache.put(pos, Pair.of(System.currentTimeMillis(), pair));
+                    synchronized (this.blockEntityCache)
+                    {
+                        this.blockEntityCache.put(pos, Pair.of(System.currentTimeMillis(), pair));
+                    }
                 }
 
                 return pair;
@@ -611,9 +628,10 @@ public class EntitiesDataStorage implements IClientTickHandler, IDataSyncer
     @Override
     public @Nullable Pair<Entity, NbtCompound> requestEntity(World world, int entityId)
     {
+        // Don't cache/request for the Schematic World
         if (world instanceof WorldSchematic)
         {
-            return null;
+            return this.refreshEntityFromWorld(world, entityId);
         }
         if (this.entityCache.containsKey(entityId))
         {
@@ -629,6 +647,12 @@ public class EntitiesDataStorage implements IClientTickHandler, IDataSyncer
                 }
             }
 
+            // Refresh from Server World
+            if (world instanceof ServerWorld)
+            {
+                return this.refreshEntityFromWorld(world, entityId);
+            }
+
             return this.entityCache.get(entityId).getRight();
         }
         if (DataManager.getInstance().hasIntegratedServer() == false &&
@@ -638,6 +662,11 @@ public class EntitiesDataStorage implements IClientTickHandler, IDataSyncer
             this.pendingEntitiesQueue.add(entityId);
         }
 
+        return this.refreshEntityFromWorld(world, entityId);
+    }
+
+    private @Nullable Pair<Entity, NbtCompound> refreshEntityFromWorld(World world, int entityId)
+    {
         if (world != null)
         {
             Entity entity = world.getEntityById(entityId);
@@ -645,11 +674,14 @@ public class EntitiesDataStorage implements IClientTickHandler, IDataSyncer
 
             if (entity != null && entity.saveSelfNbt(nbt))
             {
-                Pair<Entity, NbtCompound> pair = Pair.of(entity, nbt);
+                Pair<Entity, NbtCompound> pair = Pair.of(entity, nbt.copy());
 
-                synchronized (this.entityCache)
+                if (!(world instanceof WorldSchematic))
                 {
-                    this.entityCache.put(entityId, Pair.of(System.currentTimeMillis(), pair));
+                    synchronized (this.entityCache)
+                    {
+                        this.entityCache.put(entityId, Pair.of(System.currentTimeMillis(), pair));
+                    }
                 }
 
                 return pair;
@@ -680,14 +712,20 @@ public class EntitiesDataStorage implements IClientTickHandler, IDataSyncer
                 BlockEntity be = this.blockEntityCache.get(pos).getRight().getLeft();
                 BlockState state = world.getBlockState(pos);
 
-                if (state.getBlock() instanceof AirBlock || state.equals(Blocks.AIR.getDefaultState()))
+                if (state.isIn(BlockTags.AIR) || !state.hasBlockEntity())
                 {
+                    synchronized (this.blockEntityCache)
+                    {
+                        this.blockEntityCache.remove(pos);
+                    }
+
+                    // Don't keep requesting if we're tick warping or something.
                     return null;
                 }
 
                 if (be instanceof Inventory inv1)
                 {
-                    if (be instanceof ChestBlockEntity)
+                    if (be instanceof ChestBlockEntity && state.contains(ChestBlock.CHEST_TYPE))
                     {
                         ChestType type = state.get(ChestBlock.CHEST_TYPE);
 
@@ -827,7 +865,7 @@ public class EntitiesDataStorage implements IClientTickHandler, IDataSyncer
             return;
         }
 
-        ClientPlayNetworkHandler handler = getVanillaHandler();
+        ClientPlayNetworkHandler handler = this.getVanillaHandler();
 
         if (handler != null)
         {
@@ -1158,10 +1196,11 @@ public class EntitiesDataStorage implements IClientTickHandler, IDataSyncer
             return;
         }
 
+        String task = nbt.getString("Task", "BulkEntityReply");
+
         // TODO --> Split out the task this way (I should have done this under sakura.12, etc),
         //  So we need to check if the "Task" is not included for now... (Wait for the updates to bake in)
-        if ((nbt.contains("Task") && nbt.getString("Task", "").equals("BulkEntityReply")) ||
-            nbt.contains("Task") == false)
+        if (task.equals("BulkEntityReply"))
         {
             NbtList tileList = nbt.contains("TileEntities") ? nbt.getListOrEmpty("TileEntities") : new NbtList();
             NbtList entityList = nbt.contains("Entities") ? nbt.getListOrEmpty("Entities") : new NbtList();

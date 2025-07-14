@@ -24,6 +24,13 @@ public class SchematicEntityLookup<T extends EntityLike> implements EntityLookup
 
     protected void put(T entity)
     {
+        T tmp = this.get(entity.getUuid());
+
+        if (tmp != null)
+        {
+            this.remove(entity.getUuid());
+        }
+
         synchronized (this.list)
         {
             this.list.add(entity);

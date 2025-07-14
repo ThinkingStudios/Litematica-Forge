@@ -480,7 +480,7 @@ public class WorldUtils
                 return false;
             }
 
-            if (override == false && !Files.exists(file))
+            if (override == false && Files.exists(file))
             {
                 feedback.setString(StringUtils.translate("litematica.error.structure_write_to_file_failed.exists", file.toAbsolutePath()));
                 return false;

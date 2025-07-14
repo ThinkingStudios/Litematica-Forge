@@ -131,6 +131,16 @@ public class ChunkSchematic extends WorldChunk
     @Override
     public void addEntity(Entity entity)
     {
+        this.entityList.forEach(
+                (ent ->
+                {
+                    if (ent.getUuid() == entity.getUuid() || ent.getId() == entity.getId())
+                    {
+                        return;
+                    }
+                })
+        );
+
         this.entityList.add(entity);
         ++this.entityCount;
     }

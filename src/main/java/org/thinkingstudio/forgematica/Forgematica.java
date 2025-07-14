@@ -11,7 +11,7 @@ import net.neoforged.fml.loading.FMLLoader;
 
 import org.thinkingstudio.mafglib.loader.entrypoints.ConfigScreenEntrypoint;
 
-@Mod(value = Reference.MOD_ID, dist = Dist.CLIENT)
+@Mod(value = Reference.PORT_ID, dist = Dist.CLIENT)
 public class Forgematica {
     public Forgematica(ModContainer modContainer) {
         if (FMLLoader.getDist().isClient()) {

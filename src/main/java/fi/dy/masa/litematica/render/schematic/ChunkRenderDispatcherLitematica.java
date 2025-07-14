@@ -569,33 +569,33 @@ public class ChunkRenderDispatcherLitematica
             renderChunk.uploadBuffersByType(type, builtBuffer);
         }
 
-        if (type.isTranslucent() && Configs.Visuals.SCHEMATIC_OVERLAY_ENABLE_RESORTING.getBooleanValue())
-        {
-            BuiltBuffer.SortState sorting = compiledChunk.getTransparentSortingDataForOverlay(type);
-
-            if (sorting == null)
-            {
-                sorting = builtBuffer.sortQuads(allocator, sorter);
-
-                if (sorting == null)
-                {
-                    profiler.pop();
-                    //LOGGER.warn("[Dispatch] uploadVertexBufferByType type [{}] --> SORT FAILURE", type.name());
-                    throw new InterruptedException("Sort State failed to sortQuads()");
-                }
-
-                compiledChunk.setTransparentSortingDataForOverlay(type, sorting);
-            }
-
-            BufferAllocator.CloseableBuffer result = sorting.sortAndStore(allocator, sorter);
-
-            if (result != null)
-            {
-                //LOGGER.warn("[Dispatch] uploadVertexBufferByType type [{}] --> UPLOAD INDEX", type.name());
-                renderChunk.uploadIndexByType(type, result);
-                result.close();
-            }
-        }
+//        if (type.isTranslucent() && Configs.Visuals.SCHEMATIC_OVERLAY_ENABLE_RESORTING.getBooleanValue())
+//        {
+//            BuiltBuffer.SortState sorting = compiledChunk.getTransparentSortingDataForOverlay(type);
+//
+//            if (sorting == null)
+//            {
+//                sorting = builtBuffer.sortQuads(allocator, sorter);
+//
+//                if (sorting == null)
+//                {
+//                    profiler.pop();
+//                    //LOGGER.warn("[Dispatch] uploadVertexBufferByType type [{}] --> SORT FAILURE", type.name());
+//                    throw new InterruptedException("Sort State failed to sortQuads()");
+//                }
+//
+//                compiledChunk.setTransparentSortingDataForOverlay(type, sorting);
+//            }
+//
+//            BufferAllocator.CloseableBuffer result = sorting.sortAndStore(allocator, sorter);
+//
+//            if (result != null)
+//            {
+//                //LOGGER.warn("[Dispatch] uploadVertexBufferByType type [{}] --> UPLOAD INDEX", type.name());
+//                renderChunk.uploadIndexByType(type, result);
+//                result.close();
+//            }
+//        }
 
         //LOGGER.warn("[Dispatch] uploadVertexBufferByType type [{}] --> DONE", type.name());
         profiler.pop();

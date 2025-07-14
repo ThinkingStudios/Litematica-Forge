@@ -23,6 +23,7 @@ import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.Reference;
 import fi.dy.masa.litematica.config.Configs;
+import fi.dy.masa.litematica.schematic.transmit.SchematicBufferManager;
 import fi.dy.masa.litematica.gui.GuiConfigs.ConfigGuiTab;
 import fi.dy.masa.litematica.materials.MaterialListBase;
 import fi.dy.masa.litematica.materials.MaterialListHudRenderer;
@@ -58,6 +59,7 @@ public class DataManager implements IDirectoryCache
     private final SelectionManager selectionManager = new SelectionManager();
     private final SchematicPlacementManager schematicPlacementManager = new SchematicPlacementManager();
     private final SchematicProjectsManager schematicProjectsManager = new SchematicProjectsManager();
+    private final SchematicBufferManager schematicBufferManager = new SchematicBufferManager();
     private LayerRange renderRange = new LayerRange(SchematicWorldRefresher.INSTANCE);
     private ToolMode operationMode = ToolMode.SCHEMATIC_PLACEMENT;
     private AreaSelectionSimple areaSimple = new AreaSelectionSimple(true);
@@ -212,6 +214,11 @@ public class DataManager implements IDirectoryCache
     public static SchematicProjectsManager getSchematicProjectsManager()
     {
         return getInstance().schematicProjectsManager;
+    }
+
+    public static SchematicBufferManager getSchematicBufferManager()
+    {
+        return getInstance().schematicBufferManager;
     }
 
     @Nullable
@@ -506,16 +513,71 @@ public class DataManager implements IDirectoryCache
             dir = getDefaultBaseSchematicDirectory();
         }
 
-        if (!Files.exists(dir))
+        if (!Files.exists(dir) || !Files.isDirectory(dir))
         {
-            FileUtils.createDirectoriesIfMissing(dir);
+            try
+            {
+                if (Files.exists(dir))
+                {
+                    Files.delete(dir);
+                }
+
+                Files.createDirectory(dir);
+                Litematica.LOGGER.warn("getSchematicsBaseDirectory(): Created schematic directory '{}'", dir.toAbsolutePath().toString());
+            }
+            catch (Exception err)
+            {
+                Litematica.LOGGER.error("Failed to create the schematic directory '{}'; {}", dir.toAbsolutePath().toString(), err.getLocalizedMessage());
+            }
         }
 
         if (!Files.isDirectory(dir))
         {
-            Litematica.LOGGER.warn("Failed to create the schematic directory '{}'", dir.toAbsolutePath());
+            Litematica.LOGGER.error("Failed to create the schematic directory '{}'", dir.toAbsolutePath().toString());
         }
 
+        if (!Files.isWritable(dir))
+        {
+            Litematica.LOGGER.error("Schematic directory '{}'; is not writeable.", dir.toAbsolutePath().toString());
+        }
+
+//        Litematica.debugLog("getSchematicsBaseDirectory(): Schematic directory debug '{}'", dir.toAbsolutePath().toString());
+        return dir;
+    }
+
+    public static Path getSchematicTransmitDirectory()
+    {
+        Path dir = getSchematicsBaseDirectory().resolve("transmit");
+
+        if (!Files.exists(dir) || !Files.isDirectory(dir))
+        {
+            try
+            {
+                if (Files.exists(dir))
+                {
+                    Files.delete(dir);
+                }
+
+                Files.createDirectory(dir);
+                Litematica.LOGGER.warn("getSchematicTransmitDirectory(): Created schematic transmit directory '{}'", dir.toAbsolutePath().toString());
+            }
+            catch (Exception err)
+            {
+                Litematica.LOGGER.error("Failed to create the schematic transmit directory '{}'; {}", dir.toAbsolutePath().toString(), err.getLocalizedMessage());
+            }
+        }
+
+        if (!Files.isDirectory(dir))
+        {
+            Litematica.LOGGER.error("Failed to create the schematic transmit directory '{}'", dir.toAbsolutePath().toString());
+        }
+
+        if (!Files.isWritable(dir))
+        {
+            Litematica.LOGGER.error("Schematic transmit directory '{}'; is not writeable.", dir.toAbsolutePath().toString());
+        }
+
+//        Litematica.debugLog("getSchematicTransmitDirectory(): Schematic transmit directory debug '{}'", dir.toAbsolutePath().toString());
         return dir;
     }
 

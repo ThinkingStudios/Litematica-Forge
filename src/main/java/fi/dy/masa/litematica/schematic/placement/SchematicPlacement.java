@@ -2,6 +2,7 @@ package fi.dy.masa.litematica.schematic.placement;
 
 import java.nio.file.Path;
 import java.util.*;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
@@ -38,8 +39,7 @@ import fi.dy.masa.litematica.schematic.LitematicaSchematic;
 import fi.dy.masa.litematica.schematic.placement.SubRegionPlacement.RequiredEnabled;
 import fi.dy.masa.litematica.schematic.verifier.SchematicVerifier;
 import fi.dy.masa.litematica.selection.Box;
-import fi.dy.masa.litematica.util.BlockInfoListType;
-import fi.dy.masa.litematica.util.PositionUtils;
+import fi.dy.masa.litematica.util.*;
 
 public class SchematicPlacement
 {
@@ -1054,23 +1054,23 @@ public class SchematicPlacement
     public NbtCompound toNbt(boolean withSchematic)
     {
         NbtCompound compound = new NbtCompound();
-        compound.putString("Name", name);
+        compound.putString("Name", this.name);
 
         if (withSchematic)
         {
-            compound.put("Schematics", schematic.writeToNBT());
+            compound.put("Schematics", this.schematic.writeToNBT());
         }
 
         //compound.put("Origin", NbtHelper.fromBlockPos(origin));
-        NbtUtils.writeBlockPosToArrayTag(origin, compound, "Origin");
-        compound.putInt("Rotation", rotation.ordinal());
-        compound.putInt("Mirror", mirror.ordinal());
+        NbtUtils.writeBlockPosToArrayTag(this.origin, compound, "Origin");
+        compound.putInt("Rotation", this.rotation.ordinal());
+        compound.putInt("Mirror", this.mirror.ordinal());
         NbtCompound subs = new NbtCompound();
 
-        for (String name : relativeSubRegionPlacements.keySet())
+        for (String name : this.relativeSubRegionPlacements.keySet())
         {
             NbtCompound sub = new NbtCompound();
-            SubRegionPlacement subRegionPlacement = relativeSubRegionPlacements.get(name);
+            SubRegionPlacement subRegionPlacement = this.relativeSubRegionPlacements.get(name);
             subs.put(name, sub);
 
             //sub.put("Pos", NbtHelper.fromBlockPos(subRegionPlacement.getPos()));
@@ -1087,5 +1087,95 @@ public class SchematicPlacement
         compound.putString("PasteLayerBehavior", Configs.Generic.PASTE_LAYER_BEHAVIOR.getStringValue());
         compound.put("RenderLayerRange", LayerRange.CODEC, DataManager.getRenderLayerRange());
         return compound;
+    }
+
+    public static @Nullable SchematicPlacement createFromNbt(NbtCompound nbt)
+    {
+        String name = nbt.getString("Name", "?");
+        LitematicaSchematic schematic = new LitematicaSchematic(Path.of(name), nbt.getCompoundOrEmpty("Schematics"), FileType.LITEMATICA_SCHEMATIC);
+        BlockPos origin = NbtUtils.readBlockPosFromArrayTag(nbt, "Origin");
+        BlockRotation rot = BlockRotation.values()[nbt.getInt("Rotation", 0)];
+        BlockMirror mirror = BlockMirror.values()[nbt.getInt("Mirror", 0)];
+
+        SchematicPlacement placement = SchematicPlacement.createFor(schematic, origin, name, true, true);
+        placement.rotation = rot;
+        placement.mirror = mirror;
+        NbtCompound subs = nbt.getCompoundOrEmpty("SubRegions");
+
+        for (String key : subs.getKeys())
+        {
+            NbtCompound entry = subs.getCompoundOrEmpty(key);
+
+            if (!entry.isEmpty())
+            {
+                name = entry.getString("Name", "?");
+                origin = NbtUtils.readBlockPosFromArrayTag(entry, "Pos");
+                rot = BlockRotation.values()[entry.getInt("Rotation", 0)];
+                mirror = BlockMirror.values()[entry.getInt("Mirror", 0)];
+                boolean enabled = entry.getBoolean("Enabled", true);
+                boolean ignore = entry.getBoolean("IgnoreEntities", false);
+
+                SubRegionPlacement subRegion = new SubRegionPlacement(origin, name);
+                subRegion.setMirror(mirror);
+                subRegion.setRotation(rot);
+                subRegion.setEnabled(enabled);
+
+                if (ignore)
+                {
+                    subRegion.toggleIgnoreEntities();
+                }
+
+                placement.relativeSubRegionPlacements.put(key, subRegion);
+            }
+        }
+
+        placement.checkAreSubRegionsModified();
+        placement.updateEnclosingBox();
+
+        return placement;
+    }
+    public static @Nullable SchematicPlacement createFromNbt(@Nonnull LitematicaSchematic schematic, NbtCompound nbt)
+    {
+        String name = nbt.getString("Name", "?");
+        BlockPos origin = NbtUtils.readBlockPosFromArrayTag(nbt, "Origin");
+        BlockRotation rot = BlockRotation.values()[nbt.getInt("Rotation", 0)];
+        BlockMirror mirror = BlockMirror.values()[nbt.getInt("Mirror", 0)];
+
+        SchematicPlacement placement = SchematicPlacement.createFor(schematic, origin, name, true, true);
+        placement.rotation = rot;
+        placement.mirror = mirror;
+        NbtCompound subs = nbt.getCompoundOrEmpty("SubRegions");
+
+        for (String key : subs.getKeys())
+        {
+            NbtCompound entry = subs.getCompoundOrEmpty(key);
+
+            if (!entry.isEmpty())
+            {
+                name = entry.getString("Name", "?");
+                origin = NbtUtils.readBlockPosFromArrayTag(entry, "Pos");
+                rot = BlockRotation.values()[entry.getInt("Rotation", 0)];
+                mirror = BlockMirror.values()[entry.getInt("Mirror", 0)];
+                boolean enabled = entry.getBoolean("Enabled", true);
+                boolean ignore = entry.getBoolean("IgnoreEntities", false);
+
+                SubRegionPlacement subRegion = new SubRegionPlacement(origin, name);
+                subRegion.setMirror(mirror);
+                subRegion.setRotation(rot);
+                subRegion.setEnabled(enabled);
+
+                if (ignore)
+                {
+                    subRegion.toggleIgnoreEntities();
+                }
+
+                placement.relativeSubRegionPlacements.put(key, subRegion);
+            }
+        }
+
+        placement.checkAreSubRegionsModified();
+        placement.updateEnclosingBox();
+
+        return placement;
     }
 }

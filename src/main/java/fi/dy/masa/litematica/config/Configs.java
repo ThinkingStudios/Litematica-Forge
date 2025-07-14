@@ -27,9 +27,9 @@ import fi.dy.masa.litematica.util.*;
 
 public class Configs implements IConfigHandler
 {
-    private static final String CONFIG_FILE_NAME = Reference.MOD_ID + ".json";
+    private static final String CONFIG_FILE_NAME = Reference.PORT_ID + ".json";
 
-    private static final String GENERIC_KEY = Reference.ID+".config.generic";
+    private static final String GENERIC_KEY = Reference.MOD_ID+".config.generic";
     public static class Generic
     {
         public static final ConfigOptionList    EASY_PLACE_PROTOCOL         = new ConfigOptionList("easyPlaceProtocolVersion", EasyPlaceProtocol.AUTO).apply(GENERIC_KEY);
@@ -95,6 +95,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       PASTE_USE_FILL_COMMAND      = new ConfigBoolean("pasteUseFillCommand", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       PASTE_USING_COMMANDS_IN_SP  = new ConfigBoolean("pasteUsingCommandsInSp", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       PASTE_USING_SERVUX          = new ConfigBoolean("pasteUsingServux", true).apply(GENERIC_KEY);
+//        public static final ConfigBoolean       PASTE_SERVUX_EXPERIMENTAL   = new ConfigBoolean("pasteServuxExperimental", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       PICK_BLOCK_AVOID_DAMAGEABLE = new ConfigBoolean("pickBlockAvoidDamageable", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       PICK_BLOCK_AVOID_TOOLS      = new ConfigBoolean("pickBlockAvoidTools", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       PICK_BLOCK_ENABLED          = new ConfigBoolean("pickBlockEnabled", true).apply(GENERIC_KEY);
@@ -158,6 +159,7 @@ public class Configs implements IConfigHandler
                 PASTE_USE_FILL_COMMAND,
                 PASTE_USING_COMMANDS_IN_SP,
                 PASTE_USING_SERVUX,
+//                PASTE_SERVUX_EXPERIMENTAL,
                 PICK_BLOCK_AVOID_DAMAGEABLE,
                 PICK_BLOCK_AVOID_TOOLS,
                 PICK_BLOCK_ENABLED,
@@ -197,7 +199,7 @@ public class Configs implements IConfigHandler
         );
     }
 
-    private static final String VISUALS_KEY = Reference.ID+".config.visuals";
+    private static final String VISUALS_KEY = Reference.MOD_ID+".config.visuals";
     public static class Visuals
     {
         public static final ConfigBoolean       ENABLE_AREA_SELECTION_RENDERING     = new ConfigBoolean("enableAreaSelectionBoxesRendering", true).apply(VISUALS_KEY);
@@ -230,7 +232,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       RENDER_SCHEMATIC_TILE_ENTITIES      = new ConfigBoolean("renderSchematicTileEntities", true).apply(VISUALS_KEY);
         public static final ConfigBoolean       RENDER_TRANSLUCENT_INNER_SIDES      = new ConfigBoolean("renderTranslucentBlockInnerSides", false).apply(VISUALS_KEY);
         public static final ConfigBoolean       SCHEMATIC_OVERLAY_ENABLE_OUTLINES   = new ConfigBoolean("schematicOverlayEnableOutlines",  true).apply(VISUALS_KEY);
-        public static final ConfigBoolean       SCHEMATIC_OVERLAY_ENABLE_RESORTING  = new ConfigBoolean("schematicOverlayEnableResorting",  false).apply(VISUALS_KEY);
+//        public static final ConfigBoolean       SCHEMATIC_OVERLAY_ENABLE_RESORTING  = new ConfigBoolean("schematicOverlayEnableResorting",  false).apply(VISUALS_KEY);
         public static final ConfigBoolean       SCHEMATIC_OVERLAY_ENABLE_SIDES      = new ConfigBoolean("schematicOverlayEnableSides",     true).apply(VISUALS_KEY);
         public static final ConfigBoolean       SCHEMATIC_OVERLAY_MODEL_OUTLINE     = new ConfigBoolean("schematicOverlayModelOutline",    true).apply(VISUALS_KEY);
         public static final ConfigBoolean       SCHEMATIC_OVERLAY_MODEL_SIDES       = new ConfigBoolean("schematicOverlayModelSides",      true).apply(VISUALS_KEY);
@@ -274,7 +276,7 @@ public class Configs implements IConfigHandler
                 RENDER_SCHEMATIC_TILE_ENTITIES,
                 RENDER_TRANSLUCENT_INNER_SIDES,
                 SCHEMATIC_OVERLAY_ENABLE_OUTLINES,
-                SCHEMATIC_OVERLAY_ENABLE_RESORTING,
+//                SCHEMATIC_OVERLAY_ENABLE_RESORTING,
                 SCHEMATIC_OVERLAY_ENABLE_SIDES,
                 SCHEMATIC_OVERLAY_MODEL_OUTLINE,
                 SCHEMATIC_OVERLAY_MODEL_SIDES,
@@ -293,7 +295,7 @@ public class Configs implements IConfigHandler
         );
     }
 
-    private static final String INFO_OVERLAYS_KEY = Reference.ID+".config.info_overlays";
+    private static final String INFO_OVERLAYS_KEY = Reference.MOD_ID+".config.info_overlays";
     public static class InfoOverlays
     {
         public static final ConfigOptionList    BLOCK_INFO_LINES_ALIGNMENT          = new ConfigOptionList("blockInfoLinesAlignment", HudAlignment.TOP_RIGHT).apply(INFO_OVERLAYS_KEY);
@@ -356,7 +358,7 @@ public class Configs implements IConfigHandler
         );
     }
 
-    private static final String COLORS_KEY = Reference.ID+".config.colors";
+    private static final String COLORS_KEY = Reference.MOD_ID+".config.colors";
     public static class Colors
     {
         public static final ConfigColor AREA_SELECTION_BOX_SIDE_COLOR       = new ConfigColor("areaSelectionBoxSideColor",          "#30FFFFFF").apply(COLORS_KEY);

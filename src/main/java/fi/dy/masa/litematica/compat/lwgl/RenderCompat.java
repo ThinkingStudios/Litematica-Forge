@@ -10,9 +10,10 @@ public class RenderCompat
 {
     public static void checkGpuVisuals()
     {
-        if (Configs.Visuals.SCHEMATIC_OVERLAY_ENABLE_RESORTING.getBooleanValue() && !GpuCompat.isNvidiaGpu())
-        {
-            Configs.Visuals.SCHEMATIC_OVERLAY_ENABLE_RESORTING.setBooleanValue(false);
-        }
+        // TODO
+//        if (Configs.Visuals.SCHEMATIC_OVERLAY_ENABLE_RESORTING.getBooleanValue() && !GpuCompat.isNvidiaGpu())
+//        {
+//            Configs.Visuals.SCHEMATIC_OVERLAY_ENABLE_RESORTING.setBooleanValue(false);
+//        }
     }
 }

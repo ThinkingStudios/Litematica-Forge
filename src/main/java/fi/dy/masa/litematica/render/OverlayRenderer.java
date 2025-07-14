@@ -350,7 +350,7 @@ public class OverlayRenderer
             else
             {
                 //RenderUtils.renderBlockOutlineOverlapping(pos1, expand, lineWidthBlockBox, color1, color2, this.colorOverlapping, matrix4f, this.mc);
-                fi.dy.masa.malilib.render.RenderUtils.renderBlockOutlineOverlapping(pos1, expand, lineWidthBlockBox, color1, color2, this.colorOverlapping, matrix4f, true);
+                fi.dy.masa.malilib.render.RenderUtils.renderBlockOutlineOverlapping(pos1, expand, lineWidthBlockBox, color1, color2, this.colorOverlapping, matrix4f, false);
             }
         }
         else
